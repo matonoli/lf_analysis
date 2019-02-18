@@ -49,9 +49,9 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 			printf("Processing: %i out of total %i events...\n", iEv, nEvents); }
 		
 		Int_t iret = handler->Make(iEv);
-        if (iret) { 
-        	printf("Bad return code %i at event %i . Exiting... \n", iret, iEv); 
-        	break;	}
+		if (iret) { 
+			printf("Bad return code %i at event %i . Exiting... \n", iret, iEv); 
+			break;	}
 	}
 
 	// Finish up
