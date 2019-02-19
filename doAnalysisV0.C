@@ -15,12 +15,12 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	gROOT->LoadMacro("MyTrack.cxx+");
 	gROOT->LoadMacro("MyV0.cxx+");
 	gROOT->LoadMacro("MyAnalysis.cxx+");
-	gROOT->LoadMacro("MyHandler.cxx+");
-	gROOT->LoadMacro("MyAnalysisV0.cxx+");
+	gROOT->LoadMacro("MyHandler.cxx++");
+	gROOT->LoadMacro("MyAnalysisV0.cxx++");
 
 	// Set-up the analysis handler and load the input
 	MyHandler* handler 	= new MyHandler();
-	if (!handler->LoadInput(inputFile)) {
+	if (!handler->LoadInput(inputFile,"PIDTree")) {
 		printf("ERROR: No files to analyse \n");
 		return; }
 	else {
@@ -29,7 +29,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	// Set-up analyses and link them to handler
 	MyAnalysisV0* analysisV0 	= new MyAnalysisV0();
 	handler->AddAnalysis(analysisV0);
-	printf("Following analyses will be performed: \n");
+	printf("Following analyses will be performed: %s \n", analysisV0->GetName());
 
 	// Initialise analyses
 	handler->Init();
@@ -39,14 +39,15 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	printf("Total entries: %i \n", nEntries);
 	nEvents = (nEvents < nEntries) ? nEvents : nEntries;
 
-	// Count how often should you echo
-	Int_t evCounter = 0;
-	do { nEvents /= 10; evCounter++; } while (nEvents != 0);
+	// Count how often should echo happen
+	Int_t evCounter = 0; Int_t nDigits = nEvents;
+	do { nDigits /= 10; evCounter++; } while (nDigits != 0);
 	evCounter = (evCounter < 2) ? 1 : TMath::Power(10,evCounter-2);
+	
 	for (Int_t iEv = 0; iEv < nEvents; iEv++)	{
 		
 		if (iEv%evCounter==0) {
-			printf("Processing: %i out of total %i events...\n", iEv, nEvents); }
+			printf("Processing event %i, out of total %i events...\n", iEv, nEvents); }
 		
 		Int_t iret = handler->Make(iEv);
 		if (iret) { 
