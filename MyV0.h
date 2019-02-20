@@ -15,6 +15,7 @@ class MyV0: public TObject {
 		MyV0(AliAnalysisPIDV0* v0) : mAliV0(v0) { }	
 		~MyV0() { }
 		Float_t GetPt() 					const { return mAliV0->GetPt();};
+		Float_t GetEta() 					const { return mAliV0->GetEta();};
 		AliAnalysisPIDTrack* GetTrackPos() 	const { return mAliV0->GetPosAnalysisTrack();};
 		
 		ClassDef(MyV0,1);

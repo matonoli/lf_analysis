@@ -15,6 +15,8 @@ class MyTrack: public TObject {
 		MyTrack(AliAnalysisPIDTrack* tr) : mAliTrack(tr) { }
 		~MyTrack() { }
 		Float_t GetPt() 		const { return mAliTrack->GetPt();};
+
+		// add safety measure to getters for if mAliTrack is an invalid pointer
 		
 		ClassDef(MyTrack,1);
 

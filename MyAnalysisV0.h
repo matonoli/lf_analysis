@@ -6,17 +6,22 @@
 
 #include "TObject.h"
 #include "MyAnalysis.h"
+#include "cuts00.h"			// namespace cuts
 
 class AliAnalysisPIDEvent;	// forward declaration
 class TClonesArray;
 class TH1D;
 class MyV0;
 
-// Defining global constants here, should be changed.
-enum { nBinsSpecies = 4, nBinsMulti = 3, nBinsSphero = 3};
-const char* SPECIES[nBinsSpecies] = {"inc","K0s","L","Lbar"};
-const char* MULTI[nBinsMulti] = {"MB","V0M","NCharged"};
-const char* SPHERO[nBinsSphero] = {"MB","Jetty","Iso"};
+// Defining a namespace with constants
+namespace V0consts {
+	const Int_t NSPECIES = 4; 
+	const Int_t NMULTI = 3;
+	const Int_t NSPHERO = 3;
+	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
+	const char* MULTI[NMULTI] = {"MB","V0M","NCharged"};
+	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso"};
+}
 
 class MyAnalysisV0: public MyAnalysis {
 
@@ -28,7 +33,8 @@ class MyAnalysisV0: public MyAnalysis {
 		Int_t Make(Int_t iEv);
 		Int_t Finish();
 		Bool_t CreateHistograms();
-		Bool_t ProcessV0(MyV0 v0, Int_t Sp, Int_t Mu, Int_t Sph);
+		Bool_t ProcessV0(MyV0 &v0, Int_t Sp, Int_t Mu, Int_t Sph);
+		Bool_t IsV0(MyV0 &v0, Int_t Sp);
 
 		ClassDef(MyAnalysisV0,1);
 
@@ -55,6 +61,7 @@ class MyAnalysisV0: public MyAnalysis {
 		// MC PARTICLE HISTOGRAMS
 
 		// V0 HISTOGRAMS
-		TH1D* hV0Pt[nBinsSpecies][nBinsMulti][nBinsSphero];
+		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 };
 #endif
