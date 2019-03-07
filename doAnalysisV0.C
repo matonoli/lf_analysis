@@ -2,8 +2,9 @@
 // OliverM 2019 Lund
 
 #include <iostream>
+using namespace RooFit;
 
-void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list", 
+void doAnalysisV0(Int_t nEvents=100, const Char_t *inputFile="test.list", 
 	const Char_t *outputFile="test.root") {
 
 	// Loading ALICE libraries
@@ -13,10 +14,15 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	// Loading and compiling custom MyKit libraries
 	gROOT->LoadMacro("MyEvent.cxx+");
 	gROOT->LoadMacro("MyTrack.cxx+");
+	gROOT->LoadMacro("MyParticle.cxx+");
 	gROOT->LoadMacro("MyV0.cxx+");
 	gROOT->LoadMacro("MyAnalysis.cxx+");
 	gROOT->LoadMacro("MyHandler.cxx++");
 	gROOT->LoadMacro("MyAnalysisV0.cxx++");
+
+	// Suppress RooFit spam
+	RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+	RooMsgService::instance().setSilentMode(true);
 
 	// Set-up the analysis handler and load the input
 	MyHandler* handler 	= new MyHandler();
@@ -42,7 +48,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	// Count how often should echo happen
 	Int_t evCounter = 0; Int_t nDigits = nEvents;
 	do { nDigits /= 10; evCounter++; } while (nDigits != 0);
-	evCounter = (evCounter < 2) ? 1 : TMath::Power(10,evCounter-2);
+	evCounter = (evCounter < 3) ? 1 : 0.5*TMath::Power(10,evCounter-2);
 	
 	for (Int_t iEv = 0; iEv < nEvents; iEv++)	{
 		

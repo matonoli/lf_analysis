@@ -12,15 +12,26 @@ class MyV0: public TObject {
 
 	public:
 		MyV0() { }
-		MyV0(AliAnalysisPIDV0* v0) : mAliV0(v0) { }	
+		MyV0(AliAnalysisPIDV0* v0);// : mAliV0(v0) { }	
 		~MyV0() { }
-		Float_t GetPt() 					const { return mAliV0->GetPt();};
-		Float_t GetEta() 					const { return mAliV0->GetEta();};
-		AliAnalysisPIDTrack* GetTrackPos() 	const { return mAliV0->GetPosAnalysisTrack();};
+		Double_t GetPt() 					const { return mAliV0->GetPt();};
+		Double_t GetEta() 					const { return mAliV0->GetEta();};
+		Double_t GetDCAdd() 				const { return mAliV0->GetDCAV0Daughters();};
+		Double_t GetCPA() 					const { return mAliV0->GetV0CosinePA();};
+		Double_t GetRadius() 				const { return mAliV0->GetRadius();};
+		Double_t GetIMK0s() 				const { return mAliV0->GetIMK0s();};
+		Double_t GetIML()					const { return mAliV0->GetIML();};
+		Double_t GetIMLbar() 				const { return mAliV0->GetIMAL();};
+		AliAnalysisPIDTrack* GetPosTrack() 	const { return mAliV0->GetPosAnalysisTrack();};
+		AliAnalysisPIDTrack* GetNegTrack() 	const { return mAliV0->GetNegAnalysisTrack();};
+
+		Double_t* CalculateAP();
 		
 		ClassDef(MyV0,1);
 
 	private:
 		AliAnalysisPIDV0* mAliV0;
+		Bool_t mAPcalculated;
+		Double_t mAP[2];
 };
 #endif

@@ -78,7 +78,7 @@ Int_t MyHandler::LoadInput(const Char_t *inputFile, const Char_t *chainName) {
 Int_t MyHandler::Make(Int_t iEv) {
 
 	Int_t iret = 0;
-	printf("Looping in handler %i \n", iEv);
+	//printf("Looping in handler %i \n", iEv);
 	
 	if (!mChain->GetEntry(iEv)) iret++;
 	iret += mAnalysis->Make(iEv);

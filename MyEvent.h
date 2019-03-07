@@ -13,6 +13,7 @@ class MyEvent: public TObject {
 		MyEvent(AliAnalysisPIDEvent* ev) : mAliEvent(ev) { }	
 		~MyEvent() { }
 		Float_t GetZ() const { return mAliEvent->GetVertexZ();};
+		Bool_t IsGoodAliEvent() const { return mAliEvent->AcceptEvent();}; // vertex position
 		
 		ClassDef(MyEvent,1);
 

@@ -14,7 +14,11 @@ class MyTrack: public TObject {
 		MyTrack() { }
 		MyTrack(AliAnalysisPIDTrack* tr) : mAliTrack(tr) { }
 		~MyTrack() { }
-		Float_t GetPt() 		const { return mAliTrack->GetPt();};
+		Float_t GetPt() 						const { return mAliTrack->GetPt();};
+		Float_t GetEta() 						const { return mAliTrack->GetEta();};
+		Float_t GetNSigmaPionTPC() 				const { return mAliTrack->GetNSigmaPionTPC();};
+		Float_t GetNSigmaProtonTPC() 			const { return mAliTrack->GetNSigmaProtonTPC();};
+		Float_t GetDCApvXY() 					const { return mAliTrack->GetImpactParameter(0);};
 
 		// add safety measure to getters for if mAliTrack is an invalid pointer
 		

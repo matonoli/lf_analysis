@@ -1,6 +1,5 @@
 namespace cuts {
 	// EVENT SELECTION
-	const Int_t ACCEPTEVENT[2] =	{0, 1};
 
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};
@@ -14,11 +13,13 @@ namespace cuts {
 	const Float_t V0_D_DCAPVXY 	= 0.05;
 
 	// K0s, L, Lbar
-	const Float_t K0S_AP 			= 0;
-	const Float_t K0S_NSIGTPC[2] 	= {-3., 3.};
-	//const Float_t K0S_NSIGTOF[2] 	= {-3., 3.};
-	const Float_t L_NSIGTPC[2] 	= {-3., 3.};
-	//const Float_t L_NSIGTOF[2] 	= {-3., 3.}; 
-	const Float_t LBAR_NSIGTPC[2] 	= {-3., 3.};
+	const Float_t K0S_AP 				= 0.2;
+	const Float_t K0S_D_NSIGTPC[2] 		= {-3., 3.};
+	const Float_t K0S_D_ETA[2]			= {-0.8, 0.8};
+	const Float_t K0S_D_DCAPVXY			= 0.05;
+	//const Float_t K0S_NSIGTOF[2] 		= {-3., 3.};
+	const Float_t L_NSIGTPC[2] 			= {-3., 3.};
+	//const Float_t L_NSIGTOF[2] 		= {-3., 3.}; 
+	const Float_t LBAR_NSIGTPC[2] 		= {-3., 3.};
 	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.}; 
 }
