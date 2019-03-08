@@ -25,6 +25,9 @@ class MyV0: public TObject {
 		AliAnalysisPIDTrack* GetPosTrack() 	const { return mAliV0->GetPosAnalysisTrack();};
 		AliAnalysisPIDTrack* GetNegTrack() 	const { return mAliV0->GetNegAnalysisTrack();};
 
+		Double_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
+		Double_t GetMCPdgCode()				const { return mAliV0->GetMCPdgCode();};
+
 		Double_t* CalculateAP();
 		
 		ClassDef(MyV0,1);

@@ -65,6 +65,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventMonitor->Fill(2);
 	enum { multMB, V0M, NCharged };
 	enum { sphMB, Jetty, Iso };
+	enum { D, RC, MC };
 	Int_t isEventCentral = 0;
 	Int_t isEventSphero = 0;
 	isEventCentral += IsCentral(event,V0M);
@@ -81,7 +82,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// MC V0 ANALYSIS: PARTICLES LOOP
 	hEventMonitor->Fill(4);
-	std::vector<Int_t> Particles; // Pairs: labels at even, id's at odds
+	std::vector<Int_t> PartLabels;
+	std::vector<Int_t> PartIds; 
 	if (mFlagMC) {
 		Int_t nParticles = bParticles->GetEntriesFast();
 		for (int iP = 0; iP < nParticles; ++iP)		{
@@ -90,8 +92,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle p((AliAnalysisPIDParticle*)bParticles->At(iP));
 
 			if (!SelectParticle(p)) continue;
-			Particles.push_back(p.GetLabel());
-			Particles.push_back(p.GetPdgCode());
+			PartLabels.push_back(p.GetLabel());
+			PartIds.push_back(iP);
+
+			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+				if (p.GetPdgCode() == PDG_IDS[iSp]){
+					hV0Pt[iSp][MC][0][0]->Fill(p.GetPt());	}
+			}
 		}
 
 	}
@@ -105,10 +112,23 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!(AliAnalysisPIDV0*)bV0s->At(iV0)) continue;
 		MyV0 v0((AliAnalysisPIDV0*)bV0s->At(iV0));
 
-		//printf("vo ap is %f and %f \n", *(v0.CalculateAP()+0), *(v0.CalculateAP()+1));
+		if (mFlagMC) {
+			MyParticle v0mc;
+			Bool_t MCfound = false;
+			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
+				if (PartLabels[iP] == v0.GetMCLabel()) {
+					v0mc = MyParticle((AliAnalysisPIDParticle*)bParticles->At(PartIds[iP]));
+					MCfound = true;
+					break;	}
+			}
+			if (MCfound) {
+				for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+					if (IsV0(v0,iSp,RC)) ProcessV0(v0,iSp,RC,multMB,sphMB);		}
+			}
+		}
 
 		for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
-			if (IsV0(v0,iSp)) ProcessV0(v0,iSp,multMB,sphMB);		}
+			if (IsV0(v0,iSp,D)) ProcessV0(v0,iSp,D,multMB,sphMB);		}
 
 	}
 
@@ -127,19 +147,21 @@ Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
 	return false;
 }
 
-Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Mu, Int_t Sph) {
+Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph) {
 	
 	//printf("v0 pt is %f, args are %i , %i , %i \n", v0.GetPt(), Sp, Mu, Sph);
-	hV0Pt[Sp][Mu][Sph]->Fill(v0.GetPt());
-	hV0Eta[Sp][Mu][Sph]->Fill(v0.GetEta());
+	hV0Pt[Sp][Type][Mu][Sph]->Fill(v0.GetPt());
+	hV0Eta[Sp][Type][Mu][Sph]->Fill(v0.GetEta());
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
-	hV0IMvPt[Sp][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
+	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
 
 	return true;	
 }
 
-Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp) {
+Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	
+	if (Type==1) if (v0.GetMCPdgCode() != PDG_IDS[Sp]) return false;
+
 	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
 	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
 	if (v0.GetPt() < cuts::V0_PT[0]) 	return false;
@@ -190,6 +212,17 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 	return true;
 }
 
+Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
+
+	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	if (p.GetPdgCode() != PDG_IDS[1]
+		&& p.GetPdgCode() != PDG_IDS[2]
+		&& p.GetPdgCode() != PDG_IDS[3])	return false;
+
+	return true;
+}
+
 Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// MONITORS
@@ -205,22 +238,24 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	// MC PARTICLE HISTOGRAMS
 
 	// V0 HISTOGRAMS
-	for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
-	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
-		hV0Pt[iSp][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),
-			";V0 Pt (GeV/#it{c}); Entries",								400, 0, 20);
-		hV0Eta[iSp][iMu][iSph]			= new TH1D(Form("hV0Eta_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),
+		hV0Pt[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+			//";V0 Pt (GeV/#it{c}); Entries",								400, 0, 20);
+		hV0Eta[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; Entries", 										200, -1., 1.);
-		hV0IMvPt[iSp][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),
+		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
 
-		hV0PtFit[iSp][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),
+		hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		
 
-	} } }
+	} } } }
 		
 
 }
@@ -230,20 +265,29 @@ Int_t MyAnalysisV0::Finish() {
 
 	// EXTRACT YIELDS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < 1; ++iType)		{
 	for (int iMu = 0; iMu < 1; ++iMu)		{
 	for (int iSph = 0; iSph < 1; ++iSph)	{
 		
 		Double_t* yield = 0;
 		for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
-			yield = ExtractYieldFit(hV0IMvPt[iSp][iMu][iSph]->ProjectionY(Form("Mass bin %i", iBin),iBin,iBin));
-			hV0PtFit[iSp][iMu][iSph]->SetBinContent(iBin,*(yield+0));
-			hV0PtFit[iSp][iMu][iSph]->SetBinError(iBin,*(yield+1));
+			yield = ExtractYieldFit(hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(Form("Mass bin %i", iBin),iBin,iBin));
+			hV0PtFit[iSp][iType][iMu][iSph]->SetBinContent(iBin,*(yield+0));
+			hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(iBin,*(yield+1));
 		}
-		hV0PtFit[iSp][iMu][iSph]->Scale(1,"width");
-		hV0PtFit[iSp][iMu][iSph]->SetMarkerColor(1);
-		hV0PtFit[iSp][iMu][iSph]->SetMarkerStyle(20);
-		hV0PtFit[iSp][iMu][iSph]->SetLineColor(2);
-	} } }	
+		hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
+		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerColor(1);
+		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
+		hV0PtFit[iSp][iType][iMu][iSph]->SetLineColor(2);
+
+		hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
+		hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
+		hV0Pt[iSp][1][iMu][iSph]->GetXaxis()->SetRangeUser(0,12.);
+		hV0Pt[iSp][1][iMu][iSph]->SetMarkerColor(1);
+		hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);
+		hV0Pt[iSp][1][iMu][iSph]->SetLineColor(2);
+
+	} } } }	
 
 	return 0;	
 }
