@@ -10,6 +10,7 @@ void doAnalysisV0(Int_t nEvents=100, const Char_t *inputFile="test.list",
 	// Loading ALICE libraries
 	gROOT->LoadMacro("load_libraries.C");
 	load_libraries();
+	gROOT->LoadMacro("TransverseSpherocity/TransverseSpherocity.cxx+");
 
 	// Loading and compiling custom MyKit libraries
 	gROOT->LoadMacro("MyEvent.cxx+");
@@ -19,6 +20,7 @@ void doAnalysisV0(Int_t nEvents=100, const Char_t *inputFile="test.list",
 	gROOT->LoadMacro("MyAnalysis.cxx+");
 	gROOT->LoadMacro("MyHandler.cxx++");
 	gROOT->LoadMacro("MyAnalysisV0.cxx++");
+
 
 	// Suppress RooFit spam
 	RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);

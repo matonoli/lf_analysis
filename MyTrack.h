@@ -5,6 +5,7 @@
 #define __MyTrack__
 #include <AliAnalysisPIDTrack.h>
 #include "TObject.h"
+#include "TMath.h"
 
 class AliAnalysisPIDTrack;
 
@@ -15,6 +16,8 @@ class MyTrack: public TObject {
 		MyTrack(AliAnalysisPIDTrack* tr) : mAliTrack(tr) { }
 		~MyTrack() { }
 		Float_t GetPt() 						const { return mAliTrack->GetPt();};
+		Float_t GetPx() 						const { return mAliTrack->GetPt()*TMath::Cos(mAliTrack->GetPhi());};
+		Float_t GetPy() 						const { return mAliTrack->GetPt()*TMath::Sin(mAliTrack->GetPhi());};
 		Float_t GetEta() 						const { return mAliTrack->GetEta();};
 		Float_t GetNSigmaPionTPC() 				const { return mAliTrack->GetNSigmaPionTPC();};
 		Float_t GetNSigmaProtonTPC() 			const { return mAliTrack->GetNSigmaProtonTPC();};

@@ -16,6 +16,7 @@ class MyV0;
 class MyEvent;
 class MyTrack;
 class MyParticle;
+class TransverseSpherocity;
 
 // Defining a namespace with constants
 namespace V0consts {
@@ -53,6 +54,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
+		Bool_t SelectTrack(MyTrack &tr);
 		Double_t* ExtractYieldFit(TH1D* hist = 0);
 
 		ClassDef(MyAnalysisV0,1);
@@ -68,6 +70,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t mFlagMC;
 		Double_t bugR;
 		Double_t bugPt;
+		TransverseSpherocity* mTS;
 
 		// MONITORS
 		TH1D* hEventMonitor;
@@ -76,6 +79,11 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hParticleMonitor;
 
 		// EVENT INFO HISTOGRAMS
+		TH1D* hEventV0MCentrality;
+		TH1D* hEventRefMult;
+		TH2D* hEventV0MCentvRefMult;
+
+		TH1D* hEventSpherocity;
 
 		// TRACK HISTOGRAMS
 

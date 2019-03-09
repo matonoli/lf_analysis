@@ -22,6 +22,8 @@
 #include "RooDataHist.h"
 #include "RooPlot.h"
 
+#include "TransverseSpherocity/TransverseSpherocity.h"
+
 //#include <AliAnalysisPIDV0.h>
 
 using namespace V0consts;
@@ -49,6 +51,9 @@ Int_t MyAnalysisV0::Init() {
 	mHandler->Chain()->SetBranchAddress("AnalysisV0Track",&bV0s);
 	if (mFlagMC) mHandler->Chain()->SetBranchAddress("AnalysisParticle",&bParticles);
 
+	mTS = new TransverseSpherocity();
+	mTS->SetMinMulti(10);
+
 	printf("Analysis %s initiated with flag MC %i \n", this->GetName(), mFlagMC);
 
 	return 0;
@@ -63,7 +68,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	MyEvent event(mEvent);
 	hEventMonitor->Fill(1);
 
-	// EVENT SELECTION AND CLASSIFICATION
+	// EVENT SELECTION
 	if (!SelectEvent(event)) return 0;
 	hEventMonitor->Fill(2);
 
@@ -75,13 +80,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	bugR = bugfix.GetRadius(); bugPt = bugfix.GetPt(); }
 	hEventMonitor->Fill(3);
 
+	// EVENT CLASSIFICATION
 	enum { multMB, V0M, NCharged };
 	enum { sphMB, Jetty, Iso };
 	enum { D, RC, MC };
 	Int_t isEventCentral = 0;
-	Int_t isEventSphero = 0;
+	hEventV0MCentrality->Fill(event.GetV0MCentrality());
+	hEventRefMult->Fill(event.GetRefMult());
+	hEventV0MCentvRefMult->Fill(event.GetRefMult(),event.GetV0MCentrality());
 	isEventCentral += IsCentral(event,V0M);
-	isEventCentral += IsCentral(event,NCharged);
+	//isEventCentral += IsCentral(event,NCharged);
+
+	mTS->Reset();
+	Double_t eventTS = -99.;
 
 	// TRACK LOOP
 	hEventMonitor->Fill(4);
@@ -89,8 +100,20 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!(AliAnalysisPIDTrack*)bTracks->At(iTr)) continue;
 		MyTrack t((AliAnalysisPIDTrack*)bTracks->At(iTr));
-		
+
+		if (!SelectTrack(t)) continue;
+
+		if (isEventCentral) mTS->AddTrack(t.GetPx(), t.GetPy());		
 	}
+
+	// EVENT SPHEROCITY CLASSIFICATION
+	Bool_t isEventIso = 0;
+	Bool_t isEventJetty = 0;
+	if (isEventCentral) {
+		eventTS = mTS->GetTransverseSpherocityTracks();
+		isEventIso		= (eventTS > cuts::EV_SPH_ISO && eventTS < 1.) ;
+		isEventJetty	= (eventTS < cuts::EV_SPH_JETTY && eventTS > 0.);
+		hEventSpherocity->Fill(eventTS);	}
 
 	// MC V0 ANALYSIS: PARTICLES LOOP
 	hEventMonitor->Fill(5);
@@ -139,8 +162,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			}
 		}
 
+		for (int iMu = 0; iMu < isEventCentral+1; ++iMu) {
+		for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 		for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
-			if (IsV0(v0,iSp,D)) ProcessV0(v0,iSp,D,multMB,sphMB);		}
+			if (IsV0(v0,iSp,D)) ProcessV0(v0,iSp,D,iMu,iSph+iSph*isEventIso);
+		}	}	}
 
 	}
 
@@ -157,6 +183,15 @@ Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev) {
 
 
 Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
+
+	switch (Mu) {
+		default: 
+			break;
+		case 1: 
+			if (ev.GetV0MCentrality() < 10. 
+				&& ev.GetRefMult() > 9.9)		return true;
+			break;
+	}
 
 	return false;
 }
@@ -238,6 +273,18 @@ Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 	return true;
 }
 
+Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
+
+	if (tr.GetEta() < cuts::V0_ETA[0]) 		return false;
+	if (tr.GetEta() > cuts::V0_ETA[1]) 		return false;
+	if (TMath::Abs(tr.GetDCApvXY()) > 
+		cuts::TR_PRIMARY_PAR[0] + 
+		cuts::TR_PRIMARY_PAR[1]/TMath::Power(tr.GetPt(),cuts::TR_PRIMARY_PAR[2])) return false;
+
+
+	return true;
+}
+
 Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// MONITORS
@@ -247,6 +294,12 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hParticleMonitor 		= new TH1D("hParticleMonitor","; Step; Entries",10,-0.5,9.5);
 
 	// EVENT INFO HISTOGRAMS
+	hEventV0MCentrality		= new TH1D("hEventV0MCentrality","; V0M Centrality; Entries",300,0,150);
+	hEventRefMult			= new TH1D("hEventRefMult","; Reference multiplicity; Entries",150,0,150);
+	hEventV0MCentvRefMult	= new TH2D("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"
+		,150,0,150,300,0,150);
+
+	hEventSpherocity		= new TH1D("hEventSpherocity","; S_{O}; Entries",400,-0.1,1.1);
 
 	// TRACK HISTOGRAMS
 
@@ -295,8 +348,8 @@ Int_t MyAnalysisV0::Finish() {
 		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
 		hV0PtFit[iSp][iType][iMu][iSph]->SetLineColor(2);
 
-		//hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
-		//hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
+		hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
+		hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
 		hV0Pt[iSp][1][iMu][iSph]->GetXaxis()->SetRangeUser(0,12.);
 		hV0Pt[iSp][1][iMu][iSph]->SetMarkerColor(1);
 		hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);

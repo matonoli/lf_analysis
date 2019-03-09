@@ -1,5 +1,7 @@
 namespace cuts {
 	// EVENT SELECTION
+	const Float_t EV_SPH_JETTY 	= 0.47;
+	const Float_t EV_SPH_ISO 	= 0.76;
 
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};
@@ -21,5 +23,8 @@ namespace cuts {
 	const Float_t L_NSIGTPC[2] 			= {-3., 3.};
 	//const Float_t L_NSIGTOF[2] 		= {-3., 3.}; 
 	const Float_t LBAR_NSIGTPC[2] 		= {-3., 3.};
-	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.}; 
+	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.};
+
+	// PRIMARY TRACK SELECTION
+	const Float_t TR_PRIMARY_PAR[3]		= {0.0182, 0.0350, 1.01}; 
 }
