@@ -66,6 +66,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TClonesArray* bParticles = 0;
 
 		Bool_t mFlagMC;
+		Double_t bugR;
+		Double_t bugPt;
 
 		// MONITORS
 		TH1D* hEventMonitor;

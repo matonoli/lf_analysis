@@ -40,6 +40,9 @@ Int_t MyAnalysisV0::Init() {
 	TH1::SetDefaultSumw2();
 	CreateHistograms();
 
+	bugR = 0;
+	bugPt = 0;
+
 	// Link tree variables to arrays -- needs generalisation
 	mHandler->Chain()->SetBranchAddress("AnalysisEvent",&mEvent);
 	mHandler->Chain()->SetBranchAddress("AnalysisTrack",&bTracks);
@@ -63,6 +66,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	// EVENT SELECTION AND CLASSIFICATION
 	if (!SelectEvent(event)) return 0;
 	hEventMonitor->Fill(2);
+
+	// BUG HOTFIX FOR AURORATREES
+	if ((AliAnalysisPIDV0*)bV0s->At(0)) MyV0 bugfix((AliAnalysisPIDV0*)bV0s->At(0));
+	if (TMath::Abs(bugfix.GetRadius()-bugR) < 0.0001
+		&& TMath::Abs(bugfix.GetPt()-bugPt) < 0.0001) return 0;
+	bugR = bugfix.GetRadius(); bugPt = bugfix.GetPt();
+	hEventMonitor->Fill(3);
+
 	enum { multMB, V0M, NCharged };
 	enum { sphMB, Jetty, Iso };
 	enum { D, RC, MC };
@@ -72,7 +83,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	isEventCentral += IsCentral(event,NCharged);
 
 	// TRACK LOOP
-	hEventMonitor->Fill(3);
+	hEventMonitor->Fill(4);
 	Int_t nTracks = bTracks->GetEntriesFast();
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!(AliAnalysisPIDTrack*)bTracks->At(iTr)) continue;
@@ -81,7 +92,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	}
 
 	// MC V0 ANALYSIS: PARTICLES LOOP
-	hEventMonitor->Fill(4);
+	hEventMonitor->Fill(5);
 	std::vector<Int_t> PartLabels;
 	std::vector<Int_t> PartIds; 
 	if (mFlagMC) {
@@ -104,7 +115,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	}
 
 	// V0 DATA ANALYSIS: V0 CANDIDATES LOOP
-	hEventMonitor->Fill(5);
+	hEventMonitor->Fill(6);
 	Int_t nV0s = bV0s->GetEntriesFast();
 	for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
 		
@@ -132,13 +143,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	}
 
-	hEventMonitor->Fill(6);
+	hEventMonitor->Fill(7);
 	return 0;	
 }
 
 Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev) {
 
 	if (!ev.IsGoodAliEvent())			return false;
+	//if(bV0s->GetEntriesFast() < 1)		return false;
+	//if(bTracks->GetEntriesFast() < 1)		return false;
 }
 
 
@@ -150,6 +163,7 @@ Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
 Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph) {
 	
 	//printf("v0 pt is %f, args are %i , %i , %i \n", v0.GetPt(), Sp, Mu, Sph);
+
 	hV0Pt[Sp][Type][Mu][Sph]->Fill(v0.GetPt());
 	hV0Eta[Sp][Type][Mu][Sph]->Fill(v0.GetEta());
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
@@ -181,7 +195,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		default : 
 			break;
 		case 1 	: // K0s
-			if (*(v0.CalculateAP()+1) < cuts::K0S_AP*fabs(*(v0.CalculateAP()+0))) return false;
+			if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
@@ -280,8 +294,8 @@ Int_t MyAnalysisV0::Finish() {
 		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
 		hV0PtFit[iSp][iType][iMu][iSph]->SetLineColor(2);
 
-		hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
-		hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
+		//hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
+		//hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
 		hV0Pt[iSp][1][iMu][iSph]->GetXaxis()->SetRangeUser(0,12.);
 		hV0Pt[iSp][1][iMu][iSph]->SetMarkerColor(1);
 		hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);
