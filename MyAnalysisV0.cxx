@@ -68,10 +68,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventMonitor->Fill(2);
 
 	// BUG HOTFIX FOR AURORATREES
-	if ((AliAnalysisPIDV0*)bV0s->At(0)) MyV0 bugfix((AliAnalysisPIDV0*)bV0s->At(0));
+	MyV0 bugfix;
+	if ((AliAnalysisPIDV0*)bV0s->At(0)) { bugfix = MyV0((AliAnalysisPIDV0*)bV0s->At(0));
 	if (TMath::Abs(bugfix.GetRadius()-bugR) < 0.0001
 		&& TMath::Abs(bugfix.GetPt()-bugPt) < 0.0001) return 0;
-	bugR = bugfix.GetRadius(); bugPt = bugfix.GetPt();
+	bugR = bugfix.GetRadius(); bugPt = bugfix.GetPt(); }
 	hEventMonitor->Fill(3);
 
 	enum { multMB, V0M, NCharged };
