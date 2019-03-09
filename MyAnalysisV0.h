@@ -5,11 +5,15 @@
 #define __MyAnalysisV0__
 
 #include "TObject.h"
+#include "TString.h"
 #include "MyAnalysis.h"
 #include "cuts00.h"			// namespace cuts
 
 class AliAnalysisPIDEvent;	// forward declaration
 class TClonesArray;
+class TDirectory;
+class TFile;
+class TList;
 class TH1D;
 class TH2D;
 class MyV0;
@@ -56,6 +60,8 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
 		Double_t* ExtractYieldFit(TH1D* hist = 0);
+		void SetDirectory(TDirectory* d) { mDir = d;};
+		void SetOutputName(const Char_t *name) { mOutName = TString(name);};
 
 		ClassDef(MyAnalysisV0,1);
 
@@ -66,6 +72,11 @@ class MyAnalysisV0: public MyAnalysis {
 		TClonesArray* bTracks = 0;
 		TClonesArray* bV0s = 0;
 		TClonesArray* bParticles = 0;
+
+		TDirectory* mDir;
+		TList* mList;
+		TString mOutName;
+		TFile* mFileOut;
 
 		Bool_t mFlagMC;
 		Double_t bugR;

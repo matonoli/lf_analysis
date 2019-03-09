@@ -37,6 +37,8 @@ void doAnalysisV0(Int_t nEvents=100, const Char_t *inputFile="test.list",
 	// Set-up analyses and link them to handler
 	MyAnalysisV0* analysisV0 	= new MyAnalysisV0();
 	handler->AddAnalysis(analysisV0);
+	analysisV0->SetDirectory(gDirectory);
+	analysisV0->SetOutputName(outputFile);
 	printf("Following analyses will be performed: %s \n", analysisV0->GetName());
 
 	// Initialise analyses

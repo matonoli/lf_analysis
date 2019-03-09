@@ -3,6 +3,9 @@
 #include <TChain.h>
 #include <TBranch.h>
 #include <TCanvas.h>
+#include <TDirectory.h>
+#include <TList.h>
+#include <TFile.h>
 
 #include "MyAnalysisV0.h"
 #include "MyEvent.h"
@@ -39,8 +42,12 @@ Int_t MyAnalysisV0::Init() {
 
 	mFlagMC = mHandler->GetFlagMC();
 
+	//mDir = new TDirectory();
 	TH1::SetDefaultSumw2();
 	CreateHistograms();
+	mList = mDir->GetList();//mDir->GetList();
+	//cout << "mdir and mlist " << mDir << " " << mList << endl;
+	//mDir->ls();
 
 	bugR = 0;
 	bugPt = 0;
@@ -331,11 +338,18 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 Int_t MyAnalysisV0::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 
+	if (mOutName.Data() != "") {
+        TFile *mFileOut = new TFile(mOutName,"RECREATE");
+        mFileOut->cd();
+    } else {
+    	printf("Output file couldn't be created! \n");
+    }
+
 	// EXTRACT YIELDS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < 1; ++iType)		{
-	for (int iMu = 0; iMu < 1; ++iMu)		{
-	for (int iSph = 0; iSph < 1; ++iSph)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
 		Double_t* yield = 0;
 		for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
@@ -355,7 +369,13 @@ Int_t MyAnalysisV0::Finish() {
 		hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);
 		hV0Pt[iSp][1][iMu][iSph]->SetLineColor(2);
 
-	} } } }	
+	} } } }
+
+	Int_t iHist = 0; while (mList->At(iHist)) {			// should use an iterator...
+		TString objName(mList->At(iHist)->GetName());
+		if (objName.BeginsWith("h")) mList->At(iHist)->Write();
+		iHist++;
+	}
 
 	return 0;	
 }
