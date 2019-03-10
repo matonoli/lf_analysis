@@ -6,6 +6,7 @@
 #include <TDirectory.h>
 #include <TList.h>
 #include <TFile.h>
+#include <TLegend.h>
 
 #include "MyAnalysisV0.h"
 #include "MyEvent.h"
@@ -41,13 +42,16 @@ MyAnalysisV0::MyAnalysisV0() {
 Int_t MyAnalysisV0::Init() {
 
 	mFlagMC = mHandler->GetFlagMC();
+	mFlagHist = mHandler->GetFlagHist();
 
-	//mDir = new TDirectory();
+	printf("Initialising analysis %s with flag MC %i and Hist %i \n", 
+		this->GetName(), mFlagMC, mFlagHist);
+
+	if (mFlagHist) return 0;
+
 	TH1::SetDefaultSumw2();
 	CreateHistograms();
-	mList = mDir->GetList();//mDir->GetList();
-	//cout << "mdir and mlist " << mDir << " " << mList << endl;
-	//mDir->ls();
+
 
 	bugR = 0;
 	bugPt = 0;
@@ -61,7 +65,7 @@ Int_t MyAnalysisV0::Init() {
 	mTS = new TransverseSpherocity();
 	mTS->SetMinMulti(10);
 
-	printf("Analysis %s initiated with flag MC %i \n", this->GetName(), mFlagMC);
+	
 
 	return 0;
 }
@@ -335,46 +339,72 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 }
 
+void MyAnalysisV0::SetMCInputFile(const Char_t *name) {
+
+	TString fileName = TString(name);
+	if (fileName.Data() != "") {
+		mFileMC = new TFile(fileName,"READ");
+		printf("MC File %s loaded in. \n", fileName.Data()); }
+	else {
+		printf("No MC file loaded.");
+	}
+}
+
 Int_t MyAnalysisV0::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 
-	if (mOutName.Data() != "") {
-        TFile *mFileOut = new TFile(mOutName,"RECREATE");
-        mFileOut->cd();
-    } else {
-    	printf("Output file couldn't be created! \n");
-    }
-
-	// EXTRACT YIELDS
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
-	for (int iType = 0; iType < 1; ++iType)		{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
-	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-		
-		Double_t* yield = 0;
-		for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
-			yield = ExtractYieldFit(hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(Form("Mass bin %i", iBin),iBin,iBin));
-			hV0PtFit[iSp][iType][iMu][iSph]->SetBinContent(iBin,*(yield+0));
-			hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(iBin,*(yield+1));
+	if (!mFlagHist) {
+		if (mOutName.Data() != "") {
+			mFileOut = new TFile("hist_"+mOutName,"RECREATE");
+			mFileOut->cd();
+		} else {
+			printf("Output file couldn't be created! \n");
 		}
-		hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
-		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerColor(1);
-		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
-		hV0PtFit[iSp][iType][iMu][iSph]->SetLineColor(2);
 
-		hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
-		hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
-		hV0Pt[iSp][1][iMu][iSph]->GetXaxis()->SetRangeUser(0,12.);
-		hV0Pt[iSp][1][iMu][iSph]->SetMarkerColor(1);
-		hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);
-		hV0Pt[iSp][1][iMu][iSph]->SetLineColor(2);
 
-	} } } }
+		// EXTRACT YIELDS
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+		for (int iType = 0; iType < 1; ++iType)		{
+		for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+		for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+			
+			Double_t* yield = 0;
+			for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
+				yield = ExtractYieldFit(hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(Form("Mass bin %i", iBin),iBin,iBin));
+				hV0PtFit[iSp][iType][iMu][iSph]->SetBinContent(iBin,*(yield+0));
+				hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(iBin,*(yield+1));
+			}
+			/*hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
+			hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerColor(1);
+			hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
+			hV0PtFit[iSp][iType][iMu][iSph]->SetLineColor(2);
 
-	Int_t iHist = 0; while (mList->At(iHist)) {			// should use an iterator...
-		TString objName(mList->At(iHist)->GetName());
-		if (objName.BeginsWith("h")) mList->At(iHist)->Write();
-		iHist++;
+			hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
+			hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
+			hV0Pt[iSp][1][iMu][iSph]->GetXaxis()->SetRangeUser(0,12.);
+			hV0Pt[iSp][1][iMu][iSph]->SetMarkerColor(1);
+			hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);
+			hV0Pt[iSp][1][iMu][iSph]->SetLineColor(2);*/
+
+		} } } }
+
+
+		// MC EFFICIENCY
+		if (mFlagMC) DoEfficiency();
+		if (!mFlagMC) {
+			LoadEfficiency();
+			CorrectSpectra(); }
+
+		mList = mDir->GetList();
+		Int_t iHist = 0; while (mList->At(iHist)) {			// should use an iterator...
+			TString objName(mList->At(iHist)->GetName());
+			//printf("%s \n", objName.Data());
+			if (objName.BeginsWith("h")) mList->At(iHist)->Write();
+			iHist++;
+		}
+
+		MakeFinalFigures();
+
 	}
 
 	return 0;	
@@ -442,4 +472,161 @@ Double_t* MyAnalysisV0::ExtractYieldFit(TH1D* hist) {
 	//canCounter++;
 	
 	return val;
+}
+
+void MyAnalysisV0::DoEfficiency() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		hV0Efficiency[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Efficiency_%s",SPECIES[iSp]));
+
+		hV0Efficiency[iSp]->SetTitle("; V0 pT (GeV/#it{c}); Efficiency");
+		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
+		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
+
+		hV0Efficiency[iSp]->Divide(hV0Pt[iSp][2][0][0]);
+		hV0Efficiency[iSp]->Write();
+	}
+
+}
+
+void MyAnalysisV0::LoadEfficiency() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	
+		hV0Efficiency[iSp] = (TH1D*)mFileMC->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
+		
+	}
+
+}
+
+void MyAnalysisV0::CorrectSpectra() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+
+		hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
+		hV0PtFit[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
+
+	}	}	}	}
+
+}
+
+void MyAnalysisV0::MakeFinalFigures() {
+
+	mFilePlots = new TFile("plots_"+mOutName,"RECREATE");
+	mFilePlots->cd();
+
+	enum { LEFT, RIGHT };
+
+	// EVENT INFO
+
+	// SPHEROCITY
+	Double_t quantileValues[4] = {0.0, 0.2, 0.8, 1.0};
+	Double_t quantileCuts[4];
+	hEventSpherocity->GetXaxis()->SetRangeUser(0.0,1.0);
+	//hEventSpherocity->ClearUnderflowAndOverflow();
+	hEventSpherocity->GetQuantiles(4,quantileCuts,quantileValues);
+
+
+	TCanvas* cSpherocity = new TCanvas("cSpherocity","",1000,800);
+	mHandler->MakeNiceHistogram(hEventSpherocity,kBlack);
+	hEventSpherocity->Draw();
+	cSpherocity->Update();
+	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocity);
+	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocity);
+	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
+	mHandler->MakeNiceLegend(leg1,0.050,1);
+	leg1->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
+	leg1->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
+	leg1->Draw();
+	cSpherocity->Write();
+	cSpherocity->SaveAs("plots/spherocity.png");
+
+	// PT SPECTRA
+	TCanvas* cPt[4];
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+
+			mHandler->MakeNiceHistogram(hV0PtFit[iSp][0][0][0],COLOURS[0]);
+			mHandler->MakeNiceHistogram(hV0PtFit[iSp][0][1][iSph],COLOURS[1+iSph]);
+		}
+
+		cPt[iSp] = new TCanvas(Form("cPt_%s",SPECIES[iSp]),"",1000,800);
+		cPt[iSp]->SetLogy(1);
+		hV0PtFit[iSp][0][0][0]->GetYaxis()->SetRangeUser(0.1,10.*hV0PtFit[iSp][0][0][0]->GetMaximum());
+		hV0PtFit[iSp][0][0][0]->Draw();
+		cPt[iSp]->Update();
+		hV0PtFit[iSp][0][1][0]->Draw("same");
+		hV0PtFit[iSp][0][1][1]->Draw("same");
+		hV0PtFit[iSp][0][1][2]->Draw("same");
+
+		TLegend* legPt = new TLegend(0.55,0.55,0.85,0.85);
+		mHandler->MakeNiceLegend(legPt,0.04,1);
+		legPt->AddEntry((TObject*)0,Form("%s   |#eta| < 0.8", SPECNAMES[iSp]),"");
+		legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		legPt->AddEntry((TObject*)0,"","");
+		legPt->AddEntry(hV0PtFit[iSp][0][0][0],"MB","pl");
+		legPt->AddEntry(hV0PtFit[iSp][0][1][0],"FHM","pl");
+		legPt->AddEntry(hV0PtFit[iSp][0][1][1],"FHM Jetty","pl");
+		legPt->AddEntry(hV0PtFit[iSp][0][1][2],"FHM Iso","pl");
+		legPt->Draw();
+
+		cPt[iSp]->Write();
+		cPt[iSp]->SaveAs(Form("plots/pt_%s.png",SPECIES[iSp]));
+	}
+
+	// B/M RATIO
+	TH1D* hBtoM[NMULTI][NSPHERO];
+	for (int iMu = 0; iMu < 2; ++iMu) {
+	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
+	
+		hBtoM[iMu][iSph] = (TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hBtoM_%s_%s",MULTI[iMu],SPHERO[iSph]));
+		hBtoM[iMu][iSph]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
+		hBtoM[iMu][iSph]->Add(hV0PtFit[3][0][iMu][iSph]);
+		hBtoM[iMu][iSph]->Divide(hBtoM[iMu][iSph],hV0PtFit[1][0][iMu][iSph],1.,2.,"");
+
+	}	}
+	TCanvas* cBtoM[2];
+	TLegend* legBtoM[2];
+	cBtoM[0] = new TCanvas("cBtoM_Mult","",1000,800);
+	legBtoM[0] = new TLegend(0.55,0.55,0.85,0.85);
+	mHandler->MakeNiceLegend(legBtoM[0],0.04,1);
+	mHandler->MakeNiceHistogram(hBtoM[0][0],COLOURS[0]);
+	mHandler->MakeNiceHistogram(hBtoM[1][0],COLOURS[1]);
+	hBtoM[0][0]->GetYaxis()->SetRangeUser(0.,1.0);
+	hBtoM[0][0]->Draw();
+	cBtoM[0]->Update();
+	hBtoM[1][0]->Draw("same");
+
+	legBtoM[0]->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+	legBtoM[0]->AddEntry((TObject*)0,"","");
+	legBtoM[0]->AddEntry(hBtoM[0][0],"MB","pl");
+	legBtoM[0]->AddEntry(hBtoM[1][0],"FHM","pl");
+	legBtoM[0]->Draw();
+
+	cBtoM[0]->Write();
+	cBtoM[0]->SaveAs("plots/btom_mu.png");
+
+	cBtoM[1] = new TCanvas("cBtoM_Sph","",1000,800);
+	legBtoM[1] = new TLegend(0.55,0.55,0.85,0.85);
+	mHandler->MakeNiceLegend(legBtoM[1],0.04,1);
+	mHandler->MakeNiceHistogram(hBtoM[1][1],COLOURS[2]);
+	mHandler->MakeNiceHistogram(hBtoM[1][2],COLOURS[3]);
+	hBtoM[1][1]->GetYaxis()->SetRangeUser(0.,1.0);
+	hBtoM[1][1]->Draw();
+	cBtoM[1]->Update();
+	hBtoM[1][2]->Draw("same");
+
+	legBtoM[1]->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+	legBtoM[1]->AddEntry((TObject*)0,"","");
+	legBtoM[1]->AddEntry(hBtoM[1][1],"FHM Jetty","pl");
+	legBtoM[1]->AddEntry(hBtoM[1][2],"FHM Iso","pl");
+	legBtoM[1]->Draw();
+
+	cBtoM[1]->Write();
+	cBtoM[1]->SaveAs("plots/btom_sph.png");
+
+
 }

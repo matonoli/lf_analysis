@@ -6,3 +6,7 @@
 testMC\.list
 
 test\.root
+
+efficiencies\.root
+
+*.root

@@ -5,7 +5,7 @@
 using namespace RooFit;
 
 void doAnalysisV0(Int_t nEvents=100, const Char_t *inputFile="test.list", 
-	const Char_t *outputFile="test.root") {
+	const Char_t *outputFile="test.root", const Char_t *MCinputFile="") {
 
 	// Loading ALICE libraries
 	gROOT->LoadMacro("load_libraries.C");
@@ -36,16 +36,18 @@ void doAnalysisV0(Int_t nEvents=100, const Char_t *inputFile="test.list",
 
 	// Set-up analyses and link them to handler
 	MyAnalysisV0* analysisV0 	= new MyAnalysisV0();
-	handler->AddAnalysis(analysisV0);
 	analysisV0->SetDirectory(gDirectory);
 	analysisV0->SetOutputName(outputFile);
+
+	handler->AddAnalysis(analysisV0);
 	printf("Following analyses will be performed: %s \n", analysisV0->GetName());
 
 	// Initialise analyses
 	handler->Init();
+	analysisV0->SetMCInputFile(MCinputFile);
 
 	// Start an event loop
-	Int_t nEntries = handler->Chain()->GetEntries();
+	Int_t nEntries = (handler->GetFlagHist()) ? 0 : handler->Chain()->GetEntries();
 	printf("Total entries: %i \n", nEntries);
 	nEvents = (nEvents < nEntries) ? nEvents : nEntries;
 

@@ -8,6 +8,9 @@
 class MyAnalysis;	// forward declaration
 class TChain;
 class TFile;
+class TCanvas;
+class TH1D;
+class TLegend;
 
 class MyHandler: public TObject {
 
@@ -21,7 +24,12 @@ class MyHandler: public TObject {
 		Int_t Finish();
 		
 		Bool_t GetFlagMC() 		const {return mFlagMC;};
+		Bool_t GetFlagHist()	const {return mFlagHist;};
 		TChain* Chain() 		{return mChain;};
+
+		void DrawCut(Double_t cut, Int_t direction, TCanvas* can);
+		void MakeNiceHistogram(TH1D* h, Int_t col);
+		void MakeNiceLegend(TLegend* leg, Float_t size = 0.07, Int_t columns = 2);
 		
 		ClassDef(MyHandler,1);
 

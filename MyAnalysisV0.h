@@ -39,6 +39,8 @@ namespace V0consts {
 		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
+	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
+	const Int_t COLOURS[4] = {kAzure+3,kOrange+8,kGreen+2,kMagenta+2};
 
 }
 
@@ -62,6 +64,11 @@ class MyAnalysisV0: public MyAnalysis {
 		Double_t* ExtractYieldFit(TH1D* hist = 0);
 		void SetDirectory(TDirectory* d) { mDir = d;};
 		void SetOutputName(const Char_t *name) { mOutName = TString(name);};
+		void SetMCInputFile(const Char_t *name);
+		void DoEfficiency();
+		void LoadEfficiency();
+		void CorrectSpectra();
+		void MakeFinalFigures();
 
 		ClassDef(MyAnalysisV0,1);
 
@@ -77,8 +84,11 @@ class MyAnalysisV0: public MyAnalysis {
 		TList* mList;
 		TString mOutName;
 		TFile* mFileOut;
+		TFile* mFileMC;
+		TFile* mFilePlots;
 
 		Bool_t mFlagMC;
+		Bool_t mFlagHist;
 		Double_t bugR;
 		Double_t bugPt;
 		TransverseSpherocity* mTS;
@@ -104,7 +114,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+
+		TH1D* hV0Efficiency[V0consts::NSPECIES];
 };
 #endif
