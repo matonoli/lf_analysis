@@ -4,6 +4,7 @@
 #ifndef __MyHandler__
 #define __MyHandler__
 #include "TObject.h"
+#include "TClonesArray.h"
 
 class MyAnalysis;	// forward declaration
 class TChain;
@@ -11,6 +12,14 @@ class TFile;
 class TCanvas;
 class TH1D;
 class TLegend;
+class TDirectory;
+class TString;
+class TROOT;
+class AliAnalysisPIDEvent;
+class AliAnalysisPIDTrack;
+class AliAnalysisPIDV0;
+class AliAnalysisPIDParticle;
+//class TClonesArray;
 
 class MyHandler: public TObject {
 
@@ -19,13 +28,32 @@ class MyHandler: public TObject {
 		~MyHandler() { }
 		void AddAnalysis(MyAnalysis* ana = 0);
 		Int_t Init();
-		Int_t LoadInput(const Char_t *inputFile, const Char_t *chainName);
+		Int_t LoadInputTree(const Char_t *inputFile, const Char_t *chainName);
+		Int_t LoadInputHist(const Char_t *inputFile);
+		Int_t SetDirectory(TDirectory* d) { mDir = d;};
+		Int_t SetROOT(TROOT* r) { mROOT = r;};
 		Int_t Make(Int_t iEv);
 		Int_t Finish();
+		void SetOutputName(const Char_t *name) { mOutName = TString(name);};
 		
 		Bool_t GetFlagMC() 		const {return mFlagMC;};
 		Bool_t GetFlagHist()	const {return mFlagHist;};
-		TChain* Chain() 		{return mChain;};
+		
+		TChain* chain() 					const {return mChain;};
+		TDirectory* directory() 			const {return mDir;};
+		TROOT* root()	 					const {return mROOT;};
+		TFile* file() 						const {return mFile;};
+		Int_t nAnalysis()					const {return nAna;};
+		MyAnalysis* analysis(Int_t iAna)	const {return mAnalysis[iAna];};
+		
+		AliAnalysisPIDEvent* event()		const {return mEvent;};
+		TClonesArray* tracks()				const {return bTracks;};
+		TClonesArray* v0s()					const {return bV0s;};
+		TClonesArray* particles()			const {return bParticles;};
+		AliAnalysisPIDTrack* track(Int_t i)			const {return (AliAnalysisPIDTrack*)bTracks->At(i);};
+		AliAnalysisPIDV0* v0(Int_t i)				const {return (AliAnalysisPIDV0*)bV0s->At(i);};
+		AliAnalysisPIDParticle* particle(Int_t i)	const {return (AliAnalysisPIDParticle*)bParticles->At(i);};
+		
 
 		void DrawCut(Double_t cut, Int_t direction, TCanvas* can);
 		void MakeNiceHistogram(TH1D* h, Int_t col);
@@ -35,12 +63,24 @@ class MyHandler: public TObject {
 
 	protected:
 		
-		MyAnalysis* mAnalysis;  // should be changed into an array to allow multiple analyses
+		MyAnalysis* mAnalysis[5];
+		Int_t nAnalyses = 0;
 		TChain* mChain;
 		TFile* mFile;
+		TDirectory* mDir;
+		TROOT* mROOT;
+		TString mOutName;
 
-		Bool_t mFlagMC;
-		Bool_t mFlagHist;
+		Int_t nAna = 0;
+
+
+		AliAnalysisPIDEvent* mEvent = 0;
+		TClonesArray* bTracks = 0;
+		TClonesArray* bV0s = 0;
+		TClonesArray* bParticles = 0;
+
+		Bool_t mFlagMC = 0;
+		Bool_t mFlagHist = 0;
 
 
 };

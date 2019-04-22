@@ -7,13 +7,15 @@
 #include <TList.h>
 #include <TFile.h>
 #include <TLegend.h>
+#include <TNamed.h>
+#include <THashList.h>
 
 #include "MyAnalysisV0.h"
-#include "MyEvent.h"
-#include "MyTrack.h"
-#include "MyParticle.h"
-#include "MyV0.h"
-#include "MyHandler.h"
+#include "../MyEvent.h"
+#include "../MyTrack.h"
+#include "../MyParticle.h"
+#include "../MyV0.h"
+#include "../MyHandler.h"
 
 #include "RooFit.h"
 #include "RooRealVar.h"
@@ -41,6 +43,11 @@ MyAnalysisV0::MyAnalysisV0() {
 
 Int_t MyAnalysisV0::Init() {
 
+	TString dfName(this->GetName());
+	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
+	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());
+	mDirFile->cd();
+
 	mFlagMC = mHandler->GetFlagMC();
 	mFlagHist = mHandler->GetFlagHist();
 
@@ -52,20 +59,13 @@ Int_t MyAnalysisV0::Init() {
 	TH1::SetDefaultSumw2();
 	CreateHistograms();
 
+	mList = (TList*)mHandler->directory()->GetList();
 
 	bugR = 0;
 	bugPt = 0;
 
-	// Link tree variables to arrays -- needs generalisation
-	mHandler->Chain()->SetBranchAddress("AnalysisEvent",&mEvent);
-	mHandler->Chain()->SetBranchAddress("AnalysisTrack",&bTracks);
-	mHandler->Chain()->SetBranchAddress("AnalysisV0Track",&bV0s);
-	if (mFlagMC) mHandler->Chain()->SetBranchAddress("AnalysisParticle",&bParticles);
-
 	mTS = new TransverseSpherocity();
 	mTS->SetMinMulti(10);
-
-	
 
 	return 0;
 }
@@ -73,10 +73,13 @@ Int_t MyAnalysisV0::Init() {
 Int_t MyAnalysisV0::Make(Int_t iEv) {
 	//printf("Looping in analysis %i \n", iEv);
 
+	if (mFlagHist) return 0;
+
 	// EVENT INFO HISTOGRAMS
 	hEventMonitor->Fill(0);
-	if (!mEvent) return 1;
-	MyEvent event(mEvent);
+	//cout << "mevent is " << mHandler->event() << endl;
+	if (!mHandler->event()) return 1;
+	MyEvent event(mHandler->event());
 	hEventMonitor->Fill(1);
 
 	// EVENT SELECTION
@@ -85,7 +88,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// BUG HOTFIX FOR AURORATREES
 	MyV0 bugfix;
-	if ((AliAnalysisPIDV0*)bV0s->At(0)) { bugfix = MyV0((AliAnalysisPIDV0*)bV0s->At(0));
+	if (mHandler->v0(0)) { bugfix = MyV0(mHandler->v0(0));
 	if (TMath::Abs(bugfix.GetRadius()-bugR) < 0.0001
 		&& TMath::Abs(bugfix.GetPt()-bugPt) < 0.0001) return 0;
 	bugR = bugfix.GetRadius(); bugPt = bugfix.GetPt(); }
@@ -107,10 +110,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// TRACK LOOP
 	hEventMonitor->Fill(4);
-	Int_t nTracks = bTracks->GetEntriesFast();
+	Int_t nTracks = mHandler->tracks()->GetEntriesFast();
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
-		if (!(AliAnalysisPIDTrack*)bTracks->At(iTr)) continue;
-		MyTrack t((AliAnalysisPIDTrack*)bTracks->At(iTr));
+		if (!mHandler->track(iTr)) continue;
+		MyTrack t(mHandler->track(iTr));
 
 		if (!SelectTrack(t)) continue;
 
@@ -131,11 +134,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	std::vector<Int_t> PartLabels;
 	std::vector<Int_t> PartIds; 
 	if (mFlagMC) {
-		Int_t nParticles = bParticles->GetEntriesFast();
+		Int_t nParticles = mHandler->particles()->GetEntriesFast();
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
-			if (!(AliAnalysisPIDParticle*)bParticles->At(iP)) continue;
-			MyParticle p((AliAnalysisPIDParticle*)bParticles->At(iP));
+			if (!mHandler->particle(iP)) continue;
+			MyParticle p(mHandler->particle(iP));
 
 			if (!SelectParticle(p)) continue;
 			PartLabels.push_back(p.GetLabel());
@@ -151,19 +154,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// V0 DATA ANALYSIS: V0 CANDIDATES LOOP
 	hEventMonitor->Fill(6);
-	Int_t nV0s = bV0s->GetEntriesFast();
+	Int_t nV0s = mHandler->v0s()->GetEntriesFast();
 	for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
 		
 		hV0Monitor->Fill(0);
-		if (!(AliAnalysisPIDV0*)bV0s->At(iV0)) continue;
-		MyV0 v0((AliAnalysisPIDV0*)bV0s->At(iV0));
+		if (!mHandler->v0(iV0)) continue;
+		MyV0 v0(mHandler->v0(iV0));
 
 		if (mFlagMC) {
 			MyParticle v0mc;
 			Bool_t MCfound = false;
 			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 				if (PartLabels[iP] == v0.GetMCLabel()) {
-					v0mc = MyParticle((AliAnalysisPIDParticle*)bParticles->At(PartIds[iP]));
+					v0mc = MyParticle(mHandler->particle(PartIds[iP]));
 					MCfound = true;
 					break;	}
 			}
@@ -330,148 +333,20 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
 
-		hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		//	";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		
 
-	} } } }
-		
+	} } } }			
 
-}
-
-void MyAnalysisV0::SetMCInputFile(const Char_t *name) {
-
-	TString fileName = TString(name);
-	if (fileName.Data() != "") {
-		mFileMC = new TFile(fileName,"READ");
-		printf("MC File %s loaded in. \n", fileName.Data()); }
-	else {
-		printf("No MC file loaded.");
-	}
 }
 
 Int_t MyAnalysisV0::Finish() {
+	
 	printf("Finishing analysis %s \n",this->GetName());
-
-	if (!mFlagHist) {
-		if (mOutName.Data() != "") {
-			mFileOut = new TFile("hist_"+mOutName,"RECREATE");
-			mFileOut->cd();
-		} else {
-			printf("Output file couldn't be created! \n");
-		}
-
-
-		// EXTRACT YIELDS
-		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
-		for (int iType = 0; iType < 1; ++iType)		{
-		for (int iMu = 0; iMu < NMULTI; ++iMu)		{
-		for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-			
-			Double_t* yield = 0;
-			for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
-				yield = ExtractYieldFit(hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(Form("Mass bin %i", iBin),iBin,iBin));
-				hV0PtFit[iSp][iType][iMu][iSph]->SetBinContent(iBin,*(yield+0));
-				hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(iBin,*(yield+1));
-			}
-			/*hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
-			hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerColor(1);
-			hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
-			hV0PtFit[iSp][iType][iMu][iSph]->SetLineColor(2);
-
-			hV0Pt[iSp][1][iMu][iSph]->Divide(hV0Pt[iSp][2][iMu][iSph]);
-			hV0Pt[iSp][1][iMu][iSph]->GetYaxis()->SetRangeUser(0,0.65);
-			hV0Pt[iSp][1][iMu][iSph]->GetXaxis()->SetRangeUser(0,12.);
-			hV0Pt[iSp][1][iMu][iSph]->SetMarkerColor(1);
-			hV0Pt[iSp][1][iMu][iSph]->SetMarkerStyle(20);
-			hV0Pt[iSp][1][iMu][iSph]->SetLineColor(2);*/
-
-		} } } }
-
-
-		// MC EFFICIENCY
-		if (mFlagMC) DoEfficiency();
-		if (!mFlagMC) {
-			LoadEfficiency();
-			CorrectSpectra(); }
-
-		mList = mDir->GetList();
-		Int_t iHist = 0; while (mList->At(iHist)) {			// should use an iterator...
-			TString objName(mList->At(iHist)->GetName());
-			//printf("%s \n", objName.Data());
-			if (objName.BeginsWith("h")) mList->At(iHist)->Write();
-			iHist++;
-		}
-
-		MakeFinalFigures();
-
-	}
+	mDirFile->cd();
 
 	return 0;	
-}
-
-Double_t* MyAnalysisV0::ExtractYieldFit(TH1D* hist) {
-
-	static Double_t val[2];
-	val[0] = 0; val[1] = 0;
-	Float_t fitMin = -0.03, fitMax = 0.03;
-
-	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
-	hist->Rebin(8);
-	RooDataHist DT_set("DT_set","DT_hist",MassDT,Import(*hist)); 
-
-	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.004,0.004);
-	RooRealVar pGaus1B("pGaus1B","Sigma 1",0.001,0.01);
-	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
-	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e05);
-		
-	RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
-	RooRealVar pGaus2B("pGaus2B","Sigma 2",0.001,0.1);
-	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
-	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e05);
-		
-	RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-200,200);
-	RooChebychev fPolBg("fPolBg","fPolBg",MassDT,pPolBgA);
-	RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e05);
-		
-	RooAddPdf fTotal("fTotal","fTotal",RooArgList(fGaus1,fGaus2,fPolBg),RooArgList(nGaus1,nGaus2,nPolBg));
-	RooFitResult* fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-999),Verbose(false));
-		
-	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
-	//printf("Errors are %f and %f, total is %f or %f wrt to %f \n", nGaus1.getError(), nGaus2.getError(), nGaus1.getError()+nGaus2.getError(),sqrt(nGaus1.getError()*nGaus1.getError()+nGaus2.getError()*nGaus2.getError()),nGaus.getPropagatedError(*fR));
-	
-	/*TCanvas* can1 = new TCanvas();
-	RooPlot* plot1 = MassDT.frame(Title(" "));
-	DT_set.plotOn(plot1,MarkerSize(0.4));
-	fTotal.plotOn(plot1,LineWidth(1),LineColor(kRed));
-	plot1->SetMinimum(1e-05);
-	plot1->SetMaximum(1.35*plot1->GetMaximum());
-	plot1->GetXaxis()->SetTitleSize(0.05);
-	plot1->GetYaxis()->SetTitleSize(0.05);
-	plot1->Draw();*/
-
-
-	/*cFits[canCounter%6]->cd(1+canCounter/6);
-	RooPlot* plot1 = MassDT.frame(Title(" "));
-	DT_set.plotOn(plot1,MarkerSize(0.4));
-	fTotal.plotOn(plot1,LineWidth(1),LineColor(kRed));
-	plot1->SetMinimum(1e-05);
-	plot1->SetMaximum(1.35*plot1->GetMaximum());
-	plot1->GetXaxis()->SetTitleSize(0.05);
-	plot1->GetYaxis()->SetTitleSize(0.05);
-	plot1->Draw();
-	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
-	myLegendSetUp(leg1,0.065,1);
-	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[canCounter/6],xBins[1+canCounter/6])," ");
-	leg1->AddEntry((TObject*)0,cNames[canCounter%6]+Form(" , #chi^{2}/ndf = %4.2f",plot1->chiSquare())," ");
-	leg1->Draw();*/
-	
-	val[0] = nGaus.getVal();
-	//printf("STATUS: int from fit is %f \n", val[0]);
-	val[1] = nGaus.getPropagatedError(*fR);
-	//canCounter++;
-	
-	return val;
 }
 
 void MyAnalysisV0::DoEfficiency() {
@@ -489,31 +364,7 @@ void MyAnalysisV0::DoEfficiency() {
 
 }
 
-void MyAnalysisV0::LoadEfficiency() {
-
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	
-		hV0Efficiency[iSp] = (TH1D*)mFileMC->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
-		
-	}
-
-}
-
-void MyAnalysisV0::CorrectSpectra() {
-
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
-	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-
-		hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
-		hV0PtFit[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
-
-	}	}	}	}
-
-}
-
-void MyAnalysisV0::MakeFinalFigures() {
+/*void MyAnalysisV0::MakeFinalFigures() {
 
 	mFilePlots = new TFile("plots_"+mOutName,"RECREATE");
 	mFilePlots->cd();
@@ -629,4 +480,4 @@ void MyAnalysisV0::MakeFinalFigures() {
 	cBtoM[1]->SaveAs("plots/btom_sph.png");
 
 
-}
+}*/

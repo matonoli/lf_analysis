@@ -6,13 +6,10 @@
 
 #include "TObject.h"
 #include "TString.h"
-#include "MyAnalysis.h"
+#include "../MyAnalysis.h"
 #include "cuts00.h"			// namespace cuts
 
-class AliAnalysisPIDEvent;	// forward declaration
-class TClonesArray;
-class TDirectory;
-class TFile;
+class TFile;	// forward declaration
 class TList;
 class TH1D;
 class TH2D;
@@ -54,6 +51,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Int_t Make(Int_t iEv);
 		Int_t Finish();
 		Bool_t CreateHistograms();
+
 		Bool_t ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t SelectEvent(MyEvent &ev);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
@@ -61,31 +59,18 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
-		Double_t* ExtractYieldFit(TH1D* hist = 0);
-		void SetDirectory(TDirectory* d) { mDir = d;};
+
 		void SetOutputName(const Char_t *name) { mOutName = TString(name);};
-		void SetMCInputFile(const Char_t *name);
 		void DoEfficiency();
-		void LoadEfficiency();
-		void CorrectSpectra();
-		void MakeFinalFigures();
+		//void MakeFinalFigures();
 
 		ClassDef(MyAnalysisV0,1);
 
 	protected:
 
-		AliAnalysisPIDEvent* mEvent = 0;
-
-		TClonesArray* bTracks = 0;
-		TClonesArray* bV0s = 0;
-		TClonesArray* bParticles = 0;
-
-		TDirectory* mDir;
-		TList* mList;
 		TString mOutName;
-		TFile* mFileOut;
-		TFile* mFileMC;
 		TFile* mFilePlots;
+		TList* mList;
 
 		Bool_t mFlagMC;
 		Bool_t mFlagHist;
@@ -109,13 +94,12 @@ class MyAnalysisV0: public MyAnalysis {
 		// TRACK HISTOGRAMS
 
 		// MC PARTICLE HISTOGRAMS
+		TH1D* hV0Efficiency[V0consts::NSPECIES];
 
 		// V0 HISTOGRAMS
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
-		TH1D* hV0Efficiency[V0consts::NSPECIES];
 };
 #endif

@@ -6,6 +6,7 @@
 #include "TObject.h"
 
 class MyHandler; // forward declaration
+class TDirectoryFile;
 
 class MyAnalysis: public TObject {
 
@@ -16,10 +17,14 @@ class MyAnalysis: public TObject {
 		virtual Int_t Init() = 0;				// must be defined in daughters
 		virtual Int_t Make(Int_t iEv) = 0;		// must be defined in daughters
 		virtual Int_t Finish() = 0;				// must be defined in daughters
+
+		TDirectoryFile* dirFile()	const {return mDirFile;};
+		
 		
 		ClassDef(MyAnalysis,1);
 
 	protected:
-		MyHandler* mHandler;		
+		MyHandler* mHandler;
+		TDirectoryFile* mDirFile;		
 };
 #endif

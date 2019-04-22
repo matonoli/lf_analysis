@@ -12,6 +12,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <AliAnalysisPIDEvent.h>
+
 ClassImp(MyHandler)
 
 void MyHandler::AddAnalysis(MyAnalysis* ana) {
@@ -20,61 +22,72 @@ void MyHandler::AddAnalysis(MyAnalysis* ana) {
 		printf("Chain not yet created!\n"); }
 		//return; 	}
 	
-	this->mAnalysis = ana;
-	mAnalysis->SetHandler(this);
+	this->mAnalysis[nAnalyses] = ana;
+	mAnalysis[nAnalyses]->SetHandler(this);
+	nAnalyses++;
 }
 
 Int_t MyHandler::Init() {
 
-	mAnalysis->Init();
+	printf("Creating mother output file %s \n", mOutName.Data());
+	mFile = new TFile(mOutName.Data(),"RECREATE");
 
+	printf("nAnalyses is %i \n", nAnalyses);
+	for (Int_t iAna = 0; iAna < nAnalyses; iAna++) {
+		nAna = iAna;
+		mAnalysis[iAna]->Init();
+		mFile->cd();
+	}
 	return 0;
 }
 
-Int_t MyHandler::LoadInput(const Char_t *inputFile, const Char_t *chainName) {
+Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName) {
 	
 	TString inputFileStr(inputFile);
 	mFlagMC = inputFileStr.Contains("MC");
-	mFlagHist = inputFileStr.BeginsWith("hist");
 
-	if(!mFlagHist) {
-		mChain = new TChain(chainName);
-		string const dirFile = inputFileStr.Data();
-		if (dirFile.find(".lis") != string::npos)	{
-			
-			ifstream inputStream(dirFile.c_str());
-			if (!inputStream)	{
-				cout << "ERROR: Cannot open list file " << dirFile << endl;
-				return 0;	}
+	mChain = new TChain(chainName);
+	string const dirFile = inputFileStr.Data();
+	if (dirFile.find(".lis") != string::npos)	{			
+		ifstream inputStream(dirFile.c_str());
+		if (!inputStream)	{
+			cout << "ERROR: Cannot open list file " << dirFile << endl;
+			return 0;	}
+		int nFile = 0;
+		string file;
 
-			int nFile = 0;
-			string file;
-			while (getline(inputStream, file))	{
-				if (file.find(".root") != string::npos)	{
-					TFile* ftmp = TFile::Open(file.c_str());
-					if (ftmp && !ftmp->IsZombie() && ftmp->GetNkeys())	{
-						cout << " Read in file " << file << endl;
-						mChain->Add(file.c_str());
-						++nFile;	}
-					if (ftmp) ftmp->Close();
-				}
+		while (getline(inputStream, file))	{
+			if (file.find(".root") != string::npos)	{
+				TFile* ftmp = TFile::Open(file.c_str());
+				if (ftmp && !ftmp->IsZombie() && ftmp->GetNkeys())	{
+					cout << " Read in file " << file << endl;
+					mChain->Add(file.c_str());
+					++nFile;	}
+				if (ftmp) ftmp->Close();
 			}
-
-		cout << " Total " << nFile << " files have been read in. " << endl;
-		return 1;
 		}
 
-		else if (dirFile.find(".root") != string::npos)	{
-			mChain->Add(dirFile.c_str());	
-			return 1;	}
+		cout << " Total " << nFile << " files have been read in. " << endl;
+	}
+	else if (dirFile.find(".root") != string::npos)	{
+		mChain->Add(dirFile.c_str());	}
+	else	{
+		cout << " No good input file to read ... " << endl;
+		return 1;	}
 
-		else	{
-			cout << " No good input file to read ... " << endl;
-			return 1;	}
+	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
+	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
+	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
+	if (mFlagMC) mChain->SetBranchAddress("AnalysisParticle",&bParticles);
+}
 
-	} else {
-		mFile = new TFile(inputFileStr.Data(),"READ");	}
+Int_t MyHandler::LoadInputHist(const Char_t *inputFile) {
 	
+	TString inputFileStr(inputFile);
+	mFlagMC = inputFileStr.Contains("MC");
+	mFlagHist = 1;
+
+	mFile = new TFile(inputFileStr.Data(),"READ");	
 	return 1;
 }
 
@@ -86,7 +99,12 @@ Int_t MyHandler::Make(Int_t iEv) {
 	
 	if (!mFlagHist) {
 		if (!mChain->GetEntry(iEv)) iret++;
-		iret += mAnalysis->Make(iEv);
+		//printf("iret is %i \n", iret); 
+	}
+
+	for (Int_t iAna = 0; iAna < nAnalyses; iAna++) {
+		iret += mAnalysis[iAna]->Make(iEv); 
+		//printf("iret is %i \n", iret);
 	}
 
 	return iret;	
@@ -95,7 +113,14 @@ Int_t MyHandler::Make(Int_t iEv) {
 Int_t MyHandler::Finish() {
 	
 	printf("Finishing handler \n");
-	mAnalysis->Finish();
+	for (Int_t iAna = 0; iAna < nAnalyses; iAna++) {
+		mAnalysis[iAna]->Finish();
+	}
+
+	mFile->cd();
+	mFile->Write();
+	printf("File written \n");
+
 	return 0;	
 }
 
