@@ -7,7 +7,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "../MyAnalysis.h"
-#include "cuts00.h"			// namespace cuts
+#include "cuts01.h"			// namespace cuts
 
 class TFile;	// forward declaration
 class TList;
@@ -29,8 +29,13 @@ namespace V0consts {
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[NMULTI] = {"MB","V0M","NCharged"};
 	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso"};
-	const Int_t NPTBINS = 35;
-	const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
+	//const Int_t NPTBINS = 35;
+	const Int_t NPTBINS = 55;
+	//const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
+	const Double_t XBINS[NPTBINS+1] = { 
+		0.00, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 
+		0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
+    	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 		1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
 		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
 		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };
@@ -51,6 +56,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Int_t Make(Int_t iEv);
 		Int_t Finish();
 		Bool_t CreateHistograms();
+		Bool_t BorrowHistograms();
 
 		Bool_t ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t SelectEvent(MyEvent &ev);
@@ -60,16 +66,12 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
 
-		void SetOutputName(const Char_t *name) { mOutName = TString(name);};
 		void DoEfficiency();
-		//void MakeFinalFigures();
 
 		ClassDef(MyAnalysisV0,1);
 
 	protected:
 
-		TString mOutName;
-		TFile* mFilePlots;
 		TList* mList;
 
 		Bool_t mFlagMC;

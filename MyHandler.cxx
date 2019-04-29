@@ -87,7 +87,7 @@ Int_t MyHandler::LoadInputHist(const Char_t *inputFile) {
 	mFlagMC = inputFileStr.Contains("MC");
 	mFlagHist = 1;
 
-	mFile = new TFile(inputFileStr.Data(),"READ");	
+	mFileHist = new TFile(inputFileStr.Data(),"READ");	
 	return 1;
 }
 

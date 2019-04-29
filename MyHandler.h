@@ -43,6 +43,7 @@ class MyHandler: public TObject {
 		TDirectory* directory() 			const {return mDir;};
 		TROOT* root()	 					const {return mROOT;};
 		TFile* file() 						const {return mFile;};
+		TFile* filehist() 					const {return mFileHist;};
 		Int_t nAnalysis()					const {return nAna;};
 		MyAnalysis* analysis(Int_t iAna)	const {return mAnalysis[iAna];};
 		
@@ -67,6 +68,7 @@ class MyHandler: public TObject {
 		Int_t nAnalyses = 0;
 		TChain* mChain;
 		TFile* mFile;
+		TFile* mFileHist;
 		TDirectory* mDir;
 		TROOT* mROOT;
 		TString mOutName;

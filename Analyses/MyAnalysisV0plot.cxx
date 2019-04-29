@@ -185,6 +185,7 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		hBtoM[iMu][iSph]->Divide(hBtoM[iMu][iSph],hV0PtFitCorr[1][0][iMu][iSph],1.,2.,"");
 
 	}	}
+	
 	TCanvas* cBtoM[2];
 	TLegend* legBtoM[2];
 	cBtoM[0] = new TCanvas("cBtoM_Mult","",1000,800);

@@ -22,7 +22,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0.cxx+");
 	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0extract.cxx+");
 	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0correct.cxx+");
-	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0plot.cxx++");
+	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0plot.cxx+");
 
 	// Suppress RooFit spam
 	RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
@@ -50,8 +50,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	}
 
 	// Set-up analyses and link them to handler
-	MyAnalysisV0* analysisV0 	= new MyAnalysisV0();
-	analysisV0->SetOutputName(outputFile);
+	MyAnalysisV0* analysisV0 				= new MyAnalysisV0();
 	MyAnalysisV0extract* analysisV0extract 	= new MyAnalysisV0extract();
 	MyAnalysisV0correct* analysisV0correct 	= new MyAnalysisV0correct();	//load mc file too
 	MyAnalysisV0plot* analysisV0plot 		= new MyAnalysisV0plot();
@@ -91,6 +90,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	handler->Finish();
 
 	printf("Analysis finished. Exiting... \n");
+	new TBrowser;
 }
 
 

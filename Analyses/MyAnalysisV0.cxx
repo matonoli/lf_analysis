@@ -54,10 +54,11 @@ Int_t MyAnalysisV0::Init() {
 	printf("Initialising analysis %s with flag MC %i and Hist %i \n", 
 		this->GetName(), mFlagMC, mFlagHist);
 
-	if (mFlagHist) return 0;
+	//if (mFlagHist) return 0;
 
 	TH1::SetDefaultSumw2();
-	CreateHistograms();
+	if (mFlagHist)	BorrowHistograms();
+	else 			CreateHistograms();
 
 	mList = (TList*)mHandler->directory()->GetList();
 
@@ -190,9 +191,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev) {
 
-	if (!ev.IsGoodAliEvent())			return false;
+	//if (!ev.IsGoodAliEvent())			return false;
 	//if(bV0s->GetEntriesFast() < 1)		return false;
 	//if(bTracks->GetEntriesFast() < 1)		return false;
+	if (ev.IsPileupFromSPD())			return false;
+	if (!ev.AcceptVertex())				return false;
+	if (!ev.CheckFlag())				return false;
+	//if (!ev.IsCollisionCandidate())		return false;
+	//if (ev.GetCentralityQuality() != 0)	return false;
+
 }
 
 
@@ -252,12 +259,16 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
 			break;
 		case 2 	: // L
+			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
+			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
 			if (trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			break;
 		case 3 	: // Lbar
+			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
+			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
@@ -341,10 +352,52 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 }
 
+Bool_t MyAnalysisV0::BorrowHistograms() {
+
+	mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");
+	mDirFile->ls();
+
+	// MONITORS
+	hEventMonitor 			= (TH1D*)mDirFile->Get("hEventMonitor");
+	//cout << "blaa " << hEventMonitor->GetEntries() << endl;
+	hTrackMonitor 			= (TH1D*)mDirFile->Get("hTrackMonitor");
+	hV0Monitor  			= (TH1D*)mDirFile->Get("hV0Monitor");
+	hParticleMonitor 		= (TH1D*)mDirFile->Get("hParticleMonitor");
+
+	// EVENT INFO HISTOGRAMS
+	hEventV0MCentrality		= (TH1D*)mDirFile->Get("hEventV0MCentrality");
+	hEventRefMult			= (TH1D*)mDirFile->Get("hEventRefMult");
+	hEventV0MCentvRefMult	= (TH2D*)mDirFile->Get("hEventV0MCentvRefMult");
+
+	hEventSpherocity		= (TH1D*)mDirFile->Get("hEventSpherocity");
+
+	// TRACK HISTOGRAMS
+
+	// MC PARTICLE HISTOGRAMS
+
+	// V0 HISTOGRAMS
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
+				
+		hV0Pt[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0Eta[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2D*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+
+		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		//	";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		
+	} } } }			
+
+}
+
 Int_t MyAnalysisV0::Finish() {
 	
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
+
+	if (mFlagMC) DoEfficiency();
 
 	return 0;	
 }
@@ -359,125 +412,7 @@ void MyAnalysisV0::DoEfficiency() {
 		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
 
 		hV0Efficiency[iSp]->Divide(hV0Pt[iSp][2][0][0]);
-		hV0Efficiency[iSp]->Write();
+		//hV0Efficiency[iSp]->Write();
 	}
 
 }
-
-/*void MyAnalysisV0::MakeFinalFigures() {
-
-	mFilePlots = new TFile("plots_"+mOutName,"RECREATE");
-	mFilePlots->cd();
-
-	enum { LEFT, RIGHT };
-
-	// EVENT INFO
-
-	// SPHEROCITY
-	Double_t quantileValues[4] = {0.0, 0.2, 0.8, 1.0};
-	Double_t quantileCuts[4];
-	hEventSpherocity->GetXaxis()->SetRangeUser(0.0,1.0);
-	//hEventSpherocity->ClearUnderflowAndOverflow();
-	hEventSpherocity->GetQuantiles(4,quantileCuts,quantileValues);
-
-
-	TCanvas* cSpherocity = new TCanvas("cSpherocity","",1000,800);
-	mHandler->MakeNiceHistogram(hEventSpherocity,kBlack);
-	hEventSpherocity->Draw();
-	cSpherocity->Update();
-	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocity);
-	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocity);
-	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
-	mHandler->MakeNiceLegend(leg1,0.050,1);
-	leg1->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
-	leg1->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
-	leg1->Draw();
-	cSpherocity->Write();
-	cSpherocity->SaveAs("plots/spherocity.png");
-
-	// PT SPECTRA
-	TCanvas* cPt[4];
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-
-			mHandler->MakeNiceHistogram(hV0PtFit[iSp][0][0][0],COLOURS[0]);
-			mHandler->MakeNiceHistogram(hV0PtFit[iSp][0][1][iSph],COLOURS[1+iSph]);
-		}
-
-		cPt[iSp] = new TCanvas(Form("cPt_%s",SPECIES[iSp]),"",1000,800);
-		cPt[iSp]->SetLogy(1);
-		hV0PtFit[iSp][0][0][0]->GetYaxis()->SetRangeUser(0.1,10.*hV0PtFit[iSp][0][0][0]->GetMaximum());
-		hV0PtFit[iSp][0][0][0]->Draw();
-		cPt[iSp]->Update();
-		hV0PtFit[iSp][0][1][0]->Draw("same");
-		hV0PtFit[iSp][0][1][1]->Draw("same");
-		hV0PtFit[iSp][0][1][2]->Draw("same");
-
-		TLegend* legPt = new TLegend(0.55,0.55,0.85,0.85);
-		mHandler->MakeNiceLegend(legPt,0.04,1);
-		legPt->AddEntry((TObject*)0,Form("%s   |#eta| < 0.8", SPECNAMES[iSp]),"");
-		legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
-		legPt->AddEntry((TObject*)0,"","");
-		legPt->AddEntry(hV0PtFit[iSp][0][0][0],"MB","pl");
-		legPt->AddEntry(hV0PtFit[iSp][0][1][0],"FHM","pl");
-		legPt->AddEntry(hV0PtFit[iSp][0][1][1],"FHM Jetty","pl");
-		legPt->AddEntry(hV0PtFit[iSp][0][1][2],"FHM Iso","pl");
-		legPt->Draw();
-
-		cPt[iSp]->Write();
-		cPt[iSp]->SaveAs(Form("plots/pt_%s.png",SPECIES[iSp]));
-	}
-
-	// B/M RATIO
-	TH1D* hBtoM[NMULTI][NSPHERO];
-	for (int iMu = 0; iMu < 2; ++iMu) {
-	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-	
-		hBtoM[iMu][iSph] = (TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hBtoM_%s_%s",MULTI[iMu],SPHERO[iSph]));
-		hBtoM[iMu][iSph]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
-		hBtoM[iMu][iSph]->Add(hV0PtFit[3][0][iMu][iSph]);
-		hBtoM[iMu][iSph]->Divide(hBtoM[iMu][iSph],hV0PtFit[1][0][iMu][iSph],1.,2.,"");
-
-	}	}
-	TCanvas* cBtoM[2];
-	TLegend* legBtoM[2];
-	cBtoM[0] = new TCanvas("cBtoM_Mult","",1000,800);
-	legBtoM[0] = new TLegend(0.55,0.55,0.85,0.85);
-	mHandler->MakeNiceLegend(legBtoM[0],0.04,1);
-	mHandler->MakeNiceHistogram(hBtoM[0][0],COLOURS[0]);
-	mHandler->MakeNiceHistogram(hBtoM[1][0],COLOURS[1]);
-	hBtoM[0][0]->GetYaxis()->SetRangeUser(0.,1.0);
-	hBtoM[0][0]->Draw();
-	cBtoM[0]->Update();
-	hBtoM[1][0]->Draw("same");
-
-	legBtoM[0]->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
-	legBtoM[0]->AddEntry((TObject*)0,"","");
-	legBtoM[0]->AddEntry(hBtoM[0][0],"MB","pl");
-	legBtoM[0]->AddEntry(hBtoM[1][0],"FHM","pl");
-	legBtoM[0]->Draw();
-
-	cBtoM[0]->Write();
-	cBtoM[0]->SaveAs("plots/btom_mu.png");
-
-	cBtoM[1] = new TCanvas("cBtoM_Sph","",1000,800);
-	legBtoM[1] = new TLegend(0.55,0.55,0.85,0.85);
-	mHandler->MakeNiceLegend(legBtoM[1],0.04,1);
-	mHandler->MakeNiceHistogram(hBtoM[1][1],COLOURS[2]);
-	mHandler->MakeNiceHistogram(hBtoM[1][2],COLOURS[3]);
-	hBtoM[1][1]->GetYaxis()->SetRangeUser(0.,1.0);
-	hBtoM[1][1]->Draw();
-	cBtoM[1]->Update();
-	hBtoM[1][2]->Draw("same");
-
-	legBtoM[1]->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
-	legBtoM[1]->AddEntry((TObject*)0,"","");
-	legBtoM[1]->AddEntry(hBtoM[1][1],"FHM Jetty","pl");
-	legBtoM[1]->AddEntry(hBtoM[1][2],"FHM Iso","pl");
-	legBtoM[1]->Draw();
-
-	cBtoM[1]->Write();
-	cBtoM[1]->SaveAs("plots/btom_sph.png");
-
-
-}*/
