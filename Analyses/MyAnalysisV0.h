@@ -67,6 +67,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectTrack(MyTrack &tr);
 
 		void DoEfficiency();
+		void DoLambdaFeeddown();
 
 		ClassDef(MyAnalysisV0,1);
 
@@ -97,6 +98,7 @@ class MyAnalysisV0: public MyAnalysis {
 
 		// MC PARTICLE HISTOGRAMS
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
+		TH1D* hV0Feeddown[V0consts::NSPECIES];
 
 		// V0 HISTOGRAMS
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

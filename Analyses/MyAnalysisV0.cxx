@@ -398,6 +398,7 @@ Int_t MyAnalysisV0::Finish() {
 	mDirFile->cd();
 
 	if (mFlagMC) DoEfficiency();
+	if (mFlagMC) DoLambdaFeeddown();
 
 	return 0;	
 }
@@ -412,6 +413,21 @@ void MyAnalysisV0::DoEfficiency() {
 		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
 
 		hV0Efficiency[iSp]->Divide(hV0Pt[iSp][2][0][0]);
+		//hV0Efficiency[iSp]->Write();
+	}
+
+}
+
+void MyAnalysisV0::DoLambdaFeeddown() {
+
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
+
+		hV0Feeddown[iSp]->SetTitle("; V0 pT (GeV/#it{c}); Feed-down fraction");
+		hV0Feeddown[iSp]->GetYaxis()->SetRangeUser(0.,0.30);
+		hV0Feeddown[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
+
+		hV0Feeddown[iSp]->Divide(hV0Pt[iSp][0][0][0]);
 		//hV0Efficiency[iSp]->Write();
 	}
 
