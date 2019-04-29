@@ -129,9 +129,12 @@ void MyAnalysisV0correct::LoadEfficiency() {
 		return;
 	}
 
+	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+
+
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	
-		hV0Efficiency[iSp] = (TH1D*)mFileMC->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
+		hV0Efficiency[iSp] = (TH1D*)dirFile1->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
 		hV0Efficiency[iSp]->Write();
 	}
 
