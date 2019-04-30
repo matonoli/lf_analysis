@@ -18,6 +18,7 @@ class MyParticle: public TObject {
 		Float_t GetEta() 						const { return mAliParticle->GetEta();};
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
+		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};
 
 		// add safety measure to getters for if mAliParticle is an invalid pointer
 		

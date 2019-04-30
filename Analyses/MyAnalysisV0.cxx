@@ -231,7 +231,9 @@ Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t S
 
 Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	
-	if (Type==1) if (v0.GetMCPdgCode() != PDG_IDS[Sp]) return false;
+	if (Type==1) {
+		if (v0.GetMCPdgCode() != PDG_IDS[Sp])	return false;
+		if (!v0.IsMCPrimary())					return false; }
 
 	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
 	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
@@ -294,6 +296,10 @@ Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3])	return false;
+	if (p.GetPdgCode() != p.GetMotherPdgCode() 
+		&& TMath::Abs(p.GetMotherPdgCode()) != 311
+		&& TMath::Abs(p.GetMotherPdgCode()) > 10)	return false;
+	//printf("code is %i and %i \n", p.GetPdgCode(), p.GetMotherPdgCode());
 
 	return true;
 }
