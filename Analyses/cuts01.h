@@ -1,7 +1,10 @@
 namespace cuts {
 	// EVENT SELECTION
-	const Float_t EV_SPH_JETTY 	= 0.462;
-	const Float_t EV_SPH_ISO 	= 0.755;
+
+	const Float_t EV_SPH_JETTY 	= 0.446;		//my results
+	const Float_t EV_SPH_ISO 	= 0.747;
+	//const Float_t EV_SPH_JETTY 	= 0.462;	// dont remember where i took this from
+	//const Float_t EV_SPH_ISO 	= 0.755;
 
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};

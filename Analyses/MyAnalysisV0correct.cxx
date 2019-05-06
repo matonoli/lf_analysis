@@ -67,6 +67,8 @@ Int_t MyAnalysisV0correct::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
+	hEventType = (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
+
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < 1; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
@@ -105,6 +107,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	mDirFile->cd();
 
 	CloneHistograms();
+	NormaliseSpectra();
 	LoadEfficiency();
 	CorrectSpectra();
 
@@ -120,6 +123,38 @@ void MyAnalysisV0correct::SetMCInputFile(const Char_t *name) {
 	else {
 		printf("No MC file loaded.");
 	}
+}
+
+void MyAnalysisV0correct::NormaliseSpectra() {
+
+	/*for (int iBin = 0; iBin < NEVENTTYPES+2; ++iBin)
+	{
+		printf("Event type %i containing %f events\n", iBin, hEventType->GetBinContent(iBin));
+	}*/
+
+	Double_t NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+	printf("Normalising all histograms by dEta %f \n", NormEta);
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+			
+		Double_t NormEv = hEventType->GetBinContent(2);	// MB
+		if (iMu == 1)	{	NormEv = hEventType->GetBinContent(3);		// FHM
+			if (iSph == 1)	NormEv = hEventType->GetBinContent(8);		// FHM JET
+			if (iSph == 2)	NormEv = hEventType->GetBinContent(7);	}	// FHM ISO
+		if (iMu == 2)	{	NormEv = hEventType->GetBinContent(4);		// MHM
+			if (iSph == 1)	NormEv = hEventType->GetBinContent(10);		// MHM JET
+			if (iSph == 2)	NormEv = hEventType->GetBinContent(9);	}	// MHM ISO
+		if (NormEv == 0) NormEv = 1;
+
+		printf("Normalising histogram %s by event count %f \n", hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(), NormEv);
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEv);
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEta);
+		
+	} } } }
+	
 }
 
 void MyAnalysisV0correct::LoadEfficiency() {

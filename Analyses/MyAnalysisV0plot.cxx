@@ -147,12 +147,15 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
 			mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][0][0],COLOURS[0]);
+			hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");
 			mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][1][iSph],COLOURS[1+iSph]);
+			hV0PtFitCorr[iSp][0][1][iSph]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");
 		}
 
 		cPt[iSp] = new TCanvas(Form("cPt_%s",SPECIES[iSp]),"",1000,800);
 		cPt[iSp]->SetLogy(1);
-		hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetRangeUser(0.1,10.*hV0PtFitCorr[iSp][0][0][0]->GetMaximum());
+		Double_t lowerRange = 0.1*hV0PtFitCorr[iSp][0][0][0]->GetBinContent(hV0PtFitCorr[iSp][0][0][0]->FindLastBinAbove());
+		hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetRangeUser(lowerRange,10.*hV0PtFitCorr[iSp][0][0][0]->GetMaximum());
 		hV0PtFitCorr[iSp][0][0][0]->Draw();
 		cPt[iSp]->Update();
 		hV0PtFitCorr[iSp][0][1][0]->Draw("same");

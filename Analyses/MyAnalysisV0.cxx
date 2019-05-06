@@ -84,7 +84,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventMonitor->Fill(1);
 
 	// EVENT SELECTION
+	hEventType->Fill(EVENTTYPES[0],1);	//preES MB
 	if (!SelectEvent(event)) return 0;
+	hEventType->Fill(EVENTTYPES[1],1);	//postES MB
 	hEventMonitor->Fill(2);
 
 	// BUG HOTFIX FOR AURORATREES
@@ -103,7 +105,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventV0MCentrality->Fill(event.GetV0MCentrality());
 	hEventRefMult->Fill(event.GetRefMult());
 	hEventV0MCentvRefMult->Fill(event.GetRefMult(),event.GetV0MCentrality());
-	isEventCentral += IsCentral(event,V0M);
+	Bool_t isEventFHM = IsCentral(event,V0M);
+	Bool_t isEventMHM = IsCentral(event,NCharged);
+	if (isEventFHM)	hEventType->Fill(EVENTTYPES[2],1);
+	if (isEventMHM)	hEventType->Fill(EVENTTYPES[3],1);
+	
+	isEventCentral = (isEventFHM || isEventMHM);
 	//isEventCentral += IsCentral(event,NCharged);
 
 	mTS->Reset();
@@ -129,6 +136,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		isEventIso		= (eventTS > cuts::EV_SPH_ISO && eventTS < 1.) ;
 		isEventJetty	= (eventTS < cuts::EV_SPH_JETTY && eventTS > 0.);
 		hEventSpherocity->Fill(eventTS);	}
+
+	if (isEventFHM && isEventIso)	hEventType->Fill(EVENTTYPES[6],1);
+	if (isEventFHM && isEventJetty)	hEventType->Fill(EVENTTYPES[7],1);
+	if (isEventMHM && isEventIso)	hEventType->Fill(EVENTTYPES[8],1);
+	if (isEventMHM && isEventJetty)	hEventType->Fill(EVENTTYPES[9],1);
+
 
 	// MC V0 ANALYSIS: PARTICLES LOOP
 	hEventMonitor->Fill(5);
@@ -231,7 +244,7 @@ Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t S
 
 Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	
-	printf("is primary %i \n", v0.IsMCPrimary());
+	//printf("is primary %i \n", v0.IsMCPrimary());
 
 	if (Type==1) {
 		
@@ -337,6 +350,9 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		,150,0,150,300,0,150);
 
 	hEventSpherocity		= new TH1D("hEventSpherocity","; S_{O}; Entries",400,-0.1,1.1);
+	hEventType				= new TH1D("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
+	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
+		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
 
 	// TRACK HISTOGRAMS
 

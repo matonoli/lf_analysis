@@ -44,6 +44,10 @@ namespace V0consts {
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
 	const Int_t COLOURS[4] = {kAzure+3,kOrange+8,kGreen+2,kMagenta+2};
 
+	const Int_t NEVENTTYPES = 10; //1+2+2+4
+	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
+			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY"};
+
 }
 
 class MyAnalysisV0: public MyAnalysis {
@@ -92,6 +96,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hEventRefMult;
 		TH2D* hEventV0MCentvRefMult;
 
+		TH1D* hEventType;
 		TH1D* hEventSpherocity;
 
 		// TRACK HISTOGRAMS

@@ -147,6 +147,10 @@ void MyHandler::MakeNiceHistogram(TH1D* h, Int_t col) {
 	h->SetMarkerSize(1.3);
 	h->SetMarkerColor(col);
 	h->SetStats(0);
+
+	h->GetYaxis()->SetTitleOffset(1.1);
+	h->GetYaxis()->SetLabelOffset(0.0025);
+	h->GetYaxis()->SetLabelSize(0.03);
 }
 
 void MyHandler::MakeNiceLegend(TLegend *leg, Float_t size, Int_t columns)	{

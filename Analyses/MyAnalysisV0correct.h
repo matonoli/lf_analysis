@@ -33,6 +33,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		Bool_t CloneHistograms();
 
 		void SetMCInputFile(const Char_t *name);
+		void NormaliseSpectra();
 		void LoadEfficiency();
 		void CorrectSpectra();
 
@@ -47,6 +48,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 
 		// V0 HISTOGRAMS
 		//borrowed
+		TH1D* hEventType;
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
 
