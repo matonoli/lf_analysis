@@ -311,12 +311,15 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		legDR[iSp2][iMu-1] = new TLegend(0.55,0.55,0.85,0.85);
 		mHandler->MakeNiceLegend(legDR[iSp2][iMu-1],0.04,1);
 		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,Form("pp #sqrt{s} = 13 TeV"),"");
-		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,Form("%s  %s", SPECNAMES[iSp2], PLOTS_MULTI[iMu]),"");
+		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,Form("%s  %s", SPECNAMES[1+iSp2], PLOTS_MULTI[iMu]),"");
 		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,"","");
 		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][0],"HM","pl");
 		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][1],"HM Jetty","pl");
 		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][2],"HM Iso","pl");
 		legDR[iSp2][iMu-1]->Draw();
+
+		cDR[iSp2][iMu-1]->Write();
+		cDR[iSp2][iMu-1]->SaveAs(Form("plots/dr_%s_%s.png",SPECIES[1+iSp2],MULTI[iMu]));
 
 	}	}
 
