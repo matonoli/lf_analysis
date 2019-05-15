@@ -1,10 +1,11 @@
 namespace cuts {
 	// EVENT SELECTION
 
-	const Float_t EV_SPH_JETTY 	= 0.446;		//my results
-	const Float_t EV_SPH_ISO 	= 0.747;
-	//const Float_t EV_SPH_JETTY 	= 0.462;	// dont remember where i took this from
-	//const Float_t EV_SPH_ISO 	= 0.755;
+	//const Float_t EV_SPH_JETTY 	= 0.446;		//mc results
+	//const Float_t EV_SPH_ISO 	= 0.747;
+	const Float_t EV_SPH_JETTY 	= 0.462;	//data results
+	const Float_t EV_SPH_ISO 	= 0.755;
+	const Float_t EV_MHM[2]		= {26., 200.};
 
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};
@@ -27,7 +28,7 @@ namespace cuts {
 	//const Float_t L_NSIGTOF[2] 		= {-3., 3.}; 
 	const Float_t LBAR_NSIGTPC[2] 		= {-3., 3.};
 	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.};
-	const Float_t L_PT[2] 		= {0.3, 14.};
+	const Float_t L_PT[2] 		= {0.4, 14.}; 	//weird stuff in mc for 0.3-0.4
 
 	// PRIMARY TRACK SELECTION
 	const Float_t TR_PRIMARY_PAR[3]		= {0.0182, 0.0350, 1.01}; 

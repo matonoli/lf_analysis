@@ -19,12 +19,16 @@ class MyParticle: public TObject {
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
 		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};
+		Bool_t GetIsPrimary()					const { return mIsPrimary;};
+
+		Bool_t SetIsPrimary(Bool_t val)			{ mIsPrimary = val;};
 
 		// add safety measure to getters for if mAliParticle is an invalid pointer
 		
 		ClassDef(MyParticle,1);
 
 	private:
-		AliAnalysisPIDParticle* mAliParticle; 
+		AliAnalysisPIDParticle* mAliParticle;
+		Bool_t mIsPrimary = 1;
 };
 #endif

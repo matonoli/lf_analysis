@@ -47,9 +47,12 @@ class MyAnalysisV0plot: public MyAnalysis {
 		//borrowed
 		TH1D* hEventSpherocity;
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		//owned
-		TH1D* hBtoM[2][V0consts::NSPHERO];
+		TH1D* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0toNchDR[2][V0consts::NMULTI][V0consts::NSPHERO];
 
 };
 #endif

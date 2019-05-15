@@ -28,6 +28,7 @@ namespace V0consts {
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[NMULTI] = {"MB","V0M","NCharged"};
+	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%"};
 	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso"};
 	//const Int_t NPTBINS = 35;
 	const Int_t NPTBINS = 55;
@@ -42,7 +43,7 @@ namespace V0consts {
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
-	const Int_t COLOURS[4] = {kAzure+3,kOrange+8,kGreen+2,kMagenta+2};
+	const Int_t COLOURS[5] = {kAzure+3,kOrange+8,kPink+10,kGreen+2,kMagenta+2};
 
 	const Int_t NEVENTTYPES = 10; //1+2+2+4
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
@@ -63,6 +64,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t BorrowHistograms();
 
 		Bool_t ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
+		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t SelectEvent(MyEvent &ev);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
@@ -100,10 +102,12 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hEventSpherocity;
 
 		// TRACK HISTOGRAMS
+		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		// MC PARTICLE HISTOGRAMS
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
 		TH1D* hV0Feeddown[V0consts::NSPECIES];
+		TH1D* hV0FeeddownPDG[V0consts::NSPECIES];
 
 		// V0 HISTOGRAMS
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

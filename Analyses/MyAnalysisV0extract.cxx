@@ -192,19 +192,25 @@ Double_t* MyAnalysisV0extract::ExtractYieldFit(TH1D* hist) {
 	Int_t spNumber = spName.Atoi();
 	Double_t chi2ndf = (!empty) ? plot1->chiSquare() : -1.;
 
-	TLegend* leg1 = new TLegend(0.071,0.62,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+	if (!empty) {
+		val[0] = nGaus.getVal();
+		//printf("STATUS: int from fit is %f \n", val[0]);
+		val[1] = nGaus.getPropagatedError(*fR);
+	}
+
+	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
 	mHandler->MakeNiceLegend(leg1, 0.10, 1.);
 	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",XBINS[binNumber-1],XBINS[binNumber])," ");
 	leg1->AddEntry((TObject*)0,Form("%s , #chi^{2}/ndf = %4.2f",SPECNAMES[spNumber],chi2ndf)," ");
+	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
 	leg1->Draw();
 	
 	canCounter++;
 
-	if (empty) return val;
 
-	val[0] = nGaus.getVal();
-	//printf("STATUS: int from fit is %f \n", val[0]);
-	val[1] = nGaus.getPropagatedError(*fR);
+	//if (empty) return val;
+
+	
 	
 	return val;
 }
