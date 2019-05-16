@@ -16,6 +16,7 @@ class MyParticle: public TObject {
 		~MyParticle() { }
 		Float_t GetPt() 						const { return mAliParticle->GetPt();};
 		Float_t GetEta() 						const { return mAliParticle->GetEta();};
+		Float_t GetSign() 						const { return mAliParticle->GetSign();};
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
 		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};

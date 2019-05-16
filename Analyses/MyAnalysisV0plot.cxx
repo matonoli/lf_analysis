@@ -69,7 +69,7 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	hEventSpherocity = (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocity");
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
@@ -77,10 +77,12 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0PtFit[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0Pt[iSp][iType][iMu][iSph] 
+			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
 	} } } }
 
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
@@ -99,6 +101,8 @@ Bool_t MyAnalysisV0plot::CreateHistograms() {
 
 Bool_t MyAnalysisV0plot::CloneHistograms() {
 
+	Int_t type = (mHandler->GetFlagMC()) ? 2 : 0;
+
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 		
@@ -107,6 +111,20 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 		hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
 		
 	}	}
+
+	if (!mHandler->GetFlagMC()) {
+		for (int iMu = 0; iMu < NMULTI; ++iMu) {
+		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
+			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
+			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
+		}	}
+	} else {
+		for (int iMu = 0; iMu < NMULTI; ++iMu) {
+		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
+			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0Pt[1][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
+			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0Pt[2][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
+		}	}
+	}
 
 }
 
@@ -280,33 +298,35 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 
-				if (iSp2==1) hV0toNchDR[iSp2][iMu][iSph]->Add(hV0PtFit[2][0][iMu][iSph]);
+				if (iSp2==1) hV0toNchDR[iSp2][iMu][iSph]->Add(hV0PtFit[2][0][iMu][iSph]);	//adding Lbar
 				hV0toNchDR[iSp2][iMu][iSph]->Divide(hTrackPt[0][iMu][iSph]);
+				if (mHandler->GetFlagMC()) hV0toNchDR[iSp2][iMu][iSph]->SetLineWidth(2);
 			}	
-	}	}	// now we have ratios of v0 to pi(charged tracks)
+	}	}	// now we have ratios of v0 to pi(charged tracks) in mu and sph classes
 
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-		hV0toNchDR[iSp2][1][iSph]->Divide(hV0toNchDR[iSp2][0][iSph]);
-		hV0toNchDR[iSp2][2][iSph]->Divide(hV0toNchDR[iSp2][0][iSph]);
+		hV0toNchDR[iSp2][1][iSph]->Divide(hV0toNchDR[iSp2][0][0]);
+		hV0toNchDR[iSp2][2][iSph]->Divide(hV0toNchDR[iSp2][0][0]);
 	}	}	// iMu!=0 are now (v0/pi)_hm  / (v0/pi)_mb double ratios
 
 	TCanvas* cDR[2][NMULTI-1];
 	TLegend* legDR[2][NMULTI-1];
+	TString drawOpt = (mHandler->GetFlagMC()) ? "hist l" : "";
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)	{
 	for (int iMu = 1; iMu < NMULTI; ++iMu)	{
 		//hV0toNchDR[iSp2][iMu][iSph]
 		cDR[iSp2][iMu-1] = new TCanvas(Form("cDR_%s_%s",SPECIES[1+iSp2],MULTI[iMu]),"",1000,800);
 		cout << "iSp2 "<< iSp2 << " iMu " << iMu << " histo " <<  hV0toNchDR[iSp2][iMu][0] << endl;
-		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.5,4.);
+		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.5,2.5);
 		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetTitle("p_{T} (GeV/#it{c})");
 		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetTitle("ratio");
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][0],COLOURS[0]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][1],COLOURS[3]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][2],COLOURS[4]);
-		hV0toNchDR[iSp2][iMu][0]->Draw();
-		hV0toNchDR[iSp2][iMu][1]->Draw("same");
-		hV0toNchDR[iSp2][iMu][2]->Draw("same");
+		hV0toNchDR[iSp2][iMu][0]->Draw(drawOpt);
+		hV0toNchDR[iSp2][iMu][1]->Draw(drawOpt+"same");
+		hV0toNchDR[iSp2][iMu][2]->Draw(drawOpt+"same");
 
 		legDR[iSp2][iMu-1] = new TLegend(0.55,0.55,0.85,0.85);
 		mHandler->MakeNiceLegend(legDR[iSp2][iMu-1],0.04,1);
