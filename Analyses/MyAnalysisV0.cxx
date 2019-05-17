@@ -65,8 +65,11 @@ Int_t MyAnalysisV0::Init() {
 	bugR = 0;
 	bugPt = 0;
 
-	mTS = new TransverseSpherocity();
-	mTS->SetMinMulti(10);
+	for (Int_t iType = 0; iType < NTYPE-1; ++iType)	{
+	for (Int_t iMu = 0; iMu < NMULTI-1; ++iMu)	{
+		mTS[iType][iMu] = new TransverseSpherocity();
+		mTS[iType][iMu]->SetMinMulti(10);
+	}	}
 
 	return 0;
 }
@@ -113,26 +116,46 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	isEventCentral = (isEventFHM || isEventMHM);
 	//isEventCentral += IsCentral(event,NCharged);
 
-	mTS->Reset();
+	for (Int_t iType = 0; iType < NTYPE-1; ++iType)	{
+	for (Int_t iMu = 0; iMu < NMULTI-1; ++iMu)	{
+		mTS[iType][iMu]->Reset();
+	}	}
 	Double_t eventTS = -99.;
 
 	// TRACK LOOP
 	hEventMonitor->Fill(4);
 	Int_t nTracks = mHandler->tracks()->GetEntriesFast();
+	Int_t nParticles = (mFlagMC) ? mHandler->particles()->GetEntriesFast() : 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
 
 		if (!SelectTrack(t)) continue;
 
-		if (isEventCentral) mTS->AddTrack(t.GetPx(), t.GetPy());
+		// for Data calc. s0 from tracks
+		if (isEventCentral) mTS[0][0]->AddTrack(t.GetPx(), t.GetPy());
+	}
+	if (mFlagMC && isEventCentral) {
+		for (int iP = 0; iP < nParticles; ++iP)		{
+			
+			if (!mHandler->particle(iP)) continue;
+			MyParticle p(mHandler->particle(iP));
+
+			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
+				&& p.GetSign() != 0)	{
+
+				mTS[1][0]->AddTrack(p.GetPx(), p.GetPy());
+			}	
+		}
 	}
 
 	// EVENT SPHEROCITY CLASSIFICATION
 	Bool_t isEventIso = 0;
 	Bool_t isEventJetty = 0;
 	if (isEventCentral) {
-		eventTS = mTS->GetTransverseSpherocityTracks();
+
+		eventTS = (mFlagMC) ? mTS[1][0]->GetTransverseSpherocityTracks() : 
+			mTS[0][0]->GetTransverseSpherocityTracks();
 		isEventIso		= (eventTS > cuts::EV_SPH_ISO && eventTS < 1.) ;
 		isEventJetty	= (eventTS < cuts::EV_SPH_JETTY && eventTS > 0.);
 		hEventSpherocity->Fill(eventTS);	}
@@ -160,7 +183,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	std::vector<Int_t> PartLabels;
 	std::vector<Int_t> PartIds; 
 	if (mFlagMC) {
-		Int_t nParticles = mHandler->particles()->GetEntriesFast();
+		//Int_t nParticles = mHandler->particles()->GetEntriesFast();
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;

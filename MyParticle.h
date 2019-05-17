@@ -15,6 +15,9 @@ class MyParticle: public TObject {
 		MyParticle(AliAnalysisPIDParticle* p) : mAliParticle(p) { }
 		~MyParticle() { }
 		Float_t GetPt() 						const { return mAliParticle->GetPt();};
+		Float_t GetPx() 						const { return mAliParticle->GetPt()*TMath::Cos(mAliParticle->GetPhi());};
+		Float_t GetPy() 						const { return mAliParticle->GetPt()*TMath::Sin(mAliParticle->GetPhi());};
+		Float_t GetPhi() 						const { return mAliParticle->GetPhi();};
 		Float_t GetEta() 						const { return mAliParticle->GetEta();};
 		Float_t GetSign() 						const { return mAliParticle->GetSign();};
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};

@@ -311,19 +311,22 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 	}	}	// iMu!=0 are now (v0/pi)_hm  / (v0/pi)_mb double ratios
 
 	TCanvas* cDR[2][NMULTI-1];
+	TPad* pDR[2][NMULTI-1];
 	TLegend* legDR[2][NMULTI-1];
 	TString drawOpt = (mHandler->GetFlagMC()) ? "hist l" : "";
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)	{
 	for (int iMu = 1; iMu < NMULTI; ++iMu)	{
 		//hV0toNchDR[iSp2][iMu][iSph]
 		cDR[iSp2][iMu-1] = new TCanvas(Form("cDR_%s_%s",SPECIES[1+iSp2],MULTI[iMu]),"",1000,800);
+		cDR[iSp2][iMu-1]->SetLogy();
 		cout << "iSp2 "<< iSp2 << " iMu " << iMu << " histo " <<  hV0toNchDR[iSp2][iMu][0] << endl;
-		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.5,2.5);
+		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.2,200);
 		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetTitle("p_{T} (GeV/#it{c})");
 		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetTitle("ratio");
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][0],COLOURS[0]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][1],COLOURS[3]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][2],COLOURS[4]);
+		cout << hV0toNchDR[iSp2][iMu][0]->GetEntries() << endl;
 		hV0toNchDR[iSp2][iMu][0]->Draw(drawOpt);
 		hV0toNchDR[iSp2][iMu][1]->Draw(drawOpt+"same");
 		hV0toNchDR[iSp2][iMu][2]->Draw(drawOpt+"same");
@@ -337,6 +340,19 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][1],"HM Jetty","pl");
 		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][2],"HM Iso","pl");
 		legDR[iSp2][iMu-1]->Draw();
+
+		pDR[iSp2][iMu-1] = new TPad(Form("pDR_%i_%i",iSp2,iMu-1),"",0.13,0.5,0.5,0.89);
+		pDR[iSp2][iMu-1]->SetLogy(0);
+		pDR[iSp2][iMu-1]->Draw();
+		pDR[iSp2][iMu-1]->cd();
+		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetRangeUser(0.,2.6);
+		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.4,1.3);
+		hV0toNchDR[iSp2][iMu][0]->Draw(drawOpt);
+		hV0toNchDR[iSp2][iMu][1]->Draw(drawOpt+"same");
+		hV0toNchDR[iSp2][iMu][2]->Draw(drawOpt+"same");
+		cDR[iSp2][iMu-1]->cd();
+		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetRangeUser(0.,14.);
+		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.2,200);
 
 		cDR[iSp2][iMu-1]->Write();
 		cDR[iSp2][iMu-1]->SaveAs(Form("plots/dr_%s_%s.png",SPECIES[1+iSp2],MULTI[iMu]));

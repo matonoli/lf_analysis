@@ -85,7 +85,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t mFlagHist;
 		Double_t bugR;
 		Double_t bugPt;
-		TransverseSpherocity* mTS;
+		TransverseSpherocity* mTS[V0consts::NMULTI-1][V0consts::NTYPE-1];
 
 		// MONITORS
 		TH1D* hEventMonitor;
