@@ -65,10 +65,12 @@ Int_t MyAnalysisV0::Init() {
 	bugR = 0;
 	bugPt = 0;
 
-	for (Int_t iType = 0; iType < NTYPE-1; ++iType)	{
+	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
 	for (Int_t iMu = 0; iMu < NMULTI-1; ++iMu)	{
 		mTS[iType][iMu] = new TransverseSpherocity();
 		mTS[iType][iMu]->SetMinMulti(10);
+		mTSNorm[iType][iMu] = new TransverseSpherocity();
+		mTSNorm[iType][iMu]->SetMinMulti(10);
 	}	}
 
 	return 0;
@@ -116,11 +118,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	isEventCentral = (isEventFHM || isEventMHM);
 	//isEventCentral += IsCentral(event,NCharged);
 
-	for (Int_t iType = 0; iType < NTYPE-1; ++iType)	{
+	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
 	for (Int_t iMu = 0; iMu < NMULTI-1; ++iMu)	{
 		mTS[iType][iMu]->Reset();
+		mTSNorm[iType][iMu]->Reset();
 	}	}
 	Double_t eventTS = -99.;
+	Double_t eventTS2[6] = {-99.,-99.,-99.,-99.,-99.,-99.};
+	enum { tsD, tsRC, tsMC, tsDNorm, tsRCNorm, tsMCNorm };
+
 
 	// TRACK LOOP
 	hEventMonitor->Fill(4);
@@ -133,8 +139,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!SelectTrack(t)) continue;
 
 		// for Data calc. s0 from tracks
-		if (isEventCentral) mTS[0][0]->AddTrack(t.GetPx(), t.GetPy());
+		if (isEventCentral) {
+			mTS[0][0]->AddTrack(t.GetPx(), t.GetPy());
+			mTSNorm[0][0]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt()); 
+		}
 	}
+
+	// SPHERO CALCULATION ON PARTICLE LEVEL IN MC
 	if (mFlagMC && isEventCentral) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
@@ -142,9 +153,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle p(mHandler->particle(iP));
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0)	{
+				&& p.GetSign() != 0 && p.GetPt() > 0.15)	{
 
-				mTS[1][0]->AddTrack(p.GetPx(), p.GetPy());
+				mTS[2][0]->AddTrack(p.GetPx(), p.GetPy());
+				mTSNorm[2][0]->AddTrack(p.GetPx()/p.GetPt(), p.GetPy()/p.GetPt());
 			}	
 		}
 	}
@@ -154,11 +166,24 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Bool_t isEventJetty = 0;
 	if (isEventCentral) {
 
-		eventTS = (mFlagMC) ? mTS[1][0]->GetTransverseSpherocityTracks() : 
-			mTS[0][0]->GetTransverseSpherocityTracks();
+		eventTS2[tsD] 		= mTS[D][0]->GetTransverseSpherocityTracks();
+		eventTS2[tsRC] 		= mTS[D][0]->GetTransverseSpherocityTracks();	//in MC reconstructed equals data
+		eventTS2[tsMC] 		= mTS[MC][0]->GetTransverseSpherocityTracks();
+		eventTS2[tsDNorm] 	= mTSNorm[D][0]->GetTransverseSpherocityTracks();
+		eventTS2[tsRCNorm]	= mTSNorm[D][0]->GetTransverseSpherocityTracks();
+		eventTS2[tsMCNorm]	= mTSNorm[MC][0]->GetTransverseSpherocityTracks();
+
+		//eventTS = (mFlagMC) ? eventTS2[tsMC] : eventTS2[tsD];
+		eventTS = (mFlagMC) ? eventTS2[tsMCNorm] : eventTS2[tsDNorm];
 		isEventIso		= (eventTS > cuts::EV_SPH_ISO && eventTS < 1.) ;
 		isEventJetty	= (eventTS < cuts::EV_SPH_JETTY && eventTS > 0.);
-		hEventSpherocity->Fill(eventTS);	}
+		
+		hEventSpherocity->Fill(eventTS);
+		hEventTSMCvRC->Fill(eventTS2[tsMC],eventTS2[tsRC]);
+		hEventTSNormMCvRC->Fill(eventTS2[tsMCNorm],eventTS2[tsRCNorm]);
+		hEventTSMCvNorm->Fill(eventTS2[tsMC],eventTS2[tsMCNorm]);
+		hEventTSRCvNorm->Fill(eventTS2[tsRC],eventTS2[tsRCNorm]);
+	}
 
 	if (isEventFHM && isEventIso)	hEventType->Fill(EVENTTYPES[6],1);
 	if (isEventFHM && isEventJetty)	hEventType->Fill(EVENTTYPES[7],1);
@@ -424,6 +449,11 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
 		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
 
+	hEventTSMCvRC 			= new TH2D("hEventTSMCvRC",";S_{O} with MC particles; S_{O} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventTSNormMCvRC		= new TH2D("hEventTSNormMCvRC",";S_{O}^{p_{T}=1} with MC particles; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventTSMCvNorm			= new TH2D("hEventTSMCvNorm",";S_{O} with MC particles; S_{O}^{p_{T}=1} with MC particles", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventTSRCvNorm			= new TH2D("hEventTSRCvNorm",";S_{O} with RC tracks; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
+
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
@@ -471,7 +501,6 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 
 	// MONITORS
 	hEventMonitor 			= (TH1D*)mDirFile->Get("hEventMonitor");
-	//cout << "blaa " << hEventMonitor->GetEntries() << endl;
 	hTrackMonitor 			= (TH1D*)mDirFile->Get("hTrackMonitor");
 	hV0Monitor  			= (TH1D*)mDirFile->Get("hV0Monitor");
 	hParticleMonitor 		= (TH1D*)mDirFile->Get("hParticleMonitor");
@@ -483,6 +512,10 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	hEventV0MCentvRefMult	= (TH2D*)mDirFile->Get("hEventV0MCentvRefMult");
 
 	hEventSpherocity		= (TH1D*)mDirFile->Get("hEventSpherocity");
+	hEventTSMCvRC			= (TH2D*)mDirFile->Get("hEventTSMCvRC");
+	hEventTSNormMCvRC		= (TH2D*)mDirFile->Get("hEventTSNormMCvRC");
+	hEventTSMCvNorm			= (TH2D*)mDirFile->Get("hEventTSMCvNorm");
+	hEventTSRCvNorm			= (TH2D*)mDirFile->Get("hEventTSRCvNorm");
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{

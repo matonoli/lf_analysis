@@ -85,7 +85,8 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t mFlagHist;
 		Double_t bugR;
 		Double_t bugPt;
-		TransverseSpherocity* mTS[V0consts::NMULTI-1][V0consts::NTYPE-1];
+		TransverseSpherocity* mTS[V0consts::NTYPE][V0consts::NMULTI-1];
+		TransverseSpherocity* mTSNorm[V0consts::NTYPE][V0consts::NMULTI-1];
 
 		// MONITORS
 		TH1D* hEventMonitor;
@@ -100,6 +101,10 @@ class MyAnalysisV0: public MyAnalysis {
 
 		TH1D* hEventType;
 		TH1D* hEventSpherocity;
+		TH2D* hEventTSMCvRC;
+		TH2D* hEventTSNormMCvRC;
+		TH2D* hEventTSMCvNorm;
+		TH2D* hEventTSRCvNorm;
 
 		// TRACK HISTOGRAMS
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

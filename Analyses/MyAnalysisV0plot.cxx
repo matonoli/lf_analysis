@@ -101,14 +101,14 @@ Bool_t MyAnalysisV0plot::CreateHistograms() {
 
 Bool_t MyAnalysisV0plot::CloneHistograms() {
 
-	Int_t type = (mHandler->GetFlagMC()) ? 2 : 0;
+	//Int_t type = (mHandler->GetFlagMC()) ? 2 : 0;
 
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 		
 		hBtoM[iMu][iSph] =			(TH1D*)hV0PtFitCorr[2][0][iMu][iSph]->Clone(Form("hBtoM_%s_%s",MULTI[iMu],SPHERO[iSph]));
-		hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
-		hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
+		//hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
+		//hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
 		
 	}	}
 
@@ -123,7 +123,7 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0Pt[1][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
 			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0Pt[2][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
-		}	}
+		}	}			// so for mc we do particle level v0 only --> add also track lvl
 	}
 
 }
@@ -189,10 +189,10 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 
 			}
 
-			cPt[iSp][iMu-1] = new TCanvas(Form("cPt_%s_%s",SPECIES[iSp],MULTI[iMu]),"",1000,800);
+			cPt[iSp][iMu-1] = new TCanvas(Form("cPt_%s_%s",SPECIES[iSp],MULTI[iMu]),"",1000,900);
 			cPt[iSp][iMu-1]->SetLogy(1);
 			Double_t lowerRange = 0.1*hV0PtFitCorr[iSp][0][0][0]->GetBinContent(hV0PtFitCorr[iSp][0][0][0]->FindLastBinAbove());
-			hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetRangeUser(lowerRange,10.*hV0PtFitCorr[iSp][0][0][0]->GetMaximum());
+			if (iMu==1) hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetRangeUser(lowerRange,10.*hV0PtFitCorr[iSp][0][0][0]->GetMaximum());
 			hV0PtFitCorr[iSp][0][0][0]->Draw();
 			cPt[iSp][iMu-1]->Update();
 			hV0PtFitCorr[iSp][0][iMu][0]->Draw("same");
@@ -210,6 +210,11 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][1],Form("%s %s",PLOTS_MULTI[iMu],SPHERO[1]),"pl");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][2],Form("%s %s",PLOTS_MULTI[iMu],SPHERO[2]),"pl");
 			legPt->Draw();
+
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][1],hV0PtFitCorr[iSp][0][iMu][0],
+				cPt[iSp][iMu-1], 0.1,3.2);
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][2],hV0PtFitCorr[iSp][0][iMu][0],
+				cPt[iSp][iMu-1], 0.1,3.2);
 
 			cPt[iSp][iMu-1]->Write();
 			cPt[iSp][iMu-1]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[iMu]));
@@ -293,7 +298,7 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 	cBtoM[2]->SaveAs("plots/btom_nch_sph.png");
 
 
-	// Double-ratio
+	// DOUBLE RATIO CALC
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			for (int iMu = 0; iMu < NMULTI; ++iMu)		{
@@ -310,23 +315,22 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		hV0toNchDR[iSp2][2][iSph]->Divide(hV0toNchDR[iSp2][0][0]);
 	}	}	// iMu!=0 are now (v0/pi)_hm  / (v0/pi)_mb double ratios
 
+	// DOUBLE RATIO PLOTTING
 	TCanvas* cDR[2][NMULTI-1];
-	TPad* pDR[2][NMULTI-1];
 	TLegend* legDR[2][NMULTI-1];
 	TString drawOpt = (mHandler->GetFlagMC()) ? "hist l" : "";
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)	{
 	for (int iMu = 1; iMu < NMULTI; ++iMu)	{
-		//hV0toNchDR[iSp2][iMu][iSph]
+		
 		cDR[iSp2][iMu-1] = new TCanvas(Form("cDR_%s_%s",SPECIES[1+iSp2],MULTI[iMu]),"",1000,800);
 		cDR[iSp2][iMu-1]->SetLogy();
-		cout << "iSp2 "<< iSp2 << " iMu " << iMu << " histo " <<  hV0toNchDR[iSp2][iMu][0] << endl;
 		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.2,200);
 		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetTitle("p_{T} (GeV/#it{c})");
 		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetTitle("ratio");
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][0],COLOURS[0]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][1],COLOURS[3]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][2],COLOURS[4]);
-		cout << hV0toNchDR[iSp2][iMu][0]->GetEntries() << endl;
+	
 		hV0toNchDR[iSp2][iMu][0]->Draw(drawOpt);
 		hV0toNchDR[iSp2][iMu][1]->Draw(drawOpt+"same");
 		hV0toNchDR[iSp2][iMu][2]->Draw(drawOpt+"same");
@@ -341,15 +345,10 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][2],"HM Iso","pl");
 		legDR[iSp2][iMu-1]->Draw();
 
-		pDR[iSp2][iMu-1] = new TPad(Form("pDR_%i_%i",iSp2,iMu-1),"",0.13,0.5,0.5,0.89);
-		pDR[iSp2][iMu-1]->SetLogy(0);
-		pDR[iSp2][iMu-1]->Draw();
-		pDR[iSp2][iMu-1]->cd();
-		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetRangeUser(0.,2.6);
-		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.4,1.3);
-		hV0toNchDR[iSp2][iMu][0]->Draw(drawOpt);
-		hV0toNchDR[iSp2][iMu][1]->Draw(drawOpt+"same");
-		hV0toNchDR[iSp2][iMu][2]->Draw(drawOpt+"same");
+		mHandler->MakeZoomPlot(hV0toNchDR[iSp2][iMu][0],cDR[iSp2][iMu-1],0.,2.6,0.4,1.3);
+		hV0toNchDR[iSp2][iMu][0]->DrawCopy(drawOpt);
+		hV0toNchDR[iSp2][iMu][1]->DrawCopy(drawOpt+"same");
+		hV0toNchDR[iSp2][iMu][2]->DrawCopy(drawOpt+"same");
 		cDR[iSp2][iMu-1]->cd();
 		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetRangeUser(0.,14.);
 		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.2,200);

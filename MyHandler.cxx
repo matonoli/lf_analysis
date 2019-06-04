@@ -133,11 +133,11 @@ void MyHandler::DrawCut(Double_t cut, Int_t direction, TCanvas* can) {
 	TGraph* gcut = new TGraph(2, x, y);
 	if (direction) gcut->SetLineWidth(-402);
 	else gcut->SetLineWidth(402);
-   	gcut->SetLineColor(kRed);
-   	gcut->SetFillColor(kRed);
-   	gcut->SetFillStyle(3003);
+	gcut->SetLineColor(kRed);
+	gcut->SetFillColor(kRed);
+	gcut->SetFillStyle(3003);
 
-   	gcut->Draw("same");
+	gcut->Draw("same");
 }
 
 void MyHandler::MakeNiceHistogram(TH1D* h, Int_t col) {
@@ -151,6 +151,8 @@ void MyHandler::MakeNiceHistogram(TH1D* h, Int_t col) {
 	h->GetYaxis()->SetTitleOffset(1.1);
 	h->GetYaxis()->SetLabelOffset(0.0025);
 	h->GetYaxis()->SetLabelSize(0.03);
+
+	//h->SetTopMargin(0.055);
 }
 
 void MyHandler::MakeNiceLegend(TLegend *leg, Float_t size, Int_t columns)	{
@@ -164,3 +166,87 @@ void MyHandler::MakeNiceLegend(TLegend *leg, Float_t size, Int_t columns)	{
 	leg->SetNColumns(columns);
 
 }
+
+void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high) {
+	
+	c->cd();
+
+	// check for an already existent ratio plot
+	Bool_t hasRatio = false;
+	TObject* obj;
+	TIter next(c->GetListOfPrimitives());
+	while ( (obj = next()) ) {
+		TString objName = obj->GetName();
+		if (objName == Form("p2_%s",c->GetName())) {
+			TVirtualPad* prat = (TVirtualPad*)obj;
+			prat->cd();
+			hasRatio = true;
+		}
+	}
+
+	if (!hasRatio) {
+
+		TCanvas* ctop = (TCanvas*)c->Clone("ctop");
+		c->Clear();
+		ctop->SetBottomMargin(0.005);
+		c->cd();
+
+		TPad* p1 = new TPad(Form("p1_%s",c->GetName()),"",0.,0.3,1.,1.);
+		p1->SetBottomMargin(0.);
+		p1->Draw();
+		p1->cd();
+		ctop->DrawClonePad();
+
+		c->cd();
+		TPad* p2 = new TPad(Form("p2_%s",c->GetName()),"",0.,0.00,1.,0.28);
+		p2->SetTopMargin(0);
+		p2->SetBottomMargin(0.32);
+		p2->Draw();
+		p2->cd();
+	}
+
+	TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
+	hr->SetMinimum(low);
+	hr->SetMaximum(high);
+	hr->Divide(hd);
+
+	hr->GetYaxis()->SetTitle("ratio");
+	hr->GetYaxis()->CenterTitle();
+	hr->GetYaxis()->SetNdivisions(505);
+	hr->GetYaxis()->SetTitleSize(25);
+	//hr->GetYaxis()->SetTitleFont(43);
+	hr->GetYaxis()->SetTitleOffset(1.55);
+	hr->GetYaxis()->SetLabelFont(43); 
+	hr->GetYaxis()->SetLabelSize(20);
+
+	hr->GetXaxis()->SetTitleSize(25);
+	hr->GetXaxis()->SetTitleFont(43);
+	hr->GetXaxis()->SetTitleOffset(4.);
+	hr->GetXaxis()->SetLabelFont(43); 
+	hr->GetXaxis()->SetLabelSize(25);
+	hr->GetXaxis()->SetTickLength(0.09);
+
+	if (!hasRatio)	hr->Draw();
+	else			hr->Draw("same");
+
+	//c->SetCanvasSize()
+	c->cd();
+
+}
+
+
+void MyHandler::MakeZoomPlot(TH1D* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax) {
+
+	c->cd();
+	TPad* p = new TPad(Form("p_%s",c->GetName()),"",0.13,0.5,0.5,0.89);
+	p->SetLogy(0);
+	p->Draw();
+	p->cd();
+
+	//Double_t prevXmin = h->GetXaxis()->GetR
+	h->GetXaxis()->SetRangeUser(xmin,xmax);
+	h->GetYaxis()->SetRangeUser(ymin,ymax);
+	//
+
+}
+	
