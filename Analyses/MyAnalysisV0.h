@@ -23,13 +23,13 @@ class TransverseSpherocity;
 namespace V0consts {
 	const Int_t NSPECIES = 4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 3;
-	const Int_t NSPHERO = 3;
+	const Int_t NMULTI = 4;
+	const Int_t NSPHERO = 8;
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
-	const char* MULTI[NMULTI] = {"MB","V0M","NCharged"};
-	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%"};
-	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso"};
+	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RT"};
+	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%", "R_{T}"};
+	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso","0-1","1-2","2-3","3-4","4-5"};
 	//const Int_t NPTBINS = 35;
 	const Int_t NPTBINS = 55;
 	//const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
@@ -43,11 +43,14 @@ namespace V0consts {
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
-	const Int_t COLOURS[5] = {kAzure+3,kOrange+8,kPink+10,kGreen+2,kMagenta+2};
+	const Int_t COLOURS[6] = {kAzure+3,kOrange+8,kPink+10,kGreen+2,kMagenta+2, kViolet+10};
 
-	const Int_t NEVENTTYPES = 10; //1+2+2+4
+	const Int_t NEVENTTYPES = 16; //1+2+2+4+6
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
-			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY"};
+			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY",
+			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5"};
+
+	const Float_t RT_DEN		= 6.971; 
 
 }
 
@@ -106,8 +109,15 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hEventTSMCvNorm;
 		TH2D* hEventTSRCvNorm;
 
+		TH2D* hLeadPhivPt;
+		TH1D* hNchvLeadPt;
+		TH2D* hNchvLeadPt2;
+		TH1D* hNchTrans;
+		TH1D* hRt;
+
 		// TRACK HISTOGRAMS
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2D* hTrackEtavPhi[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		// MC PARTICLE HISTOGRAMS
 		TH1D* hV0Efficiency[V0consts::NSPECIES];

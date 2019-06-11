@@ -103,7 +103,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventMonitor->Fill(3);
 
 	// EVENT CLASSIFICATION
-	enum { multMB, V0M, NCharged };
+	enum { multMB, V0M, NCharged, RT };
 	enum { sphMB, Jetty, Iso };
 	enum { D, RC, MC };
 	Int_t isEventCentral = 0;
@@ -128,15 +128,22 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	enum { tsD, tsRC, tsMC, tsDNorm, tsRCNorm, tsMCNorm };
 
 
-	// TRACK LOOP
+	// TRACK LOOP TO CONSTRUCT SPHEROCITY AND FIND LEADING
 	hEventMonitor->Fill(4);
 	Int_t nTracks = mHandler->tracks()->GetEntriesFast();
 	Int_t nParticles = (mFlagMC) ? mHandler->particles()->GetEntriesFast() : 0;
+
+	Double_t ptLead = 0, phiLead = 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
 
 		if (!SelectTrack(t)) continue;
+		if (!t.IskITSrefit()) continue;
+
+		if (t.GetPt() > ptLead) {
+			ptLead = t.GetPt();
+			phiLead = t.GetPhi();	}
 
 		// for Data calc. s0 from tracks
 		if (isEventCentral) {
@@ -144,6 +151,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			mTSNorm[0][0]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt()); 
 		}
 	}
+	hLeadPhivPt->Fill(ptLead,phiLead);
 
 	// SPHERO CALCULATION ON PARTICLE LEVEL IN MC
 	if (mFlagMC && isEventCentral) {
@@ -191,17 +199,63 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (isEventMHM && isEventJetty)	hEventType->Fill(EVENTTYPES[9],1);
 
 	// TRACK SPHEROCITY STUDY LOOP
+	Int_t nChTrans = 0;
+	Int_t nChTrans0 = 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
 
 		if (!SelectTrack(t)) continue;
 
-		for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
+		ProcessTrack(t,D,multMB,sphMB);
+		if (isEventFHM) {
+			ProcessTrack(t,D,V0M,sphMB);
+			if (isEventJetty)	ProcessTrack(t,D,V0M,Jetty);
+			if (isEventIso)		ProcessTrack(t,D,V0M,Iso);		}
+
+		if (isEventMHM) {
+			ProcessTrack(t,D,NCharged,sphMB);
+			if (isEventJetty)	ProcessTrack(t,D,NCharged,Jetty);
+			if (isEventIso)		ProcessTrack(t,D,NCharged,Iso);		}
+
+		/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
 		for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 			ProcessTrack(t,D,iMu+iMu*(!isEventFHM),iSph+iSph*(!isEventJetty));
-		}	}	
+		}	}	*/
+
+		// RT DETERMINATION
+		Double_t dphi = mHandler->DeltaPhi(t.GetPhi(),phiLead);
+		if (TMath::Abs(dphi) < TMath::Pi()/3.) continue;
+		if (TMath::Abs(dphi) > 2.*TMath::Pi()/3.) continue;
+		if (!t.IskITSrefit()) continue;
+		hNchvLeadPt->Fill(ptLead);
+		nChTrans0++;
+		if (ptLead < 5.) continue;
+		nChTrans++;
 	}
+
+	hNchvLeadPt2->Fill(ptLead,nChTrans0);
+	Double_t eventRt = 0;
+	if (nChTrans>0) {
+		hNchTrans->Fill(nChTrans);
+		eventRt = (double)nChTrans/RT_DEN;
+		hRt->Fill(eventRt);		}
+
+	Bool_t isEventRT = false;
+	enum { rt01, rt12, rt23, rt34, rt45, rtsizeof };
+	Bool_t isRT[rtsizeof] = {false, false, false, false, false};
+	if (eventRt) {
+		isEventRT = true;
+		for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
+			isRT[iRt] = (eventRt > (Double_t)iRt 
+				&& eventRt < (Double_t)(iRt+1));	}
+	}
+
+	if (isEventRT) hEventType->Fill(EVENTTYPES[10],1);
+	for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
+		if (isRT[iRt]) hEventType->Fill(EVENTTYPES[11+iRt],1); }
+
+
 
 	// MC V0 ANALYSIS: PARTICLES LOOP
 	hEventMonitor->Fill(5);
@@ -229,10 +283,29 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 				if (p.GetPdgCode() == PDG_IDS[iSp])		{
-					for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
+
+					hV0Pt[iSp][MC][multMB][sphMB]->Fill(p.GetPt());
+
+					if (isEventFHM) {
+						hV0Pt[iSp][MC][V0M][sphMB]->Fill(p.GetPt());
+						if (isEventJetty)	hV0Pt[iSp][MC][V0M][Jetty]->Fill(p.GetPt());
+						if (isEventIso)		hV0Pt[iSp][MC][V0M][Iso]->Fill(p.GetPt());		}
+
+					if (isEventMHM) {
+						hV0Pt[iSp][MC][NCharged][sphMB]->Fill(p.GetPt());
+						if (isEventJetty)	hV0Pt[iSp][MC][NCharged][Jetty]->Fill(p.GetPt());
+						if (isEventIso)		hV0Pt[iSp][MC][NCharged][Iso]->Fill(p.GetPt());		}
+
+					if (isEventRT) {
+						hV0Pt[iSp][MC][RT][sphMB]->Fill(p.GetPt());
+						for (int iRt = 0; iRt < rtsizeof; ++iRt) {
+							if (isRT[iRt])	hV0Pt[iSp][MC][RT][3+iRt]->Fill(p.GetPt());	}
+					}
+
+					/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
 					for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 						hV0Pt[iSp][MC][iMu+iMu*(!isEventFHM)][iSph+iSph*(!isEventJetty)]->Fill(p.GetPt());
-					}	}
+					}	}*/
 				}
 			}
 
@@ -276,11 +349,32 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			}
 		}
 
-		for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
-		for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
+		//for (int iMu = 0; iMu < isEventFHM+isEventMHM+isEventRT+1; ++iMu) {
+		//for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 		for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
-			if (IsV0(v0,iSp,D)) ProcessV0(v0,iSp,D,iMu+iMu*(!isEventFHM),iSph+iSph*(!isEventJetty));
-		}	}	}
+			if (IsV0(v0,iSp,D)) {
+
+				ProcessV0(v0,iSp,D,multMB,sphMB);
+
+				if (isEventFHM) {
+					ProcessV0(v0,iSp,D,V0M,sphMB);
+					if (isEventJetty)	ProcessV0(v0,iSp,D,V0M,Jetty);
+					if (isEventIso)		ProcessV0(v0,iSp,D,V0M,Iso); }
+
+				if (isEventMHM) {
+					ProcessV0(v0,iSp,D,NCharged,sphMB);
+					if (isEventJetty)	ProcessV0(v0,iSp,D,NCharged,Jetty);
+					if (isEventIso)		ProcessV0(v0,iSp,D,NCharged,Iso); }
+
+				if (isEventRT) {
+					ProcessV0(v0,iSp,D,RT,sphMB);
+					for (int iRt = 0; iRt < rtsizeof; ++iRt) {
+						if (isRT[iRt])	ProcessV0(v0,iSp,D,RT,3+iRt);	}
+				}
+
+				//	ProcessV0(v0,iSp,D,iMu+iMu*(!isEventFHM)*(!isEventRT),iSph+iSph*(!isEventJetty));
+			}
+		}		
 
 	}
 
@@ -336,6 +430,7 @@ Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t S
 Bool_t MyAnalysisV0::ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph) {
 
 	hTrackPt[Type][Mu][Sph]->Fill(t.GetPt());
+	hTrackEtavPhi[Type][Mu][Sph]->Fill(t.GetPhi(),t.GetEta());
 
 }
 
@@ -454,13 +549,23 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hEventTSMCvNorm			= new TH2D("hEventTSMCvNorm",";S_{O} with MC particles; S_{O}^{p_{T}=1} with MC particles", 440, -1.1, 1.1, 440, -1.1, 1.1);
 	hEventTSRCvNorm			= new TH2D("hEventTSRCvNorm",";S_{O} with RC tracks; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
 
+	hLeadPhivPt				= new TH2D("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
+	hNchvLeadPt				= new TH1D("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
+	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,0.,50.);
+	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",100, 0., 100.);
+	hRt						= new TH1D("hRt","; R_{T}; Entries",100, 0., 5.);
+
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph]			= new TH1D(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-			";track p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);		
+			";track p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hTrackEtavPhi[iType][iMu][iSph]		= new TH2D(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+			";track #phi; track #eta", 400, -0.2, 6.4, 400, -1., 1.);		
 
 	} } } 
 
@@ -472,6 +577,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		hV0Pt[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 			//";V0 Pt (GeV/#it{c}); Entries",								400, 0, 20);
@@ -517,12 +624,21 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	hEventTSMCvNorm			= (TH2D*)mDirFile->Get("hEventTSMCvNorm");
 	hEventTSRCvNorm			= (TH2D*)mDirFile->Get("hEventTSRCvNorm");
 
+	hLeadPhivPt				= (TH2D*)mDirFile->Get("hLeadPhivPt");
+	hNchvLeadPt				= (TH1D*)mDirFile->Get("hNchvLeadPt");
+	hNchvLeadPt2			= (TH2D*)mDirFile->Get("hNchvLeadPt2");
+	hNchTrans				= (TH1D*)mDirFile->Get("hNchTrans");
+	hRt						= (TH1D*)mDirFile->Get("hRt");
+
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph]	= (TH1D*)mDirFile->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hTrackEtavPhi[iType][iMu][iSph]	= (TH2D*)mDirFile->Get(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
 	} } } 
 
@@ -534,6 +650,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		hV0Pt[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0Eta[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2D*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
@@ -554,6 +672,9 @@ Int_t MyAnalysisV0::Finish() {
 	
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
+
+	TH1D* hLeadPt = hLeadPhivPt->ProjectionX();
+	hNchvLeadPt->Divide(hLeadPt);
 
 	if (mFlagMC) DoEfficiency();
 	if (mFlagMC) DoLambdaFeeddown();

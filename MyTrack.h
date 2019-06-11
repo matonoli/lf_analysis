@@ -4,6 +4,7 @@
 #ifndef __MyTrack__
 #define __MyTrack__
 #include <AliAnalysisPIDTrack.h>
+#include <AliESDtrack.h>
 #include "TObject.h"
 #include "TMath.h"
 
@@ -19,9 +20,12 @@ class MyTrack: public TObject {
 		Float_t GetPx() 						const { return mAliTrack->GetPt()*TMath::Cos(mAliTrack->GetPhi());};
 		Float_t GetPy() 						const { return mAliTrack->GetPt()*TMath::Sin(mAliTrack->GetPhi());};
 		Float_t GetEta() 						const { return mAliTrack->GetEta();};
+		Float_t GetPhi() 						const { return mAliTrack->GetPhi();};
 		Float_t GetNSigmaPionTPC() 				const { return mAliTrack->GetNSigmaPionTPC();};
 		Float_t GetNSigmaProtonTPC() 			const { return mAliTrack->GetNSigmaProtonTPC();};
 		Float_t GetDCApvXY() 					const { return mAliTrack->GetImpactParameter(0);};
+
+		Bool_t IskITSrefit()					const { return (mAliTrack->GetStatus()&AliESDtrack::kITSrefit);};
 
 		// add safety measure to getters for if mAliTrack is an invalid pointer
 		

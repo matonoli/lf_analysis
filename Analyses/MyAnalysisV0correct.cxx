@@ -74,6 +74,8 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		
@@ -93,6 +95,8 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]	= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Clone(
 			Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]) );
 
@@ -140,6 +144,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		Double_t NormEv = hEventType->GetBinContent(2);	// MB
 		if (iMu == 1)	{	NormEv = hEventType->GetBinContent(3);		// FHM
 			if (iSph == 1)	NormEv = hEventType->GetBinContent(8);		// FHM JET
@@ -147,6 +153,12 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		if (iMu == 2)	{	NormEv = hEventType->GetBinContent(4);		// MHM
 			if (iSph == 1)	NormEv = hEventType->GetBinContent(10);		// MHM JET
 			if (iSph == 2)	NormEv = hEventType->GetBinContent(9);	}	// MHM ISO
+		if (iMu == 3)	{	NormEv = hEventType->GetBinContent(11);		// RT
+			if (iSph == 3)	NormEv = hEventType->GetBinContent(12);		// RT 0-1
+			if (iSph == 4)	NormEv = hEventType->GetBinContent(13);		// RT 1-2
+			if (iSph == 5)	NormEv = hEventType->GetBinContent(14);		// RT 2-3
+			if (iSph == 6)	NormEv = hEventType->GetBinContent(15);		// RT 3-4
+			if (iSph == 7)	NormEv = hEventType->GetBinContent(16);	}	// RT 4-5
 		if (NormEv == 0) NormEv = 1;
 
 		printf("Normalising histogram %s by event count %f \n", hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(), NormEv);
@@ -179,9 +191,12 @@ void MyAnalysisV0correct::CorrectSpectra() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < 1; ++iType)		{
+	//for (int iMu = 0; iMu < 3; ++iMu)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1,"width");
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 

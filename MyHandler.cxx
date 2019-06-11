@@ -249,4 +249,13 @@ void MyHandler::MakeZoomPlot(TH1D* h, TCanvas* c, Double_t xmin, Double_t xmax, 
 	//
 
 }
+
+Double_t MyHandler::DeltaPhi(Double_t phi1, Double_t phi2) {
+	
+	Double_t dphi = phi2 - phi1;
+	if ( dphi > TMath::Pi() )		dphi = dphi - 2*TMath::Pi();
+	if ( dphi < -1.*TMath::Pi() )	dphi = dphi + 2*TMath::Pi();
+
+	return dphi;
+}
 	

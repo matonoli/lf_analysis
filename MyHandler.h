@@ -61,6 +61,8 @@ class MyHandler: public TObject {
 		void MakeNiceLegend(TLegend* leg, Float_t size = 0.07, Int_t columns = 2);
 		void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high);
 		void MakeZoomPlot(TH1D* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
+
+		Double_t DeltaPhi(Double_t phi1, Double_t phi2);
 		
 		ClassDef(MyHandler,1);
 
