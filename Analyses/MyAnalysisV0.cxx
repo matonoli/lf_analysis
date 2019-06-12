@@ -139,7 +139,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		MyTrack t(mHandler->track(iTr));
 
 		if (!SelectTrack(t)) continue;
-		if (!t.IskITSrefit()) continue;
+		//if (!t.IskITSrefit()) continue;   //TEST
 
 		if (t.GetPt() > ptLead) {
 			ptLead = t.GetPt();
