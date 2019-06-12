@@ -124,10 +124,10 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 
 			if (iMu > 2 && (iSph < 3 && iSph)) continue;
 			if (iMu < 3 && iSph > 2) continue; 
-			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
-			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
+			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));	//k0s
+			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));	//l+lbar
 		}	}
-	} else {
+	} else {	// if flagMC show particle level ratios too
 		for (int iMu = 0; iMu < NMULTI; ++iMu) {
 		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 
@@ -365,14 +365,14 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 			for (int iMu = 0; iMu < 3; ++iMu)		{
 
 				if (iSp2==1) hV0toNchDR[iSp2][iMu][iSph]->Add(hV0PtFit[2][0][iMu][iSph]);	//adding Lbar
-				hV0toNchDR[iSp2][iMu][iSph]->Divide(hTrackPt[0][iMu][iSph]);
+				hV0toNchDR[iSp2][iMu][iSph]->Divide(hTrackPt[0][iMu][iSph]);			//dividing by track spectra of same class -> bug for particle level! (?)
 				if (mHandler->GetFlagMC()) hV0toNchDR[iSp2][iMu][iSph]->SetLineWidth(2);
 			}	
 	}	}	// now we have ratios of v0 to pi(charged tracks) in mu and sph classes
 
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)		{
 	for (int iSph = 0; iSph < 3; ++iSph)	{
-		hV0toNchDR[iSp2][1][iSph]->Divide(hV0toNchDR[iSp2][0][0]);
+		hV0toNchDR[iSp2][1][iSph]->Divide(hV0toNchDR[iSp2][0][0]);	// dividing v0/track of v0m events by v0/track mb
 		hV0toNchDR[iSp2][2][iSph]->Divide(hV0toNchDR[iSp2][0][0]);
 	}	}	// iMu!=0 are now (v0/pi)_hm  / (v0/pi)_mb double ratios
 

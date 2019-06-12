@@ -124,6 +124,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		mTSNorm[iType][iMu]->Reset();
 	}	}
 	Double_t eventTS = -99.;
+	Double_t eventTSRC = -99.;
 	Double_t eventTS2[6] = {-99.,-99.,-99.,-99.,-99.,-99.};
 	enum { tsD, tsRC, tsMC, tsDNorm, tsRCNorm, tsMCNorm };
 
@@ -139,7 +140,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		MyTrack t(mHandler->track(iTr));
 
 		if (!SelectTrack(t)) continue;
-		//if (!t.IskITSrefit()) continue;   //TEST
+		if (!t.IskITSrefit()) continue;
 
 		if (t.GetPt() > ptLead) {
 			ptLead = t.GetPt();
@@ -172,6 +173,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	// EVENT SPHEROCITY CLASSIFICATION
 	Bool_t isEventIso = 0;
 	Bool_t isEventJetty = 0;
+	Bool_t isEventIsoMC = 0;
+	Bool_t isEventJettyMC = 0;
+
 	if (isEventCentral) {
 
 		eventTS2[tsD] 		= mTS[D][0]->GetTransverseSpherocityTracks();
@@ -182,9 +186,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		eventTS2[tsMCNorm]	= mTSNorm[MC][0]->GetTransverseSpherocityTracks();
 
 		//eventTS = (mFlagMC) ? eventTS2[tsMC] : eventTS2[tsD];
-		eventTS = (mFlagMC) ? eventTS2[tsMCNorm] : eventTS2[tsDNorm];
+		//eventTS = (mFlagMC) ? eventTS2[tsMCNorm] : eventTS2[tsDNorm];
+		//eventTS = (mFlagMC) ? eventTS2[tsMCNorm] : eventTS2[tsDNorm];		// in mc study default on particle level
+		eventTS = eventTS2[tsDNorm];
+
 		isEventIso		= (eventTS > cuts::EV_SPH_ISO && eventTS < 1.) ;
 		isEventJetty	= (eventTS < cuts::EV_SPH_JETTY && eventTS > 0.);
+
+		isEventIsoMC	= mFlagMC && (eventTS2[tsMCNorm] > cuts::EV_SPH_ISO && eventTS2[tsMCNorm] < 1.) ;		// in mc study also particle level 
+		isEventJettyMC	= mFlagMC && (eventTS2[tsMCNorm] < cuts::EV_SPH_JETTY && eventTS2[tsMCNorm] > 0.) ;
 		
 		hEventSpherocity->Fill(eventTS);
 		hEventTSMCvRC->Fill(eventTS2[tsMC],eventTS2[tsRC]);
@@ -193,10 +203,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		hEventTSRCvNorm->Fill(eventTS2[tsRC],eventTS2[tsRCNorm]);
 	}
 
-	if (isEventFHM && isEventIso)	hEventType->Fill(EVENTTYPES[6],1);
-	if (isEventFHM && isEventJetty)	hEventType->Fill(EVENTTYPES[7],1);
-	if (isEventMHM && isEventIso)	hEventType->Fill(EVENTTYPES[8],1);
-	if (isEventMHM && isEventJetty)	hEventType->Fill(EVENTTYPES[9],1);
+	if (isEventFHM && isEventIso)		hEventType->Fill(EVENTTYPES[6],1);
+	if (isEventFHM && isEventJetty)		hEventType->Fill(EVENTTYPES[7],1);
+	if (isEventMHM && isEventIso)		hEventType->Fill(EVENTTYPES[8],1);
+	if (isEventMHM && isEventJetty)		hEventType->Fill(EVENTTYPES[9],1);
+	if (isEventFHM && isEventIsoMC)		hEventType->Fill(EVENTTYPES[16],1);
+	if (isEventFHM && isEventJettyMC)	hEventType->Fill(EVENTTYPES[17],1);
+	if (isEventMHM && isEventIsoMC)		hEventType->Fill(EVENTTYPES[18],1);
+	if (isEventMHM && isEventJettyMC)	hEventType->Fill(EVENTTYPES[19],1);
 
 	// TRACK SPHEROCITY STUDY LOOP
 	Int_t nChTrans = 0;
@@ -211,12 +225,16 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (isEventFHM) {
 			ProcessTrack(t,D,V0M,sphMB);
 			if (isEventJetty)	ProcessTrack(t,D,V0M,Jetty);
-			if (isEventIso)		ProcessTrack(t,D,V0M,Iso);		}
+			if (isEventIso)		ProcessTrack(t,D,V0M,Iso);			//
+			if (isEventJettyMC)	ProcessTrack(t,RC,V0M,Jetty);		// study tracks also for true sphero, stored under RC
+			if (isEventIsoMC)	ProcessTrack(t,RC,V0M,Iso);		} 
 
 		if (isEventMHM) {
 			ProcessTrack(t,D,NCharged,sphMB);
 			if (isEventJetty)	ProcessTrack(t,D,NCharged,Jetty);
-			if (isEventIso)		ProcessTrack(t,D,NCharged,Iso);		}
+			if (isEventIso)		ProcessTrack(t,D,NCharged,Iso);
+			if (isEventJettyMC)	ProcessTrack(t,RC,NCharged,Jetty);
+			if (isEventIsoMC)	ProcessTrack(t,RC,NCharged,Iso);		}
 
 		/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
 		for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
@@ -271,11 +289,31 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
 				&& p.GetSign() != 0)	{
-				for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
+
+				hTrackPt[MC][multMB][sphMB]->Fill(p.GetPt());
+
+				if (isEventFHM) {
+					hTrackPt[MC][V0M][sphMB]->Fill(p.GetPt());
+					if (isEventJettyMC)		hTrackPt[MC][V0M][Jetty]->Fill(p.GetPt());
+					if (isEventIsoMC)		hTrackPt[MC][V0M][Iso]->Fill(p.GetPt()); }
+
+				if (isEventMHM) {
+					hTrackPt[MC][NCharged][sphMB]->Fill(p.GetPt());
+					if (isEventJettyMC)		hTrackPt[MC][NCharged][Jetty]->Fill(p.GetPt());
+					if (isEventIsoMC)		hTrackPt[MC][NCharged][Iso]->Fill(p.GetPt()); }
+
+				if (isEventRT) {
+					hTrackPt[MC][RT][sphMB]->Fill(p.GetPt());
+					for (int iRt = 0; iRt < rtsizeof; ++iRt) {
+						if (isRT[iRt])	hTrackPt[MC][RT][3+iRt]->Fill(p.GetPt());	}
+				}
+
+			}
+				
+				/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
 				for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 					hTrackPt[MC][iMu+iMu*(!isEventFHM)][iSph+iSph*(!isEventJetty)]->Fill(p.GetPt());
-				}	}
-			}	
+				}	}*/
 
 			if (!SelectParticle(p)) continue;
 			PartLabels.push_back(p.GetLabel());
@@ -288,13 +326,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 					if (isEventFHM) {
 						hV0Pt[iSp][MC][V0M][sphMB]->Fill(p.GetPt());
-						if (isEventJetty)	hV0Pt[iSp][MC][V0M][Jetty]->Fill(p.GetPt());
-						if (isEventIso)		hV0Pt[iSp][MC][V0M][Iso]->Fill(p.GetPt());		}
+						if (isEventJettyMC)		hV0Pt[iSp][MC][V0M][Jetty]->Fill(p.GetPt());
+						if (isEventIsoMC)		hV0Pt[iSp][MC][V0M][Iso]->Fill(p.GetPt());		}
 
 					if (isEventMHM) {
 						hV0Pt[iSp][MC][NCharged][sphMB]->Fill(p.GetPt());
-						if (isEventJetty)	hV0Pt[iSp][MC][NCharged][Jetty]->Fill(p.GetPt());
-						if (isEventIso)		hV0Pt[iSp][MC][NCharged][Iso]->Fill(p.GetPt());		}
+						if (isEventJettyMC)		hV0Pt[iSp][MC][NCharged][Jetty]->Fill(p.GetPt());
+						if (isEventIsoMC)		hV0Pt[iSp][MC][NCharged][Iso]->Fill(p.GetPt());		}
 
 					if (isEventRT) {
 						hV0Pt[iSp][MC][RT][sphMB]->Fill(p.GetPt());
@@ -339,12 +377,33 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					MCfound = true;
 					break;	}
 			}
+
 			if (MCfound) {
 				for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 					if (IsV0(v0,iSp,RC)) {
 						if (v0mc.GetIsPrimary()) hV0Feeddown[iSp]->Fill(v0.GetPt());
 						else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
-						ProcessV0(v0,iSp,RC,multMB,sphMB);		}
+						
+						ProcessV0(v0,iSp,RC,multMB,sphMB);		
+
+						if (isEventFHM) {
+							ProcessV0(v0,iSp,RC,V0M,sphMB);
+							if (isEventJettyMC)	ProcessV0(v0,iSp,RC,V0M,Jetty);			// study RC spectra for true spher. ev classification
+							if (isEventIsoMC)	ProcessV0(v0,iSp,RC,V0M,Iso);
+						}
+						
+						if (isEventMHM) {
+							ProcessV0(v0,iSp,RC,NCharged,sphMB);
+							if (isEventJettyMC)	ProcessV0(v0,iSp,RC,NCharged,Jetty);
+							if (isEventIsoMC)	ProcessV0(v0,iSp,RC,NCharged,Iso);
+						}
+
+						if (isEventRT) {
+							ProcessV0(v0,iSp,RC,RT,sphMB);
+							for (int iRt = 0; iRt < rtsizeof; ++iRt) {
+								if (isRT[iRt])	ProcessV0(v0,iSp,RC,RT,3+iRt);	}
+						}
+					}
 				}
 			}
 		}

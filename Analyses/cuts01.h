@@ -5,8 +5,8 @@ namespace cuts {
 	//const Float_t EV_SPH_ISO 	= 0.747;
 	//const Float_t EV_SPH_JETTY 	= 0.462;	//data results
 	//const Float_t EV_SPH_ISO 	= 0.755;
-	const Float_t EV_SPH_JETTY 	= 0.595;	//pt=1
-	const Float_t EV_SPH_ISO 	= 0.822;
+	const Float_t EV_SPH_JETTY 	= 0.591;	//pt=1
+	const Float_t EV_SPH_ISO 	= 0.819;
 	const Float_t EV_MHM[2]		= {26., 200.};
 
 	// V0 SELECTION
