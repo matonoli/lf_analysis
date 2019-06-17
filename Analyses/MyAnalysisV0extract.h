@@ -41,7 +41,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 
 		Int_t iCan = 0;
 		Int_t canCounter = 0;
-		TCanvas* cFits[(V0consts::NSPECIES-1) * V0consts::NMULTI * V0consts::NSPHERO];
+		TCanvas* cFits[(V0consts::NSPECIES-1) * V0consts::NMULTI * V0consts::NSPHERO * 2];
 
 
 		// V0 HISTOGRAMS

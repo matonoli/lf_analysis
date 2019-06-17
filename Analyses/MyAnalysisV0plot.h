@@ -53,7 +53,7 @@ class MyAnalysisV0plot: public MyAnalysis {
 
 		//owned
 		TH1D* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0toNchDR[2][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0toNchDR[2][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 };
 #endif

@@ -134,7 +134,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Int_t nTracks = mHandler->tracks()->GetEntriesFast();
 	Int_t nParticles = (mFlagMC) ? mHandler->particles()->GetEntriesFast() : 0;
 
-	Double_t ptLead = 0, phiLead = 0;
+	Double_t ptLead = -99., phiLead = -99.;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
@@ -222,8 +222,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!SelectTrack(t)) continue;
 
 		ProcessTrack(t,D,multMB,sphMB);
+		ProcessTrack(t,RC,multMB,sphMB);
 		if (isEventFHM) {
 			ProcessTrack(t,D,V0M,sphMB);
+			ProcessTrack(t,RC,V0M,sphMB);
 			if (isEventJetty)	ProcessTrack(t,D,V0M,Jetty);
 			if (isEventIso)		ProcessTrack(t,D,V0M,Iso);			//
 			if (isEventJettyMC)	ProcessTrack(t,RC,V0M,Jetty);		// study tracks also for true sphero, stored under RC
@@ -231,6 +233,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 		if (isEventMHM) {
 			ProcessTrack(t,D,NCharged,sphMB);
+			ProcessTrack(t,RC,NCharged,sphMB);
 			if (isEventJetty)	ProcessTrack(t,D,NCharged,Jetty);
 			if (isEventIso)		ProcessTrack(t,D,NCharged,Iso);
 			if (isEventJettyMC)	ProcessTrack(t,RC,NCharged,Jetty);
@@ -272,6 +275,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (isEventRT) hEventType->Fill(EVENTTYPES[10],1);
 	for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
 		if (isRT[iRt]) hEventType->Fill(EVENTTYPES[11+iRt],1); }
+
+	// <pT> vs RT
+	if (isEventRT) hLeadPtvRt->Fill(eventRt,ptLead);
 
 
 
@@ -613,6 +619,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,0.,50.);
 	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",100, 0., 100.);
 	hRt						= new TH1D("hRt","; R_{T}; Entries",100, 0., 5.);
+	hLeadPtvRt				= new TH2D("hLeadPtvRt","; R_{T}; p_{T}^{leading} (GeV/#it{c})", 100, 0., 5., 200, 0., 30.);
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -663,7 +670,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 Bool_t MyAnalysisV0::BorrowHistograms() {
 
 	mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");
-	mDirFile->ls();
+	//mDirFile->ls();
 
 	// MONITORS
 	hEventMonitor 			= (TH1D*)mDirFile->Get("hEventMonitor");
@@ -688,6 +695,7 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	hNchvLeadPt2			= (TH2D*)mDirFile->Get("hNchvLeadPt2");
 	hNchTrans				= (TH1D*)mDirFile->Get("hNchTrans");
 	hRt						= (TH1D*)mDirFile->Get("hRt");
+	hLeadPtvRt				= (TH2D*)mDirFile->Get("hLeadPtvRt");
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{

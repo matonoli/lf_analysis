@@ -67,8 +67,9 @@ Int_t MyAnalysisV0extract::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0extract::BorrowHistograms() {
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
@@ -83,8 +84,9 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 
 Bool_t MyAnalysisV0extract::CreateHistograms() {
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
@@ -105,14 +107,18 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	mHandler->root()->SetBatch(kTRUE);
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
 		if (iMu > 2 && (iSph < 3 && iSph)) continue;
 		if (iMu < 3 && iSph > 2) continue; 
-		cFits[iCan] = new TCanvas(Form("cFits_iSp%i_iMu%i_iSph%i",iSp,iMu,iSph),"",2800,2000);
+
+		printf("Extracting yield for pt spectrum iSp%i_iType%i_iMu%i_iSph%i \n",iSp,iType,iMu,iSph);
+
+		cFits[iCan] = new TCanvas(Form("cFits_iSp%i_iType%i_iMu%i_iSph%i",iSp,iType,iMu,iSph),"",2800,2000);
 		cFits[iCan]->Divide(8,7,0.00005,0.00005);
 			
 		Double_t* yield = 0;

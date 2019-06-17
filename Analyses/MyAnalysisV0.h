@@ -115,6 +115,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hNchvLeadPt2;
 		TH1D* hNchTrans;
 		TH1D* hRt;
+		TH2D* hLeadPtvRt;
 
 		// TRACK HISTOGRAMS
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

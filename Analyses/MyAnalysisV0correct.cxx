@@ -69,8 +69,9 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	hEventType = (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
@@ -90,8 +91,9 @@ Bool_t MyAnalysisV0correct::CreateHistograms() {
 
 Bool_t MyAnalysisV0correct::CloneHistograms() {
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
@@ -139,8 +141,9 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 	Double_t NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
 	printf("Normalising all histograms by dEta %f \n", NormEta);
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
@@ -159,6 +162,16 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 			if (iSph == 5)	NormEv = hEventType->GetBinContent(14);		// RT 2-3
 			if (iSph == 6)	NormEv = hEventType->GetBinContent(15);		// RT 3-4
 			if (iSph == 7)	NormEv = hEventType->GetBinContent(16);	}	// RT 4-5
+		if (iType == 1) {
+			if (iMu == 1) {
+				if (iSph == 1 )	NormEv = hEventType->GetBinContent(18);		// FHM JET MC
+				if (iSph == 2 )	NormEv = hEventType->GetBinContent(17);	}	// FHM ISO MC
+			if (iMu == 2) {
+				if (iSph == 1 )	NormEv = hEventType->GetBinContent(20);		// MHM JET MC
+				if (iSph == 2 )	NormEv = hEventType->GetBinContent(19);	}	// MHM ISO MC
+		}
+		
+
 		if (NormEv == 0) NormEv = 1;
 
 		printf("Normalising histogram %s by event count %f \n", hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(), NormEv);
@@ -188,9 +201,10 @@ void MyAnalysisV0correct::LoadEfficiency() {
 }
 
 void MyAnalysisV0correct::CorrectSpectra() {
-
+	
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < 1; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	//for (int iMu = 0; iMu < 3; ++iMu)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{

@@ -118,25 +118,31 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 		
 	}	}
 
-	if (!mHandler->GetFlagMC()) {
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
+	for (int iMu = 0; iMu < NMULTI; ++iMu) {
+	for (int iType = 0; iType < nType; ++iType) {
+	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
+
+		hV0toNchDR[0][iType][iMu][iSph] =	(TH1D*)hV0PtFit[1][iType][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[1],TYPE[iType],MULTI[iMu],SPHERO[iSph]));	//k0s
+		hV0toNchDR[1][iType][iMu][iSph] =	(TH1D*)hV0PtFit[2][iType][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[2],TYPE[iType],MULTI[iMu],SPHERO[iSph]));	//l+lbar
+	}	}	}
+
+	// if flagMC show particle level ratios too
+	if (mHandler->GetFlagMC()) {
+
 		for (int iMu = 0; iMu < NMULTI; ++iMu) {
 		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-
 			if (iMu > 2 && (iSph < 3 && iSph)) continue;
 			if (iMu < 3 && iSph > 2) continue; 
-			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));	//k0s
-			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));	//l+lbar
-		}	}
-	} else {	// if flagMC show particle level ratios too
-		for (int iMu = 0; iMu < NMULTI; ++iMu) {
-		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 
-			if (iMu > 2 && (iSph < 3 && iSph)) continue;
-			if (iMu < 3 && iSph > 2) continue; 
-			hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0Pt[1][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
-			hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0Pt[2][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
+			hV0toNchDR[0][2][iMu][iSph] =	(TH1D*)hV0Pt[1][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[1],TYPE[2],MULTI[iMu],SPHERO[iSph]));
+			hV0toNchDR[1][2][iMu][iSph] =	(TH1D*)hV0Pt[2][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[2],TYPE[2],MULTI[iMu],SPHERO[iSph]));
 		}	}			// so for mc we do particle level v0 only --> add also track lvl
 	}
+
+	mDirFile->ls();
 
 }
 
@@ -250,32 +256,34 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 			Double_t lowerRange = 0.1*hV0PtFitCorr[iSp][0][0][0]->GetBinContent(hV0PtFitCorr[iSp][0][0][0]->FindLastBinAbove());
 			hV0PtFitCorr[iSp][0][0][0]->Draw();
 			cPtRt[iSp]->Update();
-			hV0PtFitCorr[iSp][0][3][0]->Draw("same");
+			//hV0PtFitCorr[iSp][0][3][0]->Draw("same");
 			hV0PtFitCorr[iSp][0][3][3]->Draw("same");
 			hV0PtFitCorr[iSp][0][3][4]->Draw("same");
 			hV0PtFitCorr[iSp][0][3][5]->Draw("same");
-			hV0PtFitCorr[iSp][0][3][6]->Draw("same");
-			hV0PtFitCorr[iSp][0][3][7]->Draw("same");
+			//hV0PtFitCorr[iSp][0][3][6]->Draw("same");
+			//hV0PtFitCorr[iSp][0][3][7]->Draw("same");
 
-			TLegend* legPt = new TLegend(0.65,0.38,0.85,0.88);
+			TLegend* legPt = new TLegend(0.65,0.56,0.85,0.88);
 			mHandler->MakeNiceLegend(legPt,0.04,1);
 			
 			legPt->AddEntry((TObject*)0,Form("%s   |#eta| < 0.8, %s", SPECNAMES[iSp], isMC),"");
 			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
 			legPt->AddEntry((TObject*)0,"","");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][0][0],"MB","pl");
-			legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
+			//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][3][3],Form("%s %s",PLOTS_MULTI[3],SPHERO[3]),"pl");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][3][4],Form("%s %s",PLOTS_MULTI[3],SPHERO[4]),"pl");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][3][5],Form("%s %s",PLOTS_MULTI[3],SPHERO[5]),"pl");
-			legPt->AddEntry(hV0PtFitCorr[iSp][0][3][6],Form("%s %s",PLOTS_MULTI[3],SPHERO[6]),"pl");
-			legPt->AddEntry(hV0PtFitCorr[iSp][0][3][7],Form("%s %s",PLOTS_MULTI[3],SPHERO[7]),"pl");
+			//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][6],Form("%s %s",PLOTS_MULTI[3],SPHERO[6]),"pl");
+			//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][7],Form("%s %s",PLOTS_MULTI[3],SPHERO[7]),"pl");
 			legPt->Draw();
 
-			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][3],hV0PtFitCorr[iSp][0][3][0],
-				cPtRt[iSp], 0.1,3.2);
-			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][5],hV0PtFitCorr[iSp][0][3][0],
-				cPtRt[iSp], 0.1,3.2);
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][3],hV0PtFitCorr[iSp][0][3][4],
+				cPtRt[iSp], 0.1,2.2);
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][4],hV0PtFitCorr[iSp][0][3][4],
+				cPtRt[iSp], 0.1,2.2);
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][5],hV0PtFitCorr[iSp][0][3][4],
+				cPtRt[iSp], 0.1,2.2);
 
 			cPtRt[iSp]->Write();
 			cPtRt[iSp]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[3]));
@@ -284,8 +292,10 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 
 	// B/M RATIO
 	//TH1D* hBtoM[NMULTI][NSPHERO];
-	for (int iMu = 0; iMu < 3; ++iMu) {
-	for (int iSph = 0; iSph < 3; ++iSph) {
+	for (int iMu = 0; iMu < NMULTI; ++iMu) {
+	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
+		if (iMu > 2 && (iSph < 3 && iSph)) continue;
+		if (iMu < 3 && iSph > 2) continue; 
 		
 		hBtoM[iMu][iSph]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
 		hBtoM[iMu][iSph]->Add(hV0PtFitCorr[3][0][iMu][iSph]);
@@ -293,8 +303,8 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 
 	}	}
 	
-	TCanvas* cBtoM[3];
-	TLegend* legBtoM[3];
+	TCanvas* cBtoM[4];
+	TLegend* legBtoM[4];
 	cBtoM[0] = new TCanvas("cBtoM_Mult","",1000,800);
 	legBtoM[0] = new TLegend(0.55,0.55,0.85,0.85);
 	mHandler->MakeNiceLegend(legBtoM[0],0.04,1);
@@ -358,61 +368,135 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 	cBtoM[2]->Write();
 	cBtoM[2]->SaveAs("plots/btom_nch_sph.png");
 
+	cBtoM[3] = new TCanvas("cBtoM_Rt","",1000,800);
+	legBtoM[3] = new TLegend(0.55,0.55,0.85,0.85);
+	mHandler->MakeNiceLegend(legBtoM[3],0.04,1);
+	mHandler->MakeNiceHistogram(hBtoM[3][3],COLOURS[3]);
+	mHandler->MakeNiceHistogram(hBtoM[3][4],COLOURS[4]);
+	mHandler->MakeNiceHistogram(hBtoM[3][5],COLOURS[5]);
+	hBtoM[3][3]->GetYaxis()->SetRangeUser(0.,1.0);
+	hBtoM[3][3]->Draw();
+	cBtoM[3]->Update();
+	hBtoM[3][4]->Draw("same");
+	hBtoM[3][5]->Draw("same");
+
+	legBtoM[3]->AddEntry((TObject*)0,Form("pp #sqrt{s} = 13 TeV"),"");
+	legBtoM[3]->AddEntry((TObject*)0,isMC,"");
+	legBtoM[3]->AddEntry((TObject*)0,"","");
+	legBtoM[3]->AddEntry(hBtoM[3][3],Form("%s %s",PLOTS_MULTI[3],SPHERO[3]),"pl");
+	legBtoM[3]->AddEntry(hBtoM[3][4],Form("%s %s",PLOTS_MULTI[3],SPHERO[4]),"pl");
+	legBtoM[3]->AddEntry(hBtoM[3][5],Form("%s %s",PLOTS_MULTI[3],SPHERO[5]),"pl");
+	legBtoM[3]->Draw();
+
+	cBtoM[3]->Write();
+	cBtoM[3]->SaveAs("plots/btom_rt.png");
+
 
 	// DOUBLE RATIO CALC
+	Int_t nType = (mHandler->GetFlagMC()) ? 3 : 1;
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)		{
-	for (int iSph = 0; iSph < 3; ++iSph)	{
+	for (int iType = 0; iType < nType; ++iType)	{
+	for (int iSph = 0; iSph < 3; ++iSph)		{
 			for (int iMu = 0; iMu < 3; ++iMu)		{
 
-				if (iSp2==1) hV0toNchDR[iSp2][iMu][iSph]->Add(hV0PtFit[2][0][iMu][iSph]);	//adding Lbar
-				hV0toNchDR[iSp2][iMu][iSph]->Divide(hTrackPt[0][iMu][iSph]);			//dividing by track spectra of same class -> bug for particle level! (?)
-				if (mHandler->GetFlagMC()) hV0toNchDR[iSp2][iMu][iSph]->SetLineWidth(2);
+				
+				if (iSp2==1) {
+					if (iType!=2)	hV0toNchDR[iSp2][iType][iMu][iSph]->Add(hV0PtFit[2][iType][iMu][iSph]);
+					if (iType==2)	hV0toNchDR[iSp2][iType][iMu][iSph]->Add(hV0Pt[2][iType][iMu][iSph]);	}	//adding Lbar
+				
+				
+				if (iType==1) hV0toNchDR[iSp2][iType][iMu][iSph]->Divide(hTrackPt[1][iMu][iSph]);
+				if (iType!=1) hV0toNchDR[iSp2][iType][iMu][iSph]->Divide(hTrackPt[iType][iMu][iSph]);			//dividing by track spectra of same class -> bug for particle level! (?)
+				
+				if (iType>0) hV0toNchDR[iSp2][iType][iMu][iSph]->SetLineWidth(2);
 			}	
-	}	}	// now we have ratios of v0 to pi(charged tracks) in mu and sph classes
+	}	}	}	// now we have ratios of v0 to pi(charged tracks) in mu and sph classes
 
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)		{
-	for (int iSph = 0; iSph < 3; ++iSph)	{
-		hV0toNchDR[iSp2][1][iSph]->Divide(hV0toNchDR[iSp2][0][0]);	// dividing v0/track of v0m events by v0/track mb
-		hV0toNchDR[iSp2][2][iSph]->Divide(hV0toNchDR[iSp2][0][0]);
-	}	}	// iMu!=0 are now (v0/pi)_hm  / (v0/pi)_mb double ratios
+	for (int iType = 0; iType < nType; ++iType)	{
+	for (int iSph = 0; iSph < 3; ++iSph)		{
+		hV0toNchDR[iSp2][iType][1][iSph]->Divide(hV0toNchDR[iSp2][iType][0][0]);	// dividing v0/track of v0m events by v0/track mb
+		hV0toNchDR[iSp2][iType][2][iSph]->Divide(hV0toNchDR[iSp2][iType][0][0]);
+	}	}	}	// iMu!=0 are now (v0/pi)_hm  / (v0/pi)_mb double ratios
+
 
 	// DOUBLE RATIO PLOTTING
-	TCanvas* cDR[2][NMULTI-1];
-	TLegend* legDR[2][NMULTI-1];
+	TCanvas* cDR[2][2];
+	TLegend* legDR[2][2];
 	TString drawOpt = (mHandler->GetFlagMC()) ? "hist l" : "";
 	for (int iSp2 = 0; iSp2 < 2; ++iSp2)	{
 	for (int iMu = 1; iMu < 3; ++iMu)	{
 		
 		cDR[iSp2][iMu-1] = new TCanvas(Form("cDR_%s_%s",SPECIES[1+iSp2],MULTI[iMu]),"",1000,800);
-		cDR[iSp2][iMu-1]->SetLogy();
-		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.2,200);
-		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetTitle("p_{T} (GeV/#it{c})");
-		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetTitle("ratio");
-		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][0],COLOURS[0]);
-		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][1],COLOURS[3]);
-		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][iMu][2],COLOURS[4]);
+		//cDR[iSp2][iMu-1]->SetLogy();
+		hV0toNchDR[iSp2][0][iMu][0]->GetYaxis()->SetRangeUser(0.2,4);
+		hV0toNchDR[iSp2][0][iMu][0]->GetXaxis()->SetTitle("p_{T} (GeV/#it{c})");
+		hV0toNchDR[iSp2][0][iMu][0]->GetYaxis()->SetTitle("ratio");
+		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][0],COLOURS[0]);
+		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][1],COLOURS[3]);
+		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][2],COLOURS[4]);
 	
-		hV0toNchDR[iSp2][iMu][0]->Draw(drawOpt);
-		hV0toNchDR[iSp2][iMu][1]->Draw(drawOpt+"same");
-		hV0toNchDR[iSp2][iMu][2]->Draw(drawOpt+"same");
+		hV0toNchDR[iSp2][0][iMu][0]->Draw();
+		hV0toNchDR[iSp2][0][iMu][1]->Draw("same");
+		hV0toNchDR[iSp2][0][iMu][2]->Draw("same");
 
-		legDR[iSp2][iMu-1] = new TLegend(0.55,0.55,0.85,0.85);
-		mHandler->MakeNiceLegend(legDR[iSp2][iMu-1],0.04,1);
+		if (mHandler->GetFlagMC()) {
+			mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][1][iMu][0],COLOURS[0]);
+			mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][1][iMu][1],COLOURS[3]);
+			mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][1][iMu][2],COLOURS[4]);
+			mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][2][iMu][0],COLOURS[0]);
+			mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][2][iMu][1],COLOURS[3]);
+			mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][2][iMu][2],COLOURS[4]);
+			hV0toNchDR[iSp2][1][iMu][0]->SetLineWidth(3);
+			hV0toNchDR[iSp2][1][iMu][0]->SetLineStyle(2);
+			hV0toNchDR[iSp2][1][iMu][1]->SetLineWidth(3);
+			hV0toNchDR[iSp2][1][iMu][1]->SetLineStyle(2);
+			hV0toNchDR[iSp2][1][iMu][2]->SetLineWidth(3);
+			hV0toNchDR[iSp2][1][iMu][2]->SetLineStyle(2);
+
+			hV0toNchDR[iSp2][1][iMu][0]->Draw("hist l same");
+			hV0toNchDR[iSp2][1][iMu][1]->Draw("hist l same");
+			hV0toNchDR[iSp2][1][iMu][2]->Draw("hist l same");
+			hV0toNchDR[iSp2][2][iMu][0]->Draw("hist l same");
+			hV0toNchDR[iSp2][2][iMu][1]->Draw("hist l same");
+			hV0toNchDR[iSp2][2][iMu][2]->Draw("hist l same");
+		}
+
+		legDR[iSp2][iMu-1] = (!mHandler->GetFlagMC()) ? new TLegend(0.55,0.55,0.85,0.85) : new TLegend(0.55,0.49,0.85,0.85);
+		if (!mHandler->GetFlagMC()) mHandler->MakeNiceLegend(legDR[iSp2][iMu-1],0.04,1);
+		else 						mHandler->MakeNiceLegend(legDR[iSp2][iMu-1],0.027,1);
 		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,Form("pp #sqrt{s} = 13 TeV"),"");
 		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,Form("%s  %s", SPECNAMES[1+iSp2], PLOTS_MULTI[iMu]),"");
 		legDR[iSp2][iMu-1]->AddEntry((TObject*)0,"","");
-		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][0],"HM","pl");
-		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][1],"HM Jetty","pl");
-		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][iMu][2],"HM Iso","pl");
+		TString labelOpt = (mHandler->GetFlagMC()) ? ", RC V0, track S_{0}" : ""; 
+		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][0][iMu][0],"HM"+labelOpt,"pl");
+		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][0][iMu][1],"HM Jetty"+labelOpt,"pl");
+		legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][0][iMu][2],"HM Iso"+labelOpt,"pl");
+		if (mHandler->GetFlagMC()) {
+			legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][1][iMu][0],"HM, RC V0, particle S_{0}","l");
+			legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][1][iMu][1],"HM Jetty, RC V0, particle S_{0}","l");
+			legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][1][iMu][2],"HM Iso, RC V0, particle S_{0}","l");
+			legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][2][iMu][0],"HM, MC V0, particle S_{0}","l");
+			legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][2][iMu][1],"HM Jetty, MC V0, particle S_{0}","l");
+			legDR[iSp2][iMu-1]->AddEntry(hV0toNchDR[iSp2][2][iMu][2],"HM Iso, MC V0, particle S_{0}","l");
+		}
 		legDR[iSp2][iMu-1]->Draw();
 
-		mHandler->MakeZoomPlot(hV0toNchDR[iSp2][iMu][0],cDR[iSp2][iMu-1],0.,2.6,0.4,1.3);
-		hV0toNchDR[iSp2][iMu][0]->DrawCopy(drawOpt);
-		hV0toNchDR[iSp2][iMu][1]->DrawCopy(drawOpt+"same");
-		hV0toNchDR[iSp2][iMu][2]->DrawCopy(drawOpt+"same");
+		mHandler->MakeZoomPlot(hV0toNchDR[iSp2][0][iMu][0],cDR[iSp2][iMu-1],0.,2.6,0.4,1.3);
+		hV0toNchDR[iSp2][0][iMu][0]->DrawCopy();
+		hV0toNchDR[iSp2][0][iMu][1]->DrawCopy("same");
+		hV0toNchDR[iSp2][0][iMu][2]->DrawCopy("same");
+		if (mHandler->GetFlagMC()) {
+			hV0toNchDR[iSp2][1][iMu][0]->DrawCopy("hist l same");
+			hV0toNchDR[iSp2][1][iMu][1]->DrawCopy("hist l same");
+			hV0toNchDR[iSp2][1][iMu][2]->DrawCopy("hist l same");
+			hV0toNchDR[iSp2][2][iMu][0]->DrawCopy("hist l same");
+			hV0toNchDR[iSp2][2][iMu][1]->DrawCopy("hist l same");
+			hV0toNchDR[iSp2][2][iMu][2]->DrawCopy("hist l same"); 
+		}
 		cDR[iSp2][iMu-1]->cd();
-		hV0toNchDR[iSp2][iMu][0]->GetXaxis()->SetRangeUser(0.,14.);
-		hV0toNchDR[iSp2][iMu][0]->GetYaxis()->SetRangeUser(0.2,200);
+		hV0toNchDR[iSp2][0][iMu][0]->GetXaxis()->SetRangeUser(0.,14.);
+		hV0toNchDR[iSp2][0][iMu][0]->GetYaxis()->SetRangeUser(0.2,4);
 
 		cDR[iSp2][iMu-1]->Write();
 		cDR[iSp2][iMu-1]->SaveAs(Form("plots/dr_%s_%s.png",SPECIES[1+iSp2],MULTI[iMu]));
