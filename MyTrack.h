@@ -26,6 +26,7 @@ class MyTrack: public TObject {
 		Float_t GetDCApvXY() 					const { return mAliTrack->GetImpactParameter(0);};
 
 		Bool_t IskITSrefit()					const { return (mAliTrack->GetStatus()&AliESDtrack::kITSrefit);};
+		Bool_t IsITSTPC2011()					const { return (mAliTrack->GetTrackCutFlag()&2);};
 
 		// add safety measure to getters for if mAliTrack is an invalid pointer
 		

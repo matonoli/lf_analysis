@@ -30,6 +30,7 @@ class MyV0: public TObject {
 		Double_t GetMCPdgCode()				const { return mAliV0->GetMCPdgCode();};
 
 		Double_t* CalculateAP();
+		Double_t GetPhi();
 		
 		ClassDef(MyV0,1);
 
@@ -37,5 +38,7 @@ class MyV0: public TObject {
 		AliAnalysisPIDV0* mAliV0;
 		Bool_t mAPcalculated;
 		Double_t mAP[2];
+		Bool_t mPhicalculated;
+		Double_t mPhi;
 };
 #endif

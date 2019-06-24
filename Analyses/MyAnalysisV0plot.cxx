@@ -66,7 +66,8 @@ Int_t MyAnalysisV0plot::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0plot::BorrowHistograms() {
 
-	hEventSpherocity = (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocity");
+	hEventSpherocityV0M			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityV0M");
+	hEventSpherocityNCharged	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityNCharged");
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -172,24 +173,43 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 	// SPHEROCITY
 	Double_t quantileValues[4] = {0.0, 0.2, 0.8, 1.0};
 	Double_t quantileCuts[4];
-	hEventSpherocity->GetXaxis()->SetRangeUser(0.0,1.0);
+	hEventSpherocityV0M->GetXaxis()->SetRangeUser(0.0,1.0);
 	//hEventSpherocity->ClearUnderflowAndOverflow();
-	hEventSpherocity->GetQuantiles(4,quantileCuts,quantileValues);
+	hEventSpherocityV0M->GetQuantiles(4,quantileCuts,quantileValues);
 
-
-	TCanvas* cSpherocity = new TCanvas("cSpherocity","",1000,800);
-	mHandler->MakeNiceHistogram(hEventSpherocity,kBlack);
-	hEventSpherocity->Draw();
-	cSpherocity->Update();
-	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocity);
-	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocity);
+	TCanvas* cSpherocityV0M = new TCanvas("cSpherocityV0M","",1000,800);
+	mHandler->MakeNiceHistogram(hEventSpherocityV0M,kBlack);
+	hEventSpherocityV0M->Draw();
+	cSpherocityV0M->Update();
+	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocityV0M);
+	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocityV0M);
 	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
 	mHandler->MakeNiceLegend(leg1,0.050,1);
+	leg1->AddEntry((TObject*)0,"V0M 0-10%","");
 	leg1->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
 	leg1->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
 	leg1->Draw();
-	cSpherocity->Write();
-	cSpherocity->SaveAs("plots/spherocity.png");
+	cSpherocityV0M->Write();
+	cSpherocityV0M->SaveAs("plots/spherocity_v0m.png");
+
+	hEventSpherocityNCharged->GetXaxis()->SetRangeUser(0.0,1.0);
+	//hEventSpherocity->ClearUnderflowAndOverflow();
+	hEventSpherocityNCharged->GetQuantiles(4,quantileCuts,quantileValues);
+
+	TCanvas* cSpherocityNCharged = new TCanvas("cSpherocityNCharged","",1000,800);
+	mHandler->MakeNiceHistogram(hEventSpherocityNCharged,kBlack);
+	hEventSpherocityNCharged->Draw();
+	cSpherocityNCharged->Update();
+	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocityNCharged);
+	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocityNCharged);
+	TLegend *leg2 = new TLegend(0.075,0.7,0.5,0.88);
+	mHandler->MakeNiceLegend(leg2,0.050,1);
+	leg2->AddEntry((TObject*)0,"NCharged 0-10%","");
+	leg2->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
+	leg2->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
+	leg2->Draw();
+	cSpherocityNCharged->Write();
+	cSpherocityNCharged->SaveAs("plots/spherocity_NCharged.png");
 
 	// PT SPECTRA
 	TCanvas* cPt[4][2];

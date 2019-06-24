@@ -51,7 +51,7 @@ namespace V0consts {
 			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
 			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" };
 
-	const Float_t RT_DEN		= 6.971; 
+	const Float_t RT_DEN		= 6.082; 
 
 }
 
@@ -72,6 +72,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectEvent(MyEvent &ev);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
+		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
@@ -104,7 +105,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hEventV0MCentvRefMult;
 
 		TH1D* hEventType;
-		TH1D* hEventSpherocity;
+		TH1D* hEventSpherocityV0M;
+		TH1D* hEventSpherocityNCharged;
 		TH2D* hEventTSMCvRC;
 		TH2D* hEventTSNormMCvRC;
 		TH2D* hEventTSMCvNorm;

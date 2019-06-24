@@ -45,7 +45,8 @@ class MyAnalysisV0plot: public MyAnalysis {
 
 		// V0 HISTOGRAMS
 		//borrowed
-		TH1D* hEventSpherocity;
+		TH1D* hEventSpherocityV0M;
+		TH1D* hEventSpherocityNCharged;
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

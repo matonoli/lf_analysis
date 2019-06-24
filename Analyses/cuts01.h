@@ -3,10 +3,11 @@ namespace cuts {
 
 	//const Float_t EV_SPH_JETTY 	= 0.446;		//mc results
 	//const Float_t EV_SPH_ISO 	= 0.747;
-	//const Float_t EV_SPH_JETTY 	= 0.462;	//data results
-	//const Float_t EV_SPH_ISO 	= 0.755;
-	const Float_t EV_SPH_JETTY 	= 0.591;	//pt=1
-	const Float_t EV_SPH_ISO 	= 0.819;
+
+	//const Float_t EV_SPH_JETTY[2] 	= {0.462, 0.484};	//data, [0] is v0m. [1] is ncharged 
+	//const Float_t EV_SPH_ISO[2] 	= {0.755, 0.765};
+	const Float_t EV_SPH_JETTY[2] 	= {0.579, 0.604};	//pt=1
+	const Float_t EV_SPH_ISO[2] 	= {0.815, 0.824};
 	const Float_t EV_MHM[2]		= {26., 200.};
 
 	// V0 SELECTION

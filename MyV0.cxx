@@ -6,10 +6,11 @@
 ClassImp(MyV0)
 
 MyV0::MyV0(AliAnalysisPIDV0* v0) : mAliV0(v0), 
-	mAPcalculated(false) { 
+	mAPcalculated(false), mPhicalculated(false) { 
 
 	mAP[0] = 0;
 	mAP[1] = 0;
+	mPhi = 0;
 }
 
 Double_t* MyV0::CalculateAP() {
@@ -31,5 +32,23 @@ Double_t* MyV0::CalculateAP() {
 		mAP[1] = momPos.Perp(momTot);
 		mAPcalculated = true;
 		return mAP; 
+	}
+}
+
+Double_t MyV0::GetPhi() {
+
+	if (mPhicalculated) {
+		return mPhi;
+	} 
+	else {
+		TVector3 momNeg, momPos, momTot;
+		momNeg.SetPtEtaPhi(this->GetNegTrack()->GetPt(),this->GetNegTrack()->GetEta(),this->GetNegTrack()->GetPhi());
+		momPos.SetPtEtaPhi(this->GetPosTrack()->GetPt(),this->GetPosTrack()->GetEta(),this->GetPosTrack()->GetPhi());
+		//momTot.SetPtEtaPhi(v0->GetPt(),v0->GetEta(),v0->GetPhi());
+		momTot = momNeg + momPos;
+
+		mPhi = momTot.Phi();
+		mPhicalculated = true;
+		return mPhi; 
 	}
 }
