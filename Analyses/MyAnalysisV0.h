@@ -41,6 +41,15 @@ namespace V0consts {
 		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
 		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };
 
+	const Int_t NPTBINS2 = 28;
+	const Double_t XBINS2[NPTBINS2+1] = { 
+		0.00, 0.10, 0.14, 0.18, 0.25, 0.35, 
+		0.45, 0.55, 0.65, 0.75, 0.85,
+    	0.95, 1.10, 1.30, 1.50, 1.70, 
+		1.90, 2.20, 2.60, 3.00, 3.40, 
+		3.80, 4.50, 5.50, 6.50, 8.00, 
+		10.00, 12.00, 14.00 };
+
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
 	const Int_t COLOURS[6] = {kAzure+3,kOrange+8,kPink+10,kGreen+2,kMagenta+2, kViolet+10};
