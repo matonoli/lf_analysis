@@ -83,6 +83,10 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		hV0Pt[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(XBINS2);
+		hV0PtFit[iSp][iType][iMu][iSph]->Rebin(XBINS2);
+		hV0Pt[iSp][iType][iMu][iSph]->Rebin(XBINS2);
+
 	} } } }
 
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -93,6 +97,8 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		if (iMu < 3 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+
+		hTrackPt[iType][iMu][iSph]->Rebin(XBINS2); 
 
 	} } }
 
