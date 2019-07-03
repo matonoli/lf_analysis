@@ -13,6 +13,8 @@ class TFile;	// forward declaration
 class TList;
 class TH1D;
 class TH2D;
+class TNtuple;
+class TTree;
 class MyV0;
 class MyEvent;
 class MyTrack;
@@ -31,6 +33,10 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Bool_t BorrowHistograms();
 		Bool_t CreateHistograms();
 		Double_t* ExtractYieldFit(TH1D* hist = 0);
+		Double_t* ExtractYieldFitRt(TTree* tree = 0);
+
+		void ProducePtSpectra();
+		void ProduceRtSpectra();
 
 		ClassDef(MyAnalysisV0extract,1);
 
@@ -41,15 +47,25 @@ class MyAnalysisV0extract: public MyAnalysis {
 
 		Int_t iCan = 0;
 		Int_t canCounter = 0;
+		Int_t canCounterRt = 0;
 		TCanvas* cFits[(V0consts::NSPECIES-1) * V0consts::NMULTI * V0consts::NSPHERO * 2];
+		TCanvas* cFitsRt[(V0consts::NSPECIES-1) * 1 * 1];
+
+		Int_t nBins;
+		const Double_t* xBins;
+		Int_t nPads;
 
 
 		// V0 HISTOGRAMS
 		//borrowed
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TNtuple* tV0mass[V0consts::NSPECIES][1][1];
 
 		//owned
+		TH1D* hRtV0Yields;
+
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0RtFit[V0consts::NSPECIES][1][1];
 
 };
 #endif

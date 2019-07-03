@@ -9,6 +9,7 @@
 #include <TLegend.h>
 #include <TNamed.h>
 #include <THashList.h>
+#include <TNtuple.h>
 
 #include "MyAnalysisV0.h"
 #include "../MyEvent.h"
@@ -139,12 +140,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
 
-		if (!SelectTrack(t)) continue;
-		if (!t.IskITSrefit()) continue;
+		//if (!SelectTrack(t)) continue;
+		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
+		
 
-		if (t.GetPt() > ptLead) {
-			ptLead = t.GetPt();
-			phiLead = t.GetPhi();	}
+		if (SelectTrack(t)) {
+			if (t.GetPt() > ptLead) {
+				ptLead = t.GetPt();
+				phiLead = t.GetPhi();	}
+		}
+
+		//+add tpc refit 
+		if (!t.IskITSrefit()) 		continue;
+		if (!t.IsTPCOnlyRefit())	continue;
 
 		// for Data calc. s0 from tracks
 		if (isEventCentral) {
@@ -263,10 +271,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 			ProcessTrack(t,D,iMu+iMu*(!isEventFHM),iSph+iSph*(!isEventJetty));
 		}	}	*/
+	}
 
+	// RT NCH CALCULATION
+	for (int iTr = 0; iTr < nTracks; ++iTr)		{
+		if (!mHandler->track(iTr)) continue;
+		MyTrack t(mHandler->track(iTr));
+		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
+		
 		// RT DETERMINATION
 		if (!IsTrans(t.GetPhi(),phiLead))	continue;
 		if (!t.IskITSrefit()) continue;
+		if (!t.IsTPCOnlyRefit()) continue;
+		//+ tpcrefit !!
 		hNchvLeadPt->Fill(ptLead);
 		nChTrans0++;
 		if (ptLead < 5.) continue;
@@ -274,7 +291,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	}
 
 	hNchvLeadPt2->Fill(ptLead,nChTrans0);
-	Double_t eventRt = 0;
+	eventRt = 0;
 	if (ptLead>5.) {
 		hNchTrans->Fill(nChTrans);
 		eventRt = (double)nChTrans/RT_DEN;
@@ -507,6 +524,9 @@ Bool_t MyAnalysisV0::ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t S
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
 
+	if (Sp>0 && Type==0 && Mu==3 && Sph==0) {
+		tV0mass[Sp][0][0]->Fill(v0mass[Sp],v0.GetPt(),eventRt);	}
+
 	return true;	
 }
 
@@ -646,10 +666,10 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	hLeadPhivPt				= new TH2D("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hNchvLeadPt				= new TH1D("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
-	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,0.,50.);
-	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",100, 0., 100.);
-	hRt						= new TH1D("hRt","; R_{T}; Entries",100, 0., 5.);
-	hLeadPtvRt				= new TH2D("hLeadPtvRt","; R_{T}; p_{T}^{leading} (GeV/#it{c})", 100, 0., 5., 200, 0., 30.);
+	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
+	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",100, -0.5, 99.5);
+	hRt						= new TH1D("hRt","; R_{T}; Entries",101, -0.025, 5.025);//4.975);
+	hLeadPtvRt				= new TH2D("hLeadPtvRt","; R_{T}; p_{T}^{leading} (GeV/#it{c})", 100, -0.05, 4.95, 200, 0., 30.);
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -692,6 +712,12 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
+	}
+
+
+	// V0 NTUPLES
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+		tV0mass[iSp][0][0] = new TNtuple(Form("tV0mass_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]),"v0 rt mass tree","MassDT:lPt:lRt");
 	}
 
 
@@ -771,6 +797,26 @@ Int_t MyAnalysisV0::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		
+		//TString treename = tV0mass[iSp][0][0]->GetName();
+		//TString newname = treename.Remove(0,4);
+
+		//TNtuple* tn = (TNtuple*)tV0mass[iSp][0][0]->Clone(newname.Data());
+		//mDirFile->Remove(tV0mass[iSp][0][0]);
+
+		//cout << " tV0mass[iSp][0][0] " << tV0mass[iSp][0][0] << endl;
+		//cout << " tn " << tn<< endl;
+	}
+
+	//mDirFile->ls();
+
+	/*TNtuple* tbla = (TNtuple*)mDirFile->Get("tV0mass_K0s_D_RT");
+	TNtuple* tbla1 = (TNtuple*)mDirFile->Get("tV0mass_K0s_D_RT;1");
+
+	cout << "tbla " << tbla << endl;
+	cout << "tbla1 " << tbla1 << endl;
+*/
 	TH1D* hLeadPt = hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);
 

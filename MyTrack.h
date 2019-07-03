@@ -27,6 +27,7 @@ class MyTrack: public TObject {
 
 		Bool_t IskITSrefit()					const { return (mAliTrack->GetStatus()&AliESDtrack::kITSrefit);};
 		Bool_t IsITSTPC2011()					const { return (mAliTrack->GetTrackCutFlag()&2);};
+		Bool_t IsTPCOnlyRefit()					const { return (mAliTrack->GetTrackCutFlag()&4);};
 
 		// add safety measure to getters for if mAliTrack is an invalid pointer
 		

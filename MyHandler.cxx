@@ -16,6 +16,14 @@
 
 ClassImp(MyHandler)
 
+MyHandler::MyHandler() {
+
+	mFlagMC 	= false;
+	mFlagHist	= false;
+	mRebinPt	= false;
+	
+}
+
 void MyHandler::AddAnalysis(MyAnalysis* ana) {
 
 	if (!mChain) {

@@ -61,6 +61,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	handler->AddAnalysis(analysisV0plot);
 
 	// Initialise analyses
+	handler->RebinPt(true);
 	handler->Init();
 	analysisV0correct->SetMCInputFile(MCinputFile);
 

@@ -13,6 +13,7 @@ class TFile;	// forward declaration
 class TList;
 class TH1D;
 class TH2D;
+class TNtuple;
 class MyV0;
 class MyEvent;
 class MyTrack;
@@ -42,13 +43,35 @@ namespace V0consts {
 		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };
 
 	const Int_t NPTBINS2 = 28;
-	const Double_t XBINS2[NPTBINS2+1] = { 
+	/*const Double_t XBINS2[NPTBINS2+1] = { 
 		0.00, 0.10, 0.14, 0.18, 0.25, 0.35, 
 		0.45, 0.55, 0.65, 0.75, 0.85,
     	0.95, 1.10, 1.30, 1.50, 1.70, 
 		1.90, 2.20, 2.60, 3.00, 3.40, 
 		3.80, 4.50, 5.50, 6.50, 8.00, 
+		10.00, 12.00, 14.00 };*/
+
+	const Double_t XBINS2[NPTBINS2+1] = { 
+		0.00, 0.12, 0.16, 0.20, 0.30, 0.40, 
+		0.50, 0.60, 0.70, 0.80, 0.90,
+    	1.00, 1.20, 1.40, 1.60, 1.80, 
+		2.00, 2.40, 2.80, 3.20, 3.60, 
+		4.00, 5.00, 6.00, 7.00, 8.00, 
 		10.00, 12.00, 14.00 };
+
+	//const Int_t NRTBINS = 26;
+	//const Double_t RTBINS[NRTBINS+1] = {
+	//	-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.7,
+	//	1.9, 2.1, 2.3, 2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.7,
+	//	3.9, 4.1, 4.3, 4.5, 4.7, 4.9, 5.1	};
+
+	const Int_t NRTBINS = 13;
+	const Double_t RTBINS[NRTBINS+1] = {
+		-0.1, 0.3, 0.7, 1.1, 1.5,
+		1.9, 2.3, 2.7, 3.1, 3.5,
+		3.9, 4.3, 4.7, 5.1	};
+
+
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
@@ -60,7 +83,7 @@ namespace V0consts {
 			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
 			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" };
 
-	const Float_t RT_DEN		= 6.082; 
+	const Float_t RT_DEN		= 7.443; 
 
 }
 
@@ -86,6 +109,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
 
+
 		void DoEfficiency();
 		void DoLambdaFeeddown();
 
@@ -97,10 +121,12 @@ class MyAnalysisV0: public MyAnalysis {
 
 		Bool_t mFlagMC;
 		Bool_t mFlagHist;
+
 		Double_t bugR;
 		Double_t bugPt;
 		TransverseSpherocity* mTS[V0consts::NTYPE][V0consts::NMULTI-1];
 		TransverseSpherocity* mTSNorm[V0consts::NTYPE][V0consts::NMULTI-1];
+		Double_t eventRt;
 
 		// MONITORS
 		TH1D* hEventMonitor;
@@ -142,5 +168,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
+		// V0 NTUPLES
+		TNtuple* tV0mass[V0consts::NSPECIES][1][1];
 };
 #endif

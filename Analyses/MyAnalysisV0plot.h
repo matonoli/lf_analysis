@@ -52,6 +52,8 @@ class MyAnalysisV0plot: public MyAnalysis {
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
+		TH1D* hV0RtFitCorr[V0consts::NSPECIES][1][1];
+
 		//owned
 		TH1D* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0toNchDR[2][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

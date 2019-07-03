@@ -69,8 +69,9 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	hEventSpherocityV0M			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityV0M");
 	hEventSpherocityNCharged	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityNCharged");
 
+	Int_t nType = (mHandler->GetFlagMC()) ? NTYPE : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < NTYPE; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
@@ -83,13 +84,28 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		hV0Pt[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
-		hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
-		hV0PtFit[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
-		hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
+		//cout << " " << Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]) << endl;
+		//cout << "h is " << hV0PtFitCorr[iSp][iType][iMu][iSph] << endl;
+		//TH1D* htmp = (TH1D*)hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(),XBINS2);
+		//cout << "htmp is " << htmp << " name " << htmp->GetName() << endl;
+		//hV0PtFitCorr[iSp][iType][iMu][iSph] = htmp;
+		//cout << "h again is " << hV0PtFitCorr[iSp][iType][iMu][iSph] << endl;
+		//TString tmpName = hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName();
+		//
+		//hV0PtFitCorr[iSp][iType][iMu][iSph] = (TH1D*)htmp->Clone(tmpName.Data());
+		//if (hV0PtFitCorr[iSp][iType][iMu][iSph])
+		//hV0PtFitCorr[iSp][iType][iMu][iSph] = (TH1D*)hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(),XBINS2);
+		//if (hV0PtFit[iSp][iType][iMu][iSph])
+		//hV0PtFit[iSp][iType][iMu][iSph]		= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFit[iSp][iType][iMu][iSph]->GetName(),XBINS2);
+		
+		if (hV0Pt[iSp][iType][iMu][iSph] && mHandler->IsRebinPt()) {
+		hV0Pt[iSp][iType][iMu][iSph]	= (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS2);	}
+		//hV0PtFit[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
+		//hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
 
 	} } } }
 
-	for (int iType = 0; iType < NTYPE; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
@@ -98,9 +114,18 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		hTrackPt[iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
-		hTrackPt[iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2); 
+		if (hTrackPt[iType][iMu][iSph] && mHandler->IsRebinPt())
+		hTrackPt[iType][iMu][iSph]		= (TH1D*)hTrackPt[iType][iMu][iSph]->Rebin(NPTBINS2,hTrackPt[iType][iMu][iSph]->GetName(),XBINS2); 
 
 	} } }
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		
+		hV0RtFitCorr[iSp][0][0] 
+			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0RtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]));
+	}
+
 
 }
 
@@ -149,7 +174,7 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 		}	}			// so for mc we do particle level v0 only --> add also track lvl
 	}
 
-	mDirFile->ls();
+	//mDirFile->ls();
 
 }
 
@@ -170,6 +195,8 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 
 	//mFilePlots = new TFile("plots_"+mOutName,"RECREATE");
 	//mFilePlots->cd();
+
+	//mHandler->root()->SetBatch(kTRUE);
 
 	enum { LEFT, RIGHT };
 	const char* isMC = (mHandler->GetFlagMC()) ? "MC^{blind}_{rec}" : "Data";
@@ -528,5 +555,34 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 		cDR[iSp2][iMu-1]->SaveAs(Form("plots/dr_%s_%s.png",SPECIES[1+iSp2],MULTI[iMu]));
 
 	}	}
+
+
+	// self-normalised yields vs rt
+	TCanvas* cRtYields[4];
+	TF1* funcLin = new TF1("funcLin","x",RTBINS[0],RTBINS[NRTBINS]);
+	for (int iSp = 1; iSp < NSPECIES; ++iSp) {
+		mHandler->MakeNiceHistogram(hV0RtFitCorr[iSp][0][0],COLOURS[5]);
+		hV0RtFitCorr[iSp][0][0]->GetYaxis()->SetTitle("N_{V0} / <N_{V0}>");
+		cRtYields[iSp] = new TCanvas(Form("cRtYields_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]),"",1000,800);
+
+		hV0RtFitCorr[iSp][0][0]->GetYaxis()->SetRangeUser(-0.1,10.);
+		hV0RtFitCorr[iSp][0][0]->Draw();
+
+		TLegend* legRtYield = new TLegend(0.15,0.65,0.38,0.88);
+		mHandler->MakeNiceLegend(legRtYield,0.04,1);
+			
+		legRtYield->AddEntry((TObject*)0,Form("|#eta| < 0.8, %s", isMC),"");
+		legRtYield->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		legRtYield->AddEntry((TObject*)0,"","");
+		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][0],Form("%s", SPECNAMES[iSp]),"pl");
+		legRtYield->Draw();
+
+		funcLin->Draw("same");
+
+		cRtYields[iSp]->Write();
+		cRtYields[iSp]->SaveAs(Form("plots/rtyield_%s.png",SPECIES[iSp]));
+	}
+
+	//mHandler->root()->SetBatch(kFALSE);
 
 }

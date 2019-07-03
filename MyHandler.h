@@ -24,7 +24,7 @@ class AliAnalysisPIDParticle;
 class MyHandler: public TObject {
 
 	public:
-		MyHandler() { }	
+		MyHandler();	
 		~MyHandler() { }
 		void AddAnalysis(MyAnalysis* ana = 0);
 		Int_t Init();
@@ -36,8 +36,10 @@ class MyHandler: public TObject {
 		Int_t Finish();
 		void SetOutputName(const Char_t *name) { mOutName = TString(name);};
 		
-		Bool_t GetFlagMC() 		const {return mFlagMC;};
-		Bool_t GetFlagHist()	const {return mFlagHist;};
+		Bool_t GetFlagMC() 				const {return mFlagMC;};
+		Bool_t GetFlagHist()			const {return mFlagHist;};
+		void RebinPt(Bool_t opt)		{ mRebinPt = opt;};
+		Bool_t IsRebinPt()				const { return mRebinPt;};
 		
 		TChain* chain() 					const {return mChain;};
 		TDirectory* directory() 			const {return mDir;};
@@ -87,6 +89,7 @@ class MyHandler: public TObject {
 
 		Bool_t mFlagMC = 0;
 		Bool_t mFlagHist = 0;
+		Bool_t mRebinPt;
 
 
 };

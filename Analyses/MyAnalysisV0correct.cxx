@@ -67,7 +67,9 @@ Int_t MyAnalysisV0correct::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
-	hEventType = (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
+	hEventType	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
+	hRt			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt");
+	hRtV0Yields	= (TH1D*)mHandler->analysis(1)->dirFile()->Get("hRtV0Yields");
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -81,6 +83,12 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		
 	} } } }
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		hV0RtFit[iSp][0][0] 
+			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]));
+	}		
 
 }
 
@@ -102,8 +110,15 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 		hV0PtFitCorr[iSp][iType][iMu][iSph]	= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Clone(
 			Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]) );
 
+		//if (hV0PtFitCorr[iSp][iType][iMu][iSph] && mHandler->IsRebinPt()) {
+		//hV0PtFitCorr[iSp][iType][iMu][iSph] = (TH1D*)hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(),XBINS2); }
 		
 	} } } }
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		hV0RtFitCorr[iSp][0][0] = (TH1D*)hV0RtFit[iSp][0][0]->Clone(
+			Form("hV0RtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]) );
+	}	
 
 }
 
@@ -179,6 +194,23 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEta);
 		
 	} } } }
+
+
+	// normalise rt spectra
+
+	hRtRebin	= (TH1D*)hRt->Rebin(NRTBINS,"hRtRebin",RTBINS);
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+		hV0RtFitCorr[iSp][0][0]->Divide(hRtRebin);
+
+		//cout << "rt " << hRtV0Yields << endl;
+		Double_t meanV0 = hRtV0Yields->GetBinContent(1+iSp);
+		cout << "meanV0 " << meanV0 << endl;
+		meanV0 = meanV0/hRtRebin->Integral(1,NRTBINS);
+		cout << "2 meanV0 " << meanV0 << endl;
+		hV0RtFitCorr[iSp][0][0]->Scale(1./meanV0);
+
+	}
+
 	
 }
 
@@ -195,6 +227,13 @@ void MyAnalysisV0correct::LoadEfficiency() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	
 		hV0Efficiency[iSp] = (TH1D*)dirFile1->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
+
+		if (hV0Efficiency[iSp] && mHandler->IsRebinPt()) {
+
+			Int_t binSize = TMath::Nint((Double_t)NPTBINS/NPTBINS2);
+			hV0Efficiency[iSp] = (TH1D*)hV0Efficiency[iSp]->Rebin(NPTBINS2,hV0Efficiency[iSp]->GetName(),XBINS2);
+			hV0Efficiency[iSp]->Scale(1./binSize);		 }
+
 		hV0Efficiency[iSp]->Write();
 	}
 

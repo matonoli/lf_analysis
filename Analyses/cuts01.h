@@ -34,5 +34,8 @@ namespace cuts {
 	const Float_t L_PT[2] 		= {0.4, 14.}; 	//weird stuff in mc for 0.3-0.4
 
 	// PRIMARY TRACK SELECTION
-	const Float_t TR_PRIMARY_PAR[3]		= {0.0182, 0.0350, 1.01}; 
+	const Float_t TR_PRIMARY_PAR[3]		= {0.0182, 0.0350, 1.01}; // dont use this for spherocity!
+
+	// RT ANALYSIS CUTS
+	const Double_t RT_PTRANGE[2]	= {0.5, 5.0};
 }
