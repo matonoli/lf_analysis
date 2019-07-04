@@ -83,7 +83,7 @@ namespace V0consts {
 			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
 			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" };
 
-	const Float_t RT_DEN		= 7.473; 
+	const Float_t RT_DEN		= 7.449; 
 
 }
 

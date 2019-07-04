@@ -668,7 +668,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hNchvLeadPt				= new TH1D("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
 	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
 	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",100, -0.5, 99.5);
-	hRt						= new TH1D("hRt","; R_{T}; Entries",101, -0.025, 5.025);//4.975);
+	hRt						= new TH1D("hRt","; R_{T}; Entries",4000, -0.02, 5.02);//4.975);
 	hLeadPtvRt				= new TH2D("hLeadPtvRt","; R_{T}; p_{T}^{leading} (GeV/#it{c})", 100, -0.05, 4.95, 200, 0., 30.);
 
 	// TRACK HISTOGRAMS

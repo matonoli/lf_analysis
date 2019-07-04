@@ -332,11 +332,11 @@ void MyAnalysisV0plot::MakeFinalFigures() {
 			legPt->Draw();
 
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][3],hV0PtFitCorr[iSp][0][3][4],
-				cPtRt[iSp], 0.1,2.2);
+				cPtRt[iSp], 0.1,3.2);
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][4],hV0PtFitCorr[iSp][0][3][4],
-				cPtRt[iSp], 0.1,2.2);
+				cPtRt[iSp], 0.1,3.2);
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][3][5],hV0PtFitCorr[iSp][0][3][4],
-				cPtRt[iSp], 0.1,2.2);
+				cPtRt[iSp], 0.1,3.2);
 
 			cPtRt[iSp]->Write();
 			cPtRt[iSp]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[3]));
