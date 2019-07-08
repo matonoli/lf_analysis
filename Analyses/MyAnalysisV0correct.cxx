@@ -68,7 +68,9 @@ Int_t MyAnalysisV0correct::Make(Int_t iEv) {
 Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	hEventType	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
+	hNchTrans	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
 	hRt			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt");
+	hRt2		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
 	hRtV0Yields	= (TH1D*)mHandler->analysis(1)->dirFile()->Get("hRtV0Yields");
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -88,7 +90,18 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		hV0RtFit[iSp][0][0] 
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]));
-	}		
+	}
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+			
+		hV0PtRtFit[iSp][iType][iReg][iRtBin] 
+			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtRtFit_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
+
+
+	} } } }		
 
 }
 
@@ -119,6 +132,17 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 		hV0RtFitCorr[iSp][0][0] = (TH1D*)hV0RtFit[iSp][0][0]->Clone(
 			Form("hV0RtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]) );
 	}	
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+			
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin] = (TH1D*)hV0PtRtFit[iSp][iType][iReg][iRtBin]->Clone(
+			Form("hV0PtRtFitCorr_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
+
+
+	} } } }
 
 }
 
@@ -171,7 +195,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		if (iMu == 2)	{	NormEv = hEventType->GetBinContent(4);		// MHM
 			if (iSph == 1)	NormEv = hEventType->GetBinContent(10);		// MHM JET
 			if (iSph == 2)	NormEv = hEventType->GetBinContent(9);	}	// MHM ISO
-		if (iMu == 3)	{	NormEv = hEventType->GetBinContent(11);		// RT
+		if (iMu == 3 || iMu == 4 || iMu == 5)	{	NormEv = hEventType->GetBinContent(11);		// RT
 			if (iSph == 3)	NormEv = hEventType->GetBinContent(12);		// RT 0-1
 			if (iSph == 4)	NormEv = hEventType->GetBinContent(13);		// RT 1-2
 			if (iSph == 5)	NormEv = hEventType->GetBinContent(14);		// RT 2-3
@@ -207,9 +231,51 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		cout << "meanV0 " << meanV0 << endl;
 		meanV0 = meanV0/hRtRebin->Integral(1,NRTBINS);
 		cout << "2 meanV0 " << meanV0 << endl;
-		hV0RtFitCorr[iSp][0][0]->Scale(1./meanV0);
+		if (meanV0>0) hV0RtFitCorr[iSp][0][0]->Scale(1./meanV0);
 
 	}
+
+	// normalise pt spectra (rt) created from trees
+	Double_t rt_den = hNchTrans->GetMean();
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+
+		Double_t NormEv = 0;
+		//cout << "bla " << RTBINS0[iRtBin] << " " << RTBINS0[iRtBin]*rt_den <<
+		//" bla " << RTBINS0[iRtBin+1] << " " << RTBINS0[iRtBin+1]*rt_den << endl;
+		for (int ib = 1; ib < hNchTrans->GetNbinsX(); ++ib)
+		{
+			//cout << "aaaa " << 
+			if (hNchTrans->GetBinCenter(ib) < RTBINS0[iRtBin]*rt_den-1E-05) continue;
+			if (hNchTrans->GetBinCenter(ib) > RTBINS0[iRtBin+1]*rt_den) continue;
+			NormEv += hNchTrans->GetBinContent(ib);
+			//cout << "ib " << ib << " bins " << hNchTrans->GetBinCenter(ib) << " sum " << sum << endl;
+		}
+
+		if (NormEv == 0) NormEv = 1;
+		printf("Normalising histogram %s by event count %f \n", hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->GetName(), NormEv);
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEv);
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEta);
+
+
+		/*Int_t leftbin = hNchTrans->FindBin(RTBINS0[iRtBin]*rt_den);
+		Int_t rightbin = hNchTrans->FindBin(RTBINS0[iRtBin+1]*rt_den);
+		Double_t NormEv	= hNchTrans->Integral(leftbin,rightbin-1);
+
+		cout << iSp << " " << iType << " " << iReg << " " << iRtBin << endl;
+		cout << "bla " << RTBINS0[iRtBin] << " " << RTBINS0[iRtBin]*rt_den <<
+		" bla " << RTBINS0[iRtBin+1] << " " << RTBINS0[iRtBin+1]*rt_den << " " << leftbin << " " << rightbin << endl;
+		for (int ib = 0; ib < rightbin-leftbin+1; ++ib)
+		{
+			cout << "irtbin " << iRtBin << " lb " << leftbin << " rb " << rightbin << " bins " << hNchTrans->GetXaxis()->GetBinCenter(leftbin+ib) << endl;
+		}*/
+		/*Int_t leftbin = hRt2->FindBin(RTBINS0[iRtBin]);
+		Int_t rightbin = hRt2->FindBin(RTBINS0[iRtBin+1]);
+		Double_t NormEv	= hRt2->Integral(leftbin,rightbin-1);*/
+
+	}	}	}	}
 
 	
 }

@@ -24,13 +24,15 @@ class TransverseSpherocity;
 namespace V0consts {
 	const Int_t NSPECIES = 4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 4;
+	const Int_t NMULTI = 6;
 	const Int_t NSPHERO = 8;
+	const Int_t NREGIONS = 3;
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
-	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RT"};
-	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%", "R_{T}"};
+	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RTTrans","RTNear","RTAway"};
+	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
 	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso","0-1","1-2","2-3","3-4","4-5"};
+	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
 	//const Int_t NPTBINS = 35;
 	const Int_t NPTBINS = 55;
 	//const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
@@ -72,6 +74,11 @@ namespace V0consts {
 		3.9, 4.3, 4.7, 5.1	};
 
 
+	const Int_t NRTBINS0 = 6;
+	const Double_t RTBINS0[NRTBINS0+1] = {
+		0., 5.0, 0., 0.5, 1., 1.5, 5.	};
+
+
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
@@ -99,12 +106,14 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t CreateHistograms();
 		Bool_t BorrowHistograms();
 
-		Bool_t ProcessV0(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
+		Bool_t ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
+		Bool_t ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t SelectEvent(MyEvent &ev);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
 		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);
+		Int_t  WhatRegion(Double_t phi1, Double_t phiTrig);
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
@@ -126,7 +135,9 @@ class MyAnalysisV0: public MyAnalysis {
 		Double_t bugPt;
 		TransverseSpherocity* mTS[V0consts::NTYPE][V0consts::NMULTI-1];
 		TransverseSpherocity* mTSNorm[V0consts::NTYPE][V0consts::NMULTI-1];
+		
 		Double_t eventRt;
+		Int_t nChTrans;
 
 		// MONITORS
 		TH1D* hEventMonitor;
@@ -152,6 +163,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hNchvLeadPt2;
 		TH1D* hNchTrans;
 		TH1D* hRt;
+		TH1D* hRt2;
 		TH2D* hLeadPtvRt;
 
 		// TRACK HISTOGRAMS
@@ -169,6 +181,6 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		// V0 NTUPLES
-		TNtuple* tV0mass[V0consts::NSPECIES][1][1];
+		TNtuple* tV0massRt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 };
 #endif

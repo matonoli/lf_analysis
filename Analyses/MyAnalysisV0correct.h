@@ -49,15 +49,19 @@ class MyAnalysisV0correct: public MyAnalysis {
 		// V0 HISTOGRAMS
 		//borrowed
 		TH1D* hEventType;
+		TH1D* hNchTrans;
 		TH1D* hRt;
+		TH1D* hRt2;
 		TH1D* hRtV0Yields;
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0RtFit[V0consts::NSPECIES][1][1];
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
 
 		//owned
 		TH1D* hRtRebin;
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0RtFitCorr[V0consts::NSPECIES][1][1];
 
 };
