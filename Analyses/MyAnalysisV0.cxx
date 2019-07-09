@@ -754,7 +754,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 Bool_t MyAnalysisV0::BorrowHistograms() {
 
-	mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");
+	mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");	// this was smart of me i think
 	//mDirFile->ls();
 
 	// MONITORS
@@ -808,6 +808,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 		hV0Pt[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0Eta[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2D*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		// actually perhaps only histos which need to be processed within this analysis need to get fetched
+
 
 		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 		//	";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
@@ -835,9 +837,9 @@ Int_t MyAnalysisV0::Finish() {
 	Int_t nbins = hNchTrans->GetXaxis()->GetNbins();
 	Double_t rtbins[nbins+1];
 	for (int iBin = 0; iBin < nbins+1; ++iBin)	{
-		cout << "a bin " << hNchTrans->GetBinLowEdge(iBin+1) << endl;
+		//cout << "a bin " << hNchTrans->GetBinLowEdge(iBin+1) << endl;
 		rtbins[iBin] = (double)hNchTrans->GetBinLowEdge(iBin+1)/rt_den;
-		cout << "b bin " << rtbins[iBin] << endl;
+		//cout << "b bin " << rtbins[iBin] << endl;
 	}
 
 	hRt2->SetBins(nbins,rtbins);

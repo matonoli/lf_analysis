@@ -154,7 +154,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	CloneHistograms();
 	NormaliseSpectra();
 	LoadEfficiency();
-	CorrectSpectra();
+	//CorrectSpectra();
 
 	return 0;	
 }

@@ -87,10 +87,10 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 
 	} } } }
 
-	cout << "nreg " << NREGIONS << endl; 
+	
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 	for (Int_t iType = 0; iType < nType; iType++)	{
-	for (Int_t iReg = 0; iReg < 3; iReg++)			{	
+	for (Int_t iReg = 0; iReg < NREGIONS; iReg++)	{	
 		
 		//cout << iSp << " " << iType << " " << iReg << " " << Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]) << endl;
 		
@@ -242,7 +242,8 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 		Double_t* yield = 0;
 		Float_t leftrtb =	RTBINS0[iRtBin]*rt_den;
 		Float_t rightrtb =	RTBINS0[iRtBin+1]*rt_den;
-		cout << "left " << leftrtb << " right " << rightrtb << endl;
+//		cout << "left " << leftrtb << " right " << rightrtb << endl;
+		printf("Extracting yield for pt spectrum from trees iSp%i_iType%i_iReg%i_iRtBin%i \n",iSp,iType,iReg,iRtBin);
 		TString treeName = tV0massRt[iSp][iType][iReg]->GetName();
 		for (int iBin = 0; iBin < NPTBINS2; ++iBin)	{
 

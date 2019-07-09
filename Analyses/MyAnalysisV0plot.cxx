@@ -126,6 +126,17 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0RtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]));
 	}
 
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+			
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin] 
+			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0PtRtFitCorr_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
+
+
+	} } } }	
+
 
 }
 
@@ -148,6 +159,11 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 		//hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
 		//hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
 		
+	}	}
+
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+		hBtoMRt[iReg][iRtBin]	= (TH1D*)hV0PtRtFitCorr[2][0][iReg][iRtBin]->Clone(Form("hBtoMRt_%s_%1.1f-%1.1f",REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]));
 	}	}
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -186,12 +202,116 @@ Int_t MyAnalysisV0plot::Finish() {
 
 	BorrowHistograms();
 	CloneHistograms();
-	MakeFinalFigures();
+	//MakeFinalFiguresSpherocity();
+	MakeFinalFiguresRt();
 
 	return 0;	
 }
 
-void MyAnalysisV0plot::MakeFinalFigures() {
+void MyAnalysisV0plot::MakeFinalFiguresRt() {
+
+	const char* isMC = (mHandler->GetFlagMC()) ? "MC^{blind}_{rec}" : "Data";
+
+	// RT PT SPECTRA for different regions
+	TCanvas* cPtRt[4][3];
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	
+		mHandler->MakeNiceHistogram(hV0PtRtFitCorr[iSp][0][iReg][0],kBlack);
+		hV0PtRtFitCorr[iSp][0][iReg][0]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");
+
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			mHandler->MakeNiceHistogram(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],COLOURS[5-iRtBin]);
+			hV0PtRtFitCorr[iSp][0][iReg][iRtBin]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");		
+		}
+
+		cPtRt[iSp][iReg] = new TCanvas(Form("cPtRt2_%s_%s",SPECIES[iSp],REGIONS[iReg]),"",1000,900);
+		cPtRt[iSp][iReg]->SetLogy(1);
+		Double_t lowerRange = 0.1*hV0PtRtFitCorr[iSp][0][iReg][2]->GetBinContent(hV0PtRtFitCorr[iSp][0][iReg][2]->FindLastBinAbove());
+		hV0PtRtFitCorr[iSp][0][iReg][0]->GetYaxis()->SetRangeUser(lowerRange,10.*hV0PtRtFitCorr[iSp][0][iReg][NRTBINS0-1]->GetMaximum());
+		hV0PtRtFitCorr[iSp][0][iReg][0]->Draw();
+		cPtRt[iSp][iReg]->Update();
+		//hV0PtFitCorr[iSp][0][3][0]->Draw("same");
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			hV0PtRtFitCorr[iSp][0][iReg][iRtBin]->Draw("same");
+		}
+			//hV0PtFitCorr[iSp][0][3][6]->Draw("same");
+		//hV0PtFitCorr[iSp][0][3][7]->Draw("same");
+		TLegend* legPt = new TLegend(0.65,0.45,0.85,0.88);
+		mHandler->MakeNiceLegend(legPt,0.04,1);
+			
+		legPt->AddEntry((TObject*)0,Form("#bf{%s}   |#eta| < 0.8, %s", SPECNAMES[iSp], isMC),"");
+		legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		legPt->AddEntry((TObject*)0,"","");
+		legPt->AddEntry((TObject*)0,Form("#bf{%s}", REGIONS[iReg]),"");
+		legPt->AddEntry((TObject*)0,"","");
+		legPt->AddEntry(hV0PtRtFitCorr[iSp][0][iReg][0],"R_{T} inc.","pl");
+		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			legPt->AddEntry(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
+		}
+			//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][6],Form("%s %s",PLOTS_MULTI[3],SPHERO[6]),"pl");
+		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][7],Form("%s %s",PLOTS_MULTI[3],SPHERO[7]),"pl");
+		legPt->Draw();
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			mHandler->MakeRatioPlot(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],hV0PtRtFitCorr[iSp][0][iReg][0],
+			cPtRt[iSp][iReg], -0.1,4.2);
+		}
+			
+		cPtRt[iSp][iReg]->Write();
+		cPtRt[iSp][iReg]->SaveAs(Form("plots/ptrt_%s_%s.png",SPECIES[iSp],REGIONS[iReg]));
+
+	}	}
+
+	// B/M Ratio
+	TCanvas* cBtoM[NREGIONS];
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+		if (iRtBin==1) continue;
+
+		hBtoMRt[iReg][iRtBin]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
+		hBtoMRt[iReg][iRtBin]->Add(hV0PtRtFitCorr[3][0][iReg][iRtBin]);
+		hBtoMRt[iReg][iRtBin]->Divide(hBtoMRt[iReg][iRtBin],hV0PtRtFitCorr[1][0][iReg][iRtBin],1.,2.,"");
+
+	}	}
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+		
+		cBtoM[iReg] = new TCanvas(Form("cBtoMRt_%s",REGIONS[iReg]),"",1000,800);
+		
+		hBtoMRt[iReg][0]->GetYaxis()->SetRangeUser(0.,1.0);
+		mHandler->MakeNiceHistogram(hBtoMRt[iReg][0],kBlack);
+		hBtoMRt[iReg][0]->Draw();
+		cBtoM[iReg]->Update();
+
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			
+			mHandler->MakeNiceHistogram(hBtoMRt[iReg][iRtBin],COLOURS[5-iRtBin]);
+			hBtoMRt[iReg][iRtBin]->Draw("same");
+
+		}
+
+		TLegend* legBtoM = new TLegend(0.60,0.49,0.85,0.85);
+		mHandler->MakeNiceLegend(legBtoM,0.04,1);
+		legBtoM->AddEntry((TObject*)0,Form("|#eta| < 0.8, %s", isMC),"");
+		legBtoM->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		legBtoM->AddEntry((TObject*)0,"","");
+		legBtoM->AddEntry((TObject*)0,Form("#bf{%s}", REGIONS[iReg]),"");
+		legBtoM->AddEntry((TObject*)0,"","");
+		legBtoM->AddEntry(hBtoMRt[iReg][0],"R_{T} inc.","pl");
+		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			legBtoM->AddEntry(hBtoMRt[iReg][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
+		}
+		legBtoM->Draw();
+
+		cBtoM[iReg]->Write();
+		cBtoM[iReg]->SaveAs(Form("plots/btomrt_%s.png",REGIONS[iReg]));
+
+	}
+
+}
+
+void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 
 	//mFilePlots = new TFile("plots_"+mOutName,"RECREATE");
 	//mFilePlots->cd();

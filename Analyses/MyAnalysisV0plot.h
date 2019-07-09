@@ -32,7 +32,8 @@ class MyAnalysisV0plot: public MyAnalysis {
 		Bool_t CreateHistograms();
 		Bool_t CloneHistograms();
 
-		void MakeFinalFigures();
+		void MakeFinalFiguresSpherocity();
+		void MakeFinalFiguresRt();
 
 		ClassDef(MyAnalysisV0plot,1);
 
@@ -48,6 +49,7 @@ class MyAnalysisV0plot: public MyAnalysis {
 		TH1D* hEventSpherocityV0M;
 		TH1D* hEventSpherocityNCharged;
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
@@ -56,6 +58,7 @@ class MyAnalysisV0plot: public MyAnalysis {
 
 		//owned
 		TH1D* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hBtoMRt[V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0toNchDR[2][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 };

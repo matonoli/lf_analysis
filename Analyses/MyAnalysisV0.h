@@ -82,7 +82,7 @@ namespace V0consts {
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
-	const Int_t COLOURS[6] = {kAzure+3,kOrange+8,kPink+10,kGreen+2,kMagenta+2, kViolet+10};
+	const Int_t COLOURS[6] = {kAzure-3,kOrange+8,kPink+10,kGreen+2,kMagenta+2, kViolet+10};
 
 	const Int_t NEVENTTYPES = 20; //1+2+2+4+6+4
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
