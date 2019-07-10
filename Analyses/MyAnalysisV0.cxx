@@ -294,7 +294,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	hNchvLeadPt2->Fill(ptLead,nChTrans0);
 	eventRt = 0;
-	if (ptLead>5.) {
+	if (ptLead>5. && ptLead < 40.) {
 		hNchTrans->Fill(nChTrans);
 		eventRt = (double)nChTrans/RT_DEN;
 		hRt->Fill(eventRt);		}
@@ -302,7 +302,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Bool_t isEventRT = false;
 	enum { rt01, rt12, rt23, rt34, rt45, rtsizeof };
 	Bool_t isRT[rtsizeof] = {false, false, false, false, false};
-	if (ptLead>5.) {
+	if (ptLead>5. && ptLead<40.) {
 		isEventRT = true;
 		for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
 			isRT[iRt] = (eventRt > (Double_t)iRt 
@@ -314,8 +314,60 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (isRT[iRt]) hEventType->Fill(EVENTTYPES[11+iRt],1); }
 
 	// <pT> vs RT
-	if (isEventRT) hLeadPtvRt->Fill(eventRt,ptLead);
+	hLeadPtvNchTrans0->Fill(nChTrans0,ptLead);
+	if (isEventRT) hLeadPtvNchTrans->Fill(nChTrans,ptLead);
+	if (isEventRT && isEventFHM) hNchTransvSpherocityV0M->Fill(eventTS,nChTrans);
+	if (isEventRT && isEventMHM) hNchTransvSpherocityNCharged->Fill(eventTS,nChTrans);
 
+
+
+	//////////////////////////////////////////////////////////////////
+	// MC RT CALCULATION
+	//////////////////////////////////////////////////////////////////
+	Double_t ptLeadMC = -99., phiLeadMC = -99.;
+	if (mFlagMC) {
+		for (int iP = 0; iP < nParticles; ++iP)		{
+			
+			if (!mHandler->particle(iP)) continue;
+			MyParticle p(mHandler->particle(iP));
+
+			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
+				&& p.GetSign() != 0)	{
+
+				if (p.GetPt() > ptLeadMC) {
+					ptLeadMC = p.GetPt();
+					phiLeadMC = p.GetPhi();
+				}
+			}	
+		}
+
+		// RT
+		Int_t nChTransMC = 0;
+		Double_t eventRtMC = 0;
+		for (int iP = 0; iP < nParticles; ++iP)		{
+			
+			if (!mHandler->particle(iP)) continue;
+			MyParticle p(mHandler->particle(iP));
+
+			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
+				&& p.GetSign() != 0 && p.GetPt() > 0.15)	{
+
+				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
+				if (ptLeadMC<5.0) continue;
+				if (ptLeadMC>40.0) continue;
+
+				nChTransMC++;
+			}
+		}
+
+		if (ptLeadMC > 5. && ptLeadMC < 40.)	{
+			hNchTransMC->Fill(nChTransMC);
+			hNchTransRCvMC->Fill(nChTransMC,nChTrans);
+			eventRtMC = (double)nChTransMC/RT_DEN_MC;
+			hRtMC->Fill(eventRtMC);
+			hRtRCvMC->Fill(eventRtMC,eventRt);		}
+	}
+	/////////////////////////////////////////////////////////////////
 
 
 	// MC V0 ANALYSIS: PARTICLES LOOP
@@ -366,6 +418,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				if (p.GetPdgCode() == PDG_IDS[iSp])		{
 
 					hV0Pt[iSp][MC][multMB][sphMB]->Fill(p.GetPt());
+					tV0PtMCMB[iSp]->Fill(p.GetPt());
 
 					if (isEventFHM) {
 						hV0Pt[iSp][MC][V0M][sphMB]->Fill(p.GetPt());
@@ -376,6 +429,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						hV0Pt[iSp][MC][NCharged][sphMB]->Fill(p.GetPt());
 						if (isEventJettyMC[NCharged])	hV0Pt[iSp][MC][NCharged][Jetty]->Fill(p.GetPt());
 						if (isEventIsoMC[NCharged])		hV0Pt[iSp][MC][NCharged][Iso]->Fill(p.GetPt());		}
+
+					if (isEventRT)	{
+							Int_t region = WhatRegion(p.GetPhi(),phiLead);
+							if (iSp>0) tV0PtMCRt[iSp][region]->Fill(p.GetPt());
+						}
 
 					if (isEventRT && IsTrans(p.GetPhi(),phiLead)) {
 						hV0Pt[iSp][MC][RT][sphMB]->Fill(p.GetPt());
@@ -428,6 +486,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
 						
 						ProcessV0toHist(v0,iSp,RC,multMB,sphMB);		
+						ProcessV0toTree(v0,iSp,RC,0);		
 
 						if (isEventFHM) {
 							ProcessV0toHist(v0,iSp,RC,V0M,sphMB);
@@ -439,6 +498,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 							ProcessV0toHist(v0,iSp,RC,NCharged,sphMB);
 							if (isEventJettyMC[NCharged])	ProcessV0toHist(v0,iSp,RC,NCharged,Jetty);
 							if (isEventIsoMC[NCharged])		ProcessV0toHist(v0,iSp,RC,NCharged,Iso);
+						}
+
+						if (isEventRT)	{
+							Int_t region = WhatRegion(v0.GetPhi(),phiLead);
+							if (iSp>0) ProcessV0toTree(v0,iSp,RC,RT+region);
 						}
 
 						if (isEventRT && IsTrans(v0.GetPhi(),phiLead)) {
@@ -538,10 +602,18 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 
 Bool_t MyAnalysisV0::ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 	
-	Int_t Reg = Mu-3;
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
-	tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
 	
+	if (Mu > 2) {
+		Int_t Reg = Mu-3;
+		tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
+	}
+
+	if (Mu == 0 && Type==1) {
+		tV0massRCMB[Sp]->Fill(v0mass[Sp],v0.GetPt());	
+	}
+
+
 	return true;	
 }
 
@@ -691,9 +763,17 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hLeadPhivPt				= new TH2D("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hNchvLeadPt				= new TH1D("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
 	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
-	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",100, -0.5, 99.5);
+	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTransMC 			= new TH1D("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTransRCvMC			= new TH2D("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
 	hRt						= new TH1D("hRt","; R_{T}; Entries",4000, -0.02, 5.02);//4.975);
-	hLeadPtvRt				= new TH2D("hLeadPtvRt","; R_{T}; p_{T}^{leading} (GeV/#it{c})", 100, -0.05, 4.95, 200, 0., 30.);
+	hRtMC					= new TH1D("hRtMC","; MC R_{T}; Entries",4000, -0.02, 5.02);//4.975);
+	hRtRCvMC 				= new TH2D("hRtRCMC","; MC R_{T}; R_{T}", 200, -0.02, 5.02, 200, -0.02, 5.02);
+ 	hLeadPtvNchTrans0		= new TH2D("hLeadPtvNchTrans0","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+ 	hLeadPtvNchTrans		= new TH2D("hLeadPtvNchTrans","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+
+ 	hNchTransvSpherocityV0M			= new TH2D("hNchTransvSpherocityV0M",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
+ 	hNchTransvSpherocityNCharged	= new TH2D("hNchTransvSpherocityNCharged",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -750,6 +830,15 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	}	}	}
 
 
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+		tV0PtMCMB[iSp]		= new TNtuple(Form("tV0PtMCMB_%s",SPECIES[iSp]),"v0 MC MB pt tree","lPt");
+		tV0massRCMB[iSp]	= new TNtuple(Form("tV0massRCMB_%s",SPECIES[iSp]),"v0 RC MB mass tree","MassDT:lPt");
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{	
+			tV0PtMCRt[iSp][iReg]	= new TNtuple(Form("tV0PtMCMB_%s_%s",SPECIES[iSp],REGIONS[iReg]),"v0 MC Rt pt tree","lPt");
+		}
+	}
+
+
 }
 
 Bool_t MyAnalysisV0::BorrowHistograms() {
@@ -781,7 +870,7 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	hNchvLeadPt2				= (TH2D*)mDirFile->Get("hNchvLeadPt2");
 	hNchTrans					= (TH1D*)mDirFile->Get("hNchTrans");
 	hRt							= (TH1D*)mDirFile->Get("hRt");
-	hLeadPtvRt					= (TH2D*)mDirFile->Get("hLeadPtvRt");
+	//hLeadPtvRt					= (TH2D*)mDirFile->Get("hLeadPtvRt");
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -844,7 +933,8 @@ Int_t MyAnalysisV0::Finish() {
 
 	hRt2->SetBins(nbins,rtbins);
 
-	if (mFlagMC) DoEfficiency();
+	//if (mFlagMC) DoEfficiency();
+	if (mFlagMC) DoEfficiencyFromTrees();
 	if (mFlagMC) DoLambdaFeeddown();
 
 	return 0;	
@@ -861,6 +951,41 @@ void MyAnalysisV0::DoEfficiency() {
 
 		hV0Efficiency[iSp]->Divide(hV0Pt[iSp][2][0][0]);
 		//hV0Efficiency[iSp]->Write();
+	}
+
+}
+
+void MyAnalysisV0::DoEfficiencyFromTrees() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		
+		// minimum bias histos
+		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
+
+		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),"","goff");
+		tV0PtMCMB[iSp]->Draw("lPt>>hDen","","goff");
+
+		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
+		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
+
+		hV0Efficiency[iSp]->Divide(hDen);
+		delete hDen;
+
+		// rt histos
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
+			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+			TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
+
+			tV0massRt[iSp][1][iReg]->Draw(Form("lPt>>hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"","goff");
+			tV0PtMCRt[iSp][iReg]->Draw("lPt>>hDen","","goff");
+
+			hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
+			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,14.0);
+
+			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
+			delete hDen;
+		}
 	}
 
 }

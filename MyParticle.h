@@ -19,7 +19,7 @@ class MyParticle: public TObject {
 		Float_t GetPy() 						const { return mAliParticle->GetPt()*TMath::Sin(mAliParticle->GetPhi());};
 		Float_t GetPhi() 						const { return mAliParticle->GetPhi();};
 		Float_t GetEta() 						const { return mAliParticle->GetEta();};
-		Float_t GetSign() 						const { return mAliParticle->GetSign();};	// needs fix
+		Int_t GetSign() const;// 						const { return mAliParticle->GetSign();};	// needs fix
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
 		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};

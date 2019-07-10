@@ -15,7 +15,7 @@ namespace cuts {
 	const Float_t V0_PT[2] 		= {0.1, 14.};
 	const Float_t V0_DCADD		= 0.5;
 	const Float_t V0_CPA		= 0.997;
-	const Float_t V0_R[2]		= {0.05, 100.};
+	const Float_t V0_R[2]		= {0.5, 100.};
 
 	// V0 DAUGHTER SELECTION
 	const Float_t V0_D_ETA[2]	= {-0.8, 0.8};
@@ -37,6 +37,7 @@ namespace cuts {
 	const Float_t TR_PRIMARY_PAR[3]		= {0.0182, 0.0350, 1.01}; // dont use this for spherocity!
 
 	// RT ANALYSIS CUTS
-	const Double_t RT_PTRANGE[2]	= {2., 4.0};
+	const Double_t RT_PTRANGE[2]	= {0.5, 2.0};
+	//const Double_t RT_PTRANGE[2]	= {2., 4.0};
 	//const Double_t RT_PTRANGE[2]	= {0.5, 5.0};
 }
