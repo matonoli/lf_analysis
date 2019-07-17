@@ -437,7 +437,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 
 		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
 		hRt2->GetYaxis()->SetRangeUser(10.,20.*hRt2->GetMaximum());
-		hRt2->GetXaxis()->SetLabel("R_{T}");
+		hRt2->GetXaxis()->SetTitle("R_{T}");
 		hRt2->Draw("");
 		cRtDistro->Update();
 		hV0RtFit[1][0][0][2]->Draw("same");
