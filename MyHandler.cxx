@@ -139,8 +139,9 @@ void MyHandler::DrawCut(Double_t cut, Int_t direction, TCanvas* can) {
 	y[0] = can->GetUymin(); y[1] = can->GetUymax();
 
 	TGraph* gcut = new TGraph(2, x, y);
-	if (direction) gcut->SetLineWidth(-402);
-	else gcut->SetLineWidth(402);
+	if (direction==2) gcut->SetLineWidth(-402);
+	if (direction==1) gcut->SetLineWidth(402);
+	if (direction==0) gcut->SetLineWidth(2);
 	gcut->SetLineColor(kRed);
 	gcut->SetFillColor(kRed);
 	gcut->SetFillStyle(3003);

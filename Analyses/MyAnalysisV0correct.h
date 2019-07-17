@@ -13,6 +13,7 @@ class TFile;	// forward declaration
 class TList;
 class TH1D;
 class TH2D;
+class TNTuple;
 class MyV0;
 class MyEvent;
 class MyTrack;
@@ -35,6 +36,8 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void SetMCInputFile(const Char_t *name);
 		void NormaliseSpectra();
 		void LoadEfficiency();
+		void DoEfficiencyFromFile();
+		void DoEfficiencyFromTrees();
 		void CorrectSpectra();
 
 		ClassDef(MyAnalysisV0correct,1);
@@ -52,17 +55,24 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hNchTrans;
 		TH1D* hRt;
 		TH1D* hRt2;
-		TH1D* hRtV0Yields;
+		TH1D* hRtV0Yields[V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
-		TH1D* hV0RtFit[V0consts::NSPECIES][1][1];
+		TH1D* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
+		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
+
+		TNtuple* tV0PtMCMB[V0consts::NSPECIES];
+		TNtuple* tV0massRCMB[V0consts::NSPECIES];
+		TNtuple* tV0PtMCRt[V0consts::NSPECIES][V0consts::NREGIONS];
+		TNtuple* tV0massRt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
 		//owned
 		TH1D* hRtRebin;
+		TH1D* hRt2Rebin;
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
-		TH1D* hV0RtFitCorr[V0consts::NSPECIES][1][1];
+		TH1D* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 
 };
 #endif

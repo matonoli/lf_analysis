@@ -48,17 +48,21 @@ class MyAnalysisV0plot: public MyAnalysis {
 		//borrowed
 		TH1D* hEventSpherocityV0M;
 		TH1D* hEventSpherocityNCharged;
+		TH1D* hNchTrans;
+		TH1D* hRt2;
+
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
-		TH1D* hV0RtFitCorr[V0consts::NSPECIES][1][1];
+		TH1D* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
+		TH1D* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 
 		//owned
 		TH1D* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hBtoMRt[V0consts::NREGIONS][V0consts::NRTBINS0];
+		TH1D* hBtoMRt[V0consts::NREGIONS+1][V0consts::NRTBINS0];
 		TH1D* hV0toNchDR[2][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 };

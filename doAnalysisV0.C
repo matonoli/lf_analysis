@@ -19,7 +19,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	gROOT->LoadMacro("MyKit/MyV0.cxx+");
 	gROOT->LoadMacro("MyKit/MyAnalysis.cxx+");
 	gROOT->LoadMacro("MyKit/MyHandler.cxx+");
-	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0.cxx++");
+	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0.cxx+");
 	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0extract.cxx+");
 	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0correct.cxx+");
 	gROOT->LoadMacro("MyKit/Analyses/MyAnalysisV0plot.cxx+");
@@ -63,6 +63,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	// Initialise analyses
 	handler->RebinPt(false);
 	handler->Init();
+	analysisV0extract->SetMCInputFile(MCinputFile);
 	analysisV0correct->SetMCInputFile(MCinputFile);
 
 	// Start an event loop

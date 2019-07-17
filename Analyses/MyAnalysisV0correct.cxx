@@ -10,6 +10,7 @@
 #include <TLegend.h>
 #include <TNamed.h>
 #include <THashList.h>
+#include <TNtuple.h>
 
 #include "MyAnalysisV0correct.h"
 #include "../MyEvent.h"
@@ -67,13 +68,21 @@ Int_t MyAnalysisV0correct::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
+
 	hEventType	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
 	hNchTrans	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
 	hRt			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt");
 	hRt2		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
-	hRtV0Yields	= (TH1D*)mHandler->analysis(1)->dirFile()->Get("hRtV0Yields");
+	
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
+		hRtV0Yields[iType][iReg][iPtBin]	
+			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hRtV0Yields_%s_%s_%i",TYPE[iType],REGIONS[iReg],iPtBin));
+	} } }
 
-	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
+	
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
@@ -88,9 +97,12 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		hV0RtFit[iSp][0][0] 
-			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]));
-	}
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
+		hV0RtFit[iSp][iType][iReg][iPtBin] 
+			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin));
+	} } } }
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
@@ -129,9 +141,13 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 	} } } }
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		hV0RtFitCorr[iSp][0][0] = (TH1D*)hV0RtFit[iSp][0][0]->Clone(
-			Form("hV0RtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]) );
-	}	
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
+
+		hV0RtFitCorr[iSp][iType][iReg][iPtBin] = (TH1D*)hV0RtFit[iSp][iType][iReg][iPtBin]->Clone(
+			Form("hV0RtFitCorr_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin) );
+	}	}	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
@@ -153,8 +169,9 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	CloneHistograms();
 	NormaliseSpectra();
-	LoadEfficiency();
-	//CorrectSpectra();
+	//LoadEfficiency();
+	DoEfficiencyFromFile();
+	CorrectSpectra();
 
 	return 0;	
 }
@@ -214,29 +231,75 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		if (NormEv == 0) NormEv = 1;
 
 		printf("Normalising histogram %s by event count %f \n", hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(), NormEv);
-		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEv);
-		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEta);
+		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEv);
+		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEta);
 		
 	} } } }
 
 
 	// normalise rt spectra
+	Int_t increm = 2;
+	Double_t rt_den = hNchTrans->GetMean();
+	hRtRebin		= (TH1D*)hRt->Rebin(NRTBINS,"hRtRebin",RTBINS);
+	hRt2Rebin		= (TH1D*)hV0RtFitCorr[1][0][0][0]->Clone("hRt2Rebin");
+	Int_t nbins = hRt2Rebin->GetNbinsX();
+	Double_t rtbins[nbins+1];
 
-	hRtRebin	= (TH1D*)hRt->Rebin(NRTBINS,"hRtRebin",RTBINS);
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
-		hV0RtFitCorr[iSp][0][0]->Divide(hRtRebin);
+	cout << "nbins is " << nbins << endl;
+
+	for (int iB = 0; iB < nbins; ++iB)	{
+		Int_t binA = hNchTrans->FindBin(hRt2Rebin->GetBinLowEdge(iB));
+		Int_t binB = hNchTrans->FindBin(hRt2Rebin->GetBinLowEdge(iB+1));
+		cout << "bin a " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB) << endl;
+		cout << "bin b " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB+1) << endl;
+		Double_t integr = 0;
+		for (int i = binA; i < binB; ++i)
+		{
+			cout << "in bin " << i << " integrating " << integr << " + " << hNchTrans->GetBinContent(i) << endl;
+			integr += hNchTrans->GetBinContent(i);
+		}
+		Double_t error;
+		Double_t content 	= hNchTrans->IntegralAndError(binA,binB-1,error,"");
+		cout << "integral is " << integr << " vs " << content << endl;
+		hRt2Rebin->SetBinContent(iB,content);
+		hRt2Rebin->SetBinError(iB,error);
+	}
+	//hNchTransRebin	= (TH1D*)hNchTrans->Rebin(increm);
+
+	//im dumb
+	cout << "a " << hV0RtFitCorr[1][0][0][0]->Integral(hV0RtFitCorr[1][0][0][0]->FindBin(30.),hV0RtFitCorr[1][0][0][0]->FindBin(30.)) << endl;
+	cout << "b " << hRt2Rebin->Integral(hRt2Rebin->FindBin(30.),hRt2Rebin->FindBin(30.)) << endl;
+	cout << "c " << hRtV0Yields[0][0][0]->GetBinContent(1+1) << endl;
+	cout << "d " << hRt2Rebin->Integral(1,-1) << endl;
+
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
+		
+		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->Divide(hRt2Rebin);
+		// now we have #v0s/per event(rtbin)
 
 		//cout << "rt " << hRtV0Yields << endl;
-		Double_t meanV0 = hRtV0Yields->GetBinContent(1+iSp);
-		cout << "meanV0 " << meanV0 << endl;
-		meanV0 = meanV0/hRtRebin->Integral(1,NRTBINS);
-		cout << "2 meanV0 " << meanV0 << endl;
-		if (meanV0>0) hV0RtFitCorr[iSp][0][0]->Scale(1./meanV0);
+		Double_t meanV0 = hRtV0Yields[iType][iReg][iPtBin]->GetBinContent(1+iSp);
+		meanV0 = meanV0/hRt2Rebin->Integral(1,-1);
+		//cout << "2 meanV0 " << meanV0 << endl;
+		if (meanV0>0) hV0RtFitCorr[iSp][iType][iReg][iPtBin]->Scale(1./meanV0);
 
-	}
+		for (int iBin = 0; iBin < nbins+1; ++iBin)	{
+		rtbins[iBin] = (double)hV0RtFitCorr[iSp][iType][iReg][iPtBin]->GetBinLowEdge(iBin+1)/rt_den;	}
+
+		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->SetBins(nbins,rtbins);
+		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->GetXaxis()->SetRangeUser(rtbins[0],5.1);
+		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->GetYaxis()->SetRangeUser(0.,10.1);
+
+	}	}	}	}
+
+
+
+
 
 	// normalise pt spectra (rt) created from trees
-	Double_t rt_den = hNchTrans->GetMean();
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
@@ -305,6 +368,71 @@ void MyAnalysisV0correct::LoadEfficiency() {
 
 }
 
+void MyAnalysisV0correct::DoEfficiencyFromFile() {
+
+	if (!mFileMC) {
+		printf("No MC file loaded! Efficiency correction not performed.\n");
+		return;
+	}
+
+	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < 2; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
+	
+		tV0massRt[iSp][iType][iReg] = (TNtuple*)dirFile1->Get(Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+
+	}	}	}
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+		tV0PtMCMB[iSp]		= (TNtuple*)dirFile1->Get(Form("tV0PtMCMB_%s",SPECIES[iSp]));
+		tV0massRCMB[iSp]	= (TNtuple*)dirFile1->Get(Form("tV0massRCMB_%s",SPECIES[iSp]));
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{	
+			tV0PtMCRt[iSp][iReg]	= (TNtuple*)dirFile1->Get(Form("tV0PtMCMB_%s_%s",SPECIES[iSp],REGIONS[iReg]));
+		}
+	}
+
+	
+	DoEfficiencyFromTrees();
+
+}
+
+void MyAnalysisV0correct::DoEfficiencyFromTrees() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		
+		// minimum bias histos
+		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
+
+		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),"","goff");
+		tV0PtMCMB[iSp]->Draw("lPt>>hDen","","goff");
+
+		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
+		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
+
+		hV0Efficiency[iSp]->Divide(hDen);
+		delete hDen;
+
+		// rt histos
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
+			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+			TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
+
+			tV0massRt[iSp][1][iReg]->Draw(Form("lPt>>hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"","goff");
+			tV0PtMCRt[iSp][iReg]->Draw("lPt>>hDen","","goff");
+
+			hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
+			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,14.0);
+
+			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
+			delete hDen;
+		}
+	}
+
+}
+
 void MyAnalysisV0correct::CorrectSpectra() {
 	
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -320,5 +448,14 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 
 	}	}	}	}
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Divide(hV0Efficiency[iSp]);
+	}	}	}	}
+
 
 }

@@ -69,6 +69,9 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	hEventSpherocityV0M			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityV0M");
 	hEventSpherocityNCharged	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityNCharged");
 
+	hNchTrans	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
+	hRt2		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
+
 	Int_t nType = (mHandler->GetFlagMC()) ? NTYPE : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
@@ -121,10 +124,13 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		
-		hV0RtFitCorr[iSp][0][0] 
-			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0RtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[0],MULTI[3]));
-	}
+	for (int iType = 0; iType < nType; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
+
+		hV0RtFitCorr[iSp][iType][iReg][iPtBin]	= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0RtFitCorr_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin));
+		hV0RtFit[iSp][iType][iReg][iPtBin]		= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin));
+	} } } }
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
@@ -221,7 +227,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		hV0PtRtFitCorr[iSp][0][iReg][0]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");
 
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
-			mHandler->MakeNiceHistogram(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],COLOURS[5-iRtBin]);
+			mHandler->MakeNiceHistogram(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],COLOURS[iRtBin-2]);
 			hV0PtRtFitCorr[iSp][0][iReg][iRtBin]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");		
 		}
 
@@ -264,7 +270,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 	}	}
 
 	// B/M Ratio
-	TCanvas* cBtoM[NREGIONS];
+	TCanvas* cBtoM[NREGIONS+1];
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 		if (iRtBin==1) continue;
@@ -285,7 +291,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
 			
-			mHandler->MakeNiceHistogram(hBtoMRt[iReg][iRtBin],COLOURS[5-iRtBin]);
+			mHandler->MakeNiceHistogram(hBtoMRt[iReg][iRtBin],COLOURS[iRtBin-2]);
 			hBtoMRt[iReg][iRtBin]->Draw("same");
 
 		}
@@ -304,9 +310,154 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		}
 		legBtoM->Draw();
 
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			mHandler->MakeRatioPlot(hBtoMRt[iReg][iRtBin],hBtoMRt[iReg][0],
+			cBtoM[iReg], 0.5,1.7);
+		}
+
 		cBtoM[iReg]->Write();
 		cBtoM[iReg]->SaveAs(Form("plots/btomrt_%s.png",REGIONS[iReg]));
 
+	}
+
+	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
+		if (iRtBin==1) continue;
+
+		hBtoMRt[3][iRtBin] = (TH1D*)hV0PtRtFitCorr[2][0][1][iRtBin]->Clone(Form("hBtoMRt_Hard_%1.1f-%1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]));
+		hBtoMRt[3][iRtBin]->Add(hV0PtRtFitCorr[3][0][1][iRtBin]);
+		hBtoMRt[3][iRtBin]->Add(hV0PtRtFitCorr[2][0][2][iRtBin]);
+		hBtoMRt[3][iRtBin]->Add(hV0PtRtFitCorr[3][0][2][iRtBin]);
+		hBtoMRt[3][iRtBin]->Add(hV0PtRtFitCorr[2][0][0][iRtBin],-2.);
+		hBtoMRt[3][iRtBin]->Add(hV0PtRtFitCorr[3][0][0][iRtBin],-2.);
+		TH1D* hDen = (TH1D*)hV0PtRtFitCorr[1][0][1][iRtBin]->Clone("hDen");
+		hDen->Add(hV0PtRtFitCorr[1][0][2][iRtBin]);
+		hDen->Add(hV0PtRtFitCorr[1][0][0][iRtBin],-2.);
+		hBtoMRt[3][iRtBin]->Divide(hBtoMRt[3][iRtBin],hDen,1.,2.,"");
+		delete hDen;
+	}
+	cBtoM[3] = new TCanvas(Form("cBtoMRt_Hard"),"",1000,800);
+		
+		hBtoMRt[3][0]->GetYaxis()->SetRangeUser(0.,1.0);
+		hBtoMRt[3][0]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
+		mHandler->MakeNiceHistogram(hBtoMRt[3][0],kBlack);
+		hBtoMRt[3][0]->Draw();
+		cBtoM[3]->Update();
+
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			
+			mHandler->MakeNiceHistogram(hBtoMRt[3][iRtBin],COLOURS[iRtBin-2]);
+			hBtoMRt[3][iRtBin]->Draw("same");
+
+		}
+
+		TLegend* legBtoM = new TLegend(0.60,0.49,0.85,0.85);
+		mHandler->MakeNiceLegend(legBtoM,0.04,1);
+		legBtoM->AddEntry((TObject*)0,Form("|#eta| < 0.8, %s", isMC),"");
+		legBtoM->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		legBtoM->AddEntry((TObject*)0,"","");
+		legBtoM->AddEntry((TObject*)0,Form("#bf{Near+Away - 2xTrans}"),"");
+		legBtoM->AddEntry((TObject*)0,"","");
+		legBtoM->AddEntry(hBtoMRt[3][0],"R_{T} inc.","pl");
+		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			legBtoM->AddEntry(hBtoMRt[3][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
+		}
+		legBtoM->Draw();
+
+		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
+			mHandler->MakeRatioPlot(hBtoMRt[3][iRtBin],hBtoMRt[3][0],
+			cBtoM[3], -2.5,2.5);
+		}
+
+		cBtoM[3]->Write();
+		cBtoM[3]->SaveAs(Form("plots/btomrt_Hard.png"));
+
+
+	// SELF-NORMALISED YIELDS VS RT
+
+	TCanvas* cYieldsRt[4];
+	TF1* funcLin = new TF1("funcLin","x",-1.,10.);
+	funcLin->SetLineColor(kBlack);
+	TH1D* dummy1 = new TH1D(); mHandler->MakeNiceHistogram(dummy1,kBlack);
+	TH1D* dummy2 = new TH1D(); mHandler->MakeNiceHistogram(dummy2,kBlack);
+	dummy2->SetMarkerStyle(24);
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+
+		cYieldsRt[iSp] = new TCanvas(Form("cYieldsRt_%s",SPECIES[iSp]),"",1000,900);
+		hV0RtFitCorr[iSp][0][0][0]->GetYaxis()->SetTitle("#V0 / <V0>");
+		hV0RtFitCorr[iSp][0][0][0]->GetXaxis()->SetRangeUser(-0.01,5.1);
+		hV0RtFitCorr[iSp][0][0][0]->GetYaxis()->SetRangeUser(-0.01,12.01);
+		hV0RtFitCorr[iSp][0][0][0]->Draw();
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+		for (int iPtBin = 0; iPtBin < NRTPTBINS-1; ++iPtBin)		{
+			mHandler->MakeNiceHistogram(hV0RtFitCorr[iSp][0][iReg][iPtBin],COLOURS[iReg]);
+			if (iPtBin==1) hV0RtFitCorr[iSp][0][iReg][iPtBin]->SetMarkerStyle(24); 
+			hV0RtFitCorr[iSp][0][iReg][iPtBin]->Draw("same");
+		} }
+
+		TLegend* legRtYield = new TLegend(0.15,0.45,0.38,0.88);
+		mHandler->MakeNiceLegend(legRtYield,0.04,1);
+			
+		legRtYield->AddEntry((TObject*)0,Form("#bf{%s}  |#eta| < 0.8, %s", SPECNAMES[iSp], isMC),"");
+		legRtYield->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		legRtYield->AddEntry((TObject*)0,"","");
+		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][0][0]," #bf{Trans}","l");
+		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][1][0]," #bf{Near}","l");
+		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][2][0]," #bf{Away}","l");
+		legRtYield->AddEntry(dummy1,Form("%1.1f < p_{T} < %1.1f (GeV/#it{c})",RT_PTRANGE[0][0],RT_PTRANGE[0][1]),"p");
+		legRtYield->AddEntry(dummy2,Form("%1.1f < p_{T} < %1.1f (GeV/#it{c})",RT_PTRANGE[1][0],RT_PTRANGE[1][1]),"p");
+		legRtYield->AddEntry(funcLin,"y=x","l");
+		legRtYield->Draw();
+
+		funcLin->Draw("same");
+
+		cYieldsRt[iSp]->Write();
+		cYieldsRt[iSp]->SaveAs(Form("plots/rtyield_%s.png",SPECIES[iSp]));
+	}
+
+	// R_T DISTRIBUTION + YIELDS
+	{
+		Double_t rt_den = hNchTrans->GetMean();
+		Int_t nbins = hV0RtFitCorr[1][0][0][2]->GetNbinsX();
+		Double_t rtbins[nbins+1];
+		for (int iBin = 0; iBin < nbins+1; ++iBin)	{
+			rtbins[iBin] = (double)hV0RtFit[1][0][0][2]->GetBinLowEdge(iBin+1)/rt_den;	}
+		
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+			hV0RtFit[1][0][iReg][2]->Scale(1.,"width");
+			mHandler->MakeNiceHistogram(hV0RtFit[1][0][iReg][2],COLOURS[iReg]);
+			hV0RtFit[1][0][iReg][2]->SetBins(nbins,rtbins);
+			hV0RtFit[1][0][iReg][2]->GetXaxis()->SetRangeUser(rtbins[0],5.1);
+			hV0RtFit[1][0][iReg][2]->GetYaxis()->SetRangeUser(0.,10.1);
+		}
+
+		TCanvas* cRtDistro = new TCanvas("cRtDistro","",1000,900);
+		mHandler->MakeNiceHistogram(hRt2,kBlack);
+		cRtDistro->SetLogy();
+
+		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
+		hRt2->GetYaxis()->SetRangeUser(10.,20.*hRt2->GetMaximum());
+		hRt2->GetXaxis()->SetLabel("R_{T}");
+		hRt2->Draw("");
+		cRtDistro->Update();
+		hV0RtFit[1][0][0][2]->Draw("same");
+		hV0RtFit[1][0][1][2]->Draw("same");
+		hV0RtFit[1][0][2][2]->Draw("same");
+		mHandler->DrawCut(0.5,0,cRtDistro);
+		mHandler->DrawCut(1.,0,cRtDistro);
+		mHandler->DrawCut(1.5,0,cRtDistro);
+		TLegend *leg1 = new TLegend(0.45,0.55,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
+		leg1->AddEntry(hRt2,"R_{T} = N_{ch}^{trans} / <N_{ch}^{trans}>","pl");
+		leg1->AddEntry((TObject*)0,"","");
+		leg1->AddEntry(hV0RtFit[1][0][0][2],"K_{s}^{0} raw yield #bf{Trans}","pl");
+		leg1->AddEntry(hV0RtFit[1][0][1][2],"K_{s}^{0} raw yield #bf{Near}","pl");
+		leg1->AddEntry(hV0RtFit[1][0][2][2],"K_{s}^{0} raw yield #bf{Away}","pl");
+		leg1->Draw();
+
+		cRtDistro->Write();
+		cRtDistro->SaveAs("plots/rtdistro.png");
 	}
 
 }
@@ -678,7 +829,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 
 
 	// self-normalised yields vs rt
-	TCanvas* cRtYields[4];
+	/*TCanvas* cRtYields[4];
 	TF1* funcLin = new TF1("funcLin","x",RTBINS[0],RTBINS[NRTBINS]);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp) {
 		mHandler->MakeNiceHistogram(hV0RtFitCorr[iSp][0][0],COLOURS[5]);
@@ -701,7 +852,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 
 		cRtYields[iSp]->Write();
 		cRtYields[iSp]->SaveAs(Form("plots/rtyield_%s.png",SPECIES[iSp]));
-	}
+	}*/
 
 	//mHandler->root()->SetBatch(kFALSE);
 
