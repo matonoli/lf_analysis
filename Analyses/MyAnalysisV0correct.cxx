@@ -238,7 +238,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 
 	// normalise rt spectra
-	Int_t increm = 2;
+	Int_t increm = 3;
 	Double_t rt_den = hNchTrans->GetMean();
 	hRtRebin		= (TH1D*)hRt->Rebin(NRTBINS,"hRtRebin",RTBINS);
 	hRt2Rebin		= (TH1D*)hV0RtFitCorr[1][0][0][0]->Clone("hRt2Rebin");

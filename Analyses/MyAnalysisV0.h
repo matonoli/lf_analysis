@@ -167,6 +167,8 @@ class MyAnalysisV0: public MyAnalysis {
 		
 		Double_t eventRt;
 		Int_t nChTrans;
+		Double_t phiLead;
+		Double_t ptLead;
 
 		// MONITORS
 		TH1D* hEventMonitor;
@@ -205,6 +207,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hNchTransvSpherocityNCharged;
 		TH2D* hTrackDPhivNchTrans;
 		TH2D* hParticleDPhivNchTrans;
+		TH2D* hV0DPhivNchTrans;
 
 		// TRACK HISTOGRAMS
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

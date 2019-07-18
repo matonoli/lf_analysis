@@ -1071,7 +1071,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
 	nchmax = hNchTrans->FindLastBinAbove();
 	cout << "nchmax " << nchmax << endl;
-	increm = 2;
+	increm = 3;
 	nPads = TMath::Nint(TMath::Sqrt((nchmax/increm)));
 
 	canCounterRt = 0;

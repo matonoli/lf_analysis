@@ -428,7 +428,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 			mHandler->MakeNiceHistogram(hV0RtFit[1][0][iReg][2],COLOURS[iReg]);
 			hV0RtFit[1][0][iReg][2]->SetBins(nbins,rtbins);
 			hV0RtFit[1][0][iReg][2]->GetXaxis()->SetRangeUser(rtbins[0],5.1);
-			hV0RtFit[1][0][iReg][2]->GetYaxis()->SetRangeUser(0.,10.1);
+			//hV0RtFit[1][0][iReg][2]->GetYaxis()->SetRangeUser(0.,10.1);
 		}
 
 		TCanvas* cRtDistro = new TCanvas("cRtDistro","",1000,900);
@@ -443,9 +443,11 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		hV0RtFit[1][0][0][2]->Draw("same");
 		hV0RtFit[1][0][1][2]->Draw("same");
 		hV0RtFit[1][0][2][2]->Draw("same");
+		cRtDistro->Update();
 		mHandler->DrawCut(0.5,0,cRtDistro);
 		mHandler->DrawCut(1.,0,cRtDistro);
 		mHandler->DrawCut(1.5,0,cRtDistro);
+		cRtDistro->Update();
 		TLegend *leg1 = new TLegend(0.45,0.55,0.85,0.85);
 		mHandler->MakeNiceLegend(leg1,0.037,1);
 		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
@@ -454,6 +456,8 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		leg1->AddEntry(hV0RtFit[1][0][0][2],"K_{s}^{0} raw yield #bf{Trans}","pl");
 		leg1->AddEntry(hV0RtFit[1][0][1][2],"K_{s}^{0} raw yield #bf{Near}","pl");
 		leg1->AddEntry(hV0RtFit[1][0][2][2],"K_{s}^{0} raw yield #bf{Away}","pl");
+		hRt2->GetYaxis()->SetRangeUser(10.,20.*hRt2->GetMaximum());
+		cRtDistro->Update();
 		leg1->Draw();
 
 		cRtDistro->Write();

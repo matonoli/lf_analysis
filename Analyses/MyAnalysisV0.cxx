@@ -135,7 +135,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Int_t nTracks = mHandler->tracks()->GetEntriesFast();
 	Int_t nParticles = (mFlagMC) ? mHandler->particles()->GetEntriesFast() : 0;
 
-	Double_t ptLead = -99., phiLead = -99.;
+	ptLead = -99.; 
+	phiLead = -99.;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
@@ -620,7 +621,9 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
 
-
+	if (Mu>2 && Type==0 && Sph == 0 && Sp==1) {
+		hV0DPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
+	}
 
 	//if (Sp>0 && Type==0 && Mu==3 && Sph==0) {
 	//	tV0massRt[Sp][0][0]->Fill(v0mass[Sp],v0.GetPt(),eventRt);	}
@@ -802,6 +805,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
  	hNchTransvSpherocityV0M			= new TH2D("hNchTransvSpherocityV0M",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
  	hNchTransvSpherocityNCharged	= new TH2D("hNchTransvSpherocityNCharged",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
+ 	hV0DPhivNchTrans				= new TH2D("hV0DPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
  	hTrackDPhivNchTrans				= new TH2D("hTrackDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
  	hParticleDPhivNchTrans			= new TH2D("hParticleDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
 
@@ -972,6 +976,7 @@ Int_t MyAnalysisV0::Finish() {
 	Double_t rt_den = hNchTrans->GetMean();
 	Int_t nbins = hNchTrans->GetXaxis()->GetNbins();
 	Double_t rtbins[nbins+1];
+	//cout << "nb " << nbins << " rt " << rtbins << endl;
 	for (int iBin = 0; iBin < nbins+1; ++iBin)	{
 		//cout << "a bin " << hNchTrans->GetBinLowEdge(iBin+1) << endl;
 		rtbins[iBin] = (double)hNchTrans->GetBinLowEdge(iBin+1)/rt_den;
