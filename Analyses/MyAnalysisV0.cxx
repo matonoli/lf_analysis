@@ -388,9 +388,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle p(mHandler->particle(iP));
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0 && p.GetPt() > 0.15)	{
+				&& p.GetPt() > 0.15)	{
 
-				if (TMath::Abs(p.GetPt()-ptLeadMC)>1E-5) hParticleDPhivNchTrans->Fill(nChTransMC,mHandler->DeltaPhi(phiLeadMC,p.GetPhi()));
+				if (p.GetSign() != 0 && TMath::Abs(p.GetPt()-ptLeadMC)>1E-5) hParticleDPhivNchTrans->Fill(nChTransMC,mHandler->DeltaPhi(phiLeadMC,p.GetPhi()));
+				Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
+				if (TMath::Abs(p.GetPdgCode())==2212) 	hProtonNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
+				if (TMath::Abs(p.GetPdgCode())==211) 	hPionNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
+				if (TMath::Abs(p.GetPdgCode())==3122) 	hLambdaNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
+				if (TMath::Abs(p.GetPdgCode())==310) 	hK0sNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
+
 			}
 		}
 	}
@@ -459,6 +465,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 					if (isEventRT)	{
 							Int_t region = WhatRegion(p.GetPhi(),phiLead);
+
 							if (iSp>0) tV0PtMCRt[iSp][region]->Fill(p.GetPt());
 						}
 
@@ -824,6 +831,12 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	} } } 
 
 	// MC PARTICLE HISTOGRAMS
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+		hProtonNchTransvPt[iReg]		= new TH2D(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
+		hPionNchTransvPt[iReg]			= new TH2D(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
+		hLambdaNchTransvPt[iReg]		= new TH2D(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
+		hK0sNchTransvPt[iReg]			= new TH2D(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
+	}
 
 	// V0 HISTOGRAMS
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{

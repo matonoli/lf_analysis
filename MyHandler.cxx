@@ -22,6 +22,10 @@ MyHandler::MyHandler() {
 	mFlagHist	= false;
 	mRebinPt	= false;
 	
+	for (int i = 0; i < 5; ++i)
+	{
+		mAnalysis[i] = 0;
+	}
 }
 
 void MyHandler::AddAnalysis(MyAnalysis* ana) {

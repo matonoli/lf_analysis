@@ -34,6 +34,7 @@ class MyAnalysisV0plot: public MyAnalysis {
 
 		void MakeFinalFiguresSpherocity();
 		void MakeFinalFiguresRt();
+		void MakeFinalFiguresEvent();
 
 		ClassDef(MyAnalysisV0plot,1);
 
@@ -50,6 +51,12 @@ class MyAnalysisV0plot: public MyAnalysis {
 		TH1D* hEventSpherocityNCharged;
 		TH1D* hNchTrans;
 		TH1D* hRt2;
+		TH2D* hNchvLeadPt2;
+		TH2D* hTrackDPhivNchTrans;
+		TH2D* hV0DPhivNchTrans;
+
+		TH1D* hV0Efficiency[V0consts::NSPECIES];
+		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];

@@ -10,6 +10,7 @@
 #include <TLegend.h>
 #include <TNamed.h>
 #include <THashList.h>
+#include <TProfile.h>
 
 #include "MyAnalysisV0plot.h"
 #include "../MyEvent.h"
@@ -69,10 +70,21 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	hEventSpherocityV0M			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityV0M");
 	hEventSpherocityNCharged	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityNCharged");
 
-	hNchTrans	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
-	hRt2		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
+	hTrackDPhivNchTrans			= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hTrackDPhivNchTrans");
+	hV0DPhivNchTrans			= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0DPhivNchTrans");
 
-	Int_t nType = (mHandler->GetFlagMC()) ? NTYPE : 1;
+	hNchTrans		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
+	hRt2			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
+	hNchvLeadPt2	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hNchvLeadPt2");
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		hV0Efficiency[iSp] = (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+		hV0EfficiencyRt[iSp][iReg] = (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]));
+	} }
+
+	/*Int_t nType = (mHandler->GetFlagMC()) ? NTYPE : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
@@ -141,7 +153,7 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0PtRtFitCorr_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
 
 
-	} } } }	
+	} } } }	*/
 
 
 }
@@ -207,11 +219,191 @@ Int_t MyAnalysisV0plot::Finish() {
 
 
 	BorrowHistograms();
-	CloneHistograms();
+	//loneHistograms();
 	//MakeFinalFiguresSpherocity();
-	MakeFinalFiguresRt();
+	MakeFinalFiguresEvent();
+	//MakeFinalFiguresRt();
 
 	return 0;	
+}
+
+void MyAnalysisV0plot::MakeFinalFiguresEvent() {
+
+		// MEAN NCH VS LEADPT
+	{	
+		TCanvas* cNchvPt = new TCanvas("cNchvPt","",1000,900);
+		
+		TProfile* hNchvPt = (TProfile*)hNchvLeadPt2->ProfileX();
+		
+		mHandler->MakeNiceHistogram((TH1D*)hNchvPt,kBlack);
+
+		hNchvPt->GetYaxis()->SetTitle("<N_{ch}^{trans}>");// / (#Deltay #Delta#phi)");
+		Double_t NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+		//hNchvPt->Scale(1./NormEta);
+		Double_t NormPhi = 2./3.*TMath::Pi();
+		//hNchvPt->Scale(1./NormPhi);
+
+		hNchvPt->GetYaxis()->SetRangeUser(-0.01,2.*hNchvPt->GetMaximum());
+		hNchvPt->Draw();
+
+		cNchvPt->Update();
+		mHandler->DrawCut(5.,2,cNchvPt);
+
+		TLegend *leg1 = new TLegend(0.45,0.72,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		leg1->AddEntry((TObject*)0,"#bf{Transverse}","");
+		
+		cNchvPt->Update();
+		leg1->Draw();
+
+		cNchvPt->Write();
+		cNchvPt->SaveAs("plots/rtNchvPt.png");
+	}
+
+	// RT DISTRIBUTION
+	{
+		Double_t rt_den = hNchTrans->GetMean();
+		TCanvas* cRtDistro = new TCanvas("cRtDistro","",1000,900);
+		mHandler->MakeNiceHistogram(hRt2,kBlack);
+		cRtDistro->SetLogy();
+
+		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
+		hRt2->GetYaxis()->SetRangeUser(1.,30.*hRt2->GetMaximum());
+		hRt2->GetXaxis()->SetTitle("R_{T}");
+		hRt2->Draw("");
+		cRtDistro->Update();
+		TLegend *leg1 = new TLegend(0.45,0.60,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
+		leg1->AddEntry(hRt2,"R_{T} = N_{ch}^{trans} / <N_{ch}^{trans}>","pl");
+		leg1->AddEntry((TObject*)0,Form("<N_{ch}^{trans}> = %1.3f",rt_den),"");
+		cRtDistro->Update();
+		leg1->Draw();
+
+		cRtDistro->Write();
+		cRtDistro->SaveAs("plots/rtdistro.png");
+	}
+
+	// RT MC V RC
+	/*{
+		Double_t rt_den = hNchTrans->GetMean();
+		Double_t rt_denMC = hNchTransMC->GetMean();
+		TCanvas* cRtMCRC = new TCanvas("cRtMCRC","",1000,900);
+		//mHandler->MakeNiceHistogram(hRt2,kBlack);
+		cRtDistro->SetLogz();
+
+		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
+		hRt2->GetYaxis()->SetRangeUser(1.,30.*hRt2->GetMaximum());
+		hRt2->GetXaxis()->SetTitle("R_{T}");
+		hRt2->Draw("");
+		cRtDistro->Update();
+		TLegend *leg1 = new TLegend(0.45,0.60,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
+		leg1->AddEntry(hRt2,"R_{T} = N_{ch}^{trans} / <N_{ch}^{trans}>","pl");
+		leg1->AddEntry((TObject*)0,Form("<N_{ch}^{trans}> = %1.3f",rt_den),"");
+		cRtDistro->Update();
+		leg1->Draw();
+
+		cRtDistro->Write();
+		cRtDistro->SaveAs("plots/rtdistro.png");
+	}*/
+
+	{
+		Double_t rt_den = hNchTrans->GetMean();
+		TCanvas* cRtDistro = new TCanvas("cRtDistro","",1000,900);
+		mHandler->MakeNiceHistogram(hRt2,kBlack);
+		cRtDistro->SetLogy();
+
+		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
+		hRt2->GetYaxis()->SetRangeUser(1.,30.*hRt2->GetMaximum());
+		hRt2->GetXaxis()->SetTitle("R_{T}");
+		hRt2->Draw("");
+		cRtDistro->Update();
+		TLegend *leg1 = new TLegend(0.45,0.60,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
+		leg1->AddEntry(hRt2,"R_{T} = N_{ch}^{trans} / <N_{ch}^{trans}>","pl");
+		leg1->AddEntry((TObject*)0,Form("<N_{ch}^{trans}> = %1.3f",rt_den),"");
+		cRtDistro->Update();
+		leg1->Draw();
+
+		cRtDistro->Write();
+		cRtDistro->SaveAs("plots/rtdistro.png");
+	}
+
+	/*{
+		TCanvas* cEffi[NSPECIES];
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+			cEffi[iSp] = new TCanvas(Form("cEffi_%s",SPECIES[iSp]),"",1000,900);
+			
+			mHandler->MakeNiceHistogram(hV0Efficiency[iSp],kBlack);
+			hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(-0.01,0.8);
+			hV0Efficiency[iSp]->Draw();
+			for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+				mHandler->MakeNiceHistogram(hV0EfficiencyRt[iSp][iReg],COLOURS[iReg]);
+				hV0EfficiencyRt[iSp][iReg]->Draw("same");
+			}
+
+			cEffi[iSp]->Update();
+			TLegend *leg1 = new TLegend(0.45,0.60,0.85,0.85);
+			mHandler->MakeNiceLegend(leg1,0.037,1);
+			leg1->AddEntry((TObject*)0,Form("#bf{%s} pp #sqrt{s} = 13 TeV",SPECNAMES[iSp]),"");
+			leg1->AddEntry((TObject*)0,"","");
+			leg1->AddEntry(hV0Efficiency[iSp],"MB","pl");
+			leg1->AddEntry(hV0EfficiencyRt[iSp][0],"R_{T} Trans","pl");
+			leg1->AddEntry(hV0EfficiencyRt[iSp][1],"R_{T} Near","pl");
+			leg1->AddEntry(hV0EfficiencyRt[iSp][2],"R_{T} Away","pl");
+			
+			cEffi[iSp]->Update();
+			leg1->Draw();
+
+			cEffi[iSp]->Write();
+			cEffi[iSp]->SaveAs(Form("plots/cEffi_%s.png",SPECIES[iSp]));
+		}
+	}*/
+
+	{
+		TCanvas* cDphi = new TCanvas("cDphi","",1000,900);
+		TH1D* hDphi0 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd0",1,4);
+		TH1D* hDphi1 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd1",7,14);
+		TH1D* hDphi2 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd2",16,21);
+		mHandler->MakeNiceHistogram(hDphi0,COLOURS[0]);
+		mHandler->MakeNiceHistogram(hDphi1,COLOURS[1]);
+		mHandler->MakeNiceHistogram(hDphi2,COLOURS[2]);
+		//cDphi->SetLogy();
+
+		hDphi0->Rebin(8); hDphi0->Scale(1./hDphi0->Integral(0,-1));
+		hDphi1->Rebin(8); hDphi1->Scale(1./hDphi1->Integral(0,-1));
+		hDphi2->Rebin(8); hDphi2->Scale(1./hDphi2->Integral(0,-1));
+
+		hDphi0->GetYaxis()->SetTitle("a.u.");
+		hDphi0->Draw("");
+		hDphi1->Draw("same");
+		hDphi2->Draw("same");
+		cDphi->Update();
+		
+		TLegend *leg1 = new TLegend(0.64,0.60,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry(hDphi0,"low R_{T}","pl");
+		leg1->AddEntry(hDphi1,"average R_{T}","pl");
+		leg1->AddEntry(hDphi2,"high R_{T}","pl");
+		
+		cDphi->Update();
+		leg1->Draw();
+
+		cDphi->Write();
+		cDphi->SaveAs("plots/rtdphi.png");
+	}
+
+
+
+	
+
 }
 
 void MyAnalysisV0plot::MakeFinalFiguresRt() {
@@ -415,7 +607,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		cYieldsRt[iSp]->SaveAs(Form("plots/rtyield_%s.png",SPECIES[iSp]));
 	}
 
-	// R_T DISTRIBUTION + YIELDS
+	// R_T YIELDS
 	{
 		Double_t rt_den = hNchTrans->GetMean();
 		Int_t nbins = hV0RtFitCorr[1][0][0][2]->GetNbinsX();
@@ -428,40 +620,42 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 			mHandler->MakeNiceHistogram(hV0RtFit[1][0][iReg][2],COLOURS[iReg]);
 			hV0RtFit[1][0][iReg][2]->SetBins(nbins,rtbins);
 			hV0RtFit[1][0][iReg][2]->GetXaxis()->SetRangeUser(rtbins[0],5.1);
+			hV0RtFit[1][0][iReg][2]->GetXaxis()->SetTitle("R_{T}");
 			//hV0RtFit[1][0][iReg][2]->GetYaxis()->SetRangeUser(0.,10.1);
 		}
 
-		TCanvas* cRtDistro = new TCanvas("cRtDistro","",1000,900);
-		mHandler->MakeNiceHistogram(hRt2,kBlack);
-		cRtDistro->SetLogy();
+		TCanvas* cRtRawYield = new TCanvas("cRtRawYield","",1000,900);
+		//mHandler->MakeNiceHistogram(hRt2,kBlack);
+		//cRtRawYield->SetLogy();
 
-		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
+		/*hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
 		hRt2->GetYaxis()->SetRangeUser(10.,20.*hRt2->GetMaximum());
-		hRt2->GetXaxis()->SetTitle("R_{T}");
-		hRt2->Draw("");
-		cRtDistro->Update();
-		hV0RtFit[1][0][0][2]->Draw("same");
+		hRt2->GetXaxis()->SetTitle("R_{T}");*/
+		//hRt2->Draw("");
+		cRtRawYield->Update();
+		hV0RtFit[1][0][1][2]->GetYaxis()->SetRangeUser(-0.01,1.2*hV0RtFit[1][0][1][2]->GetMaximum());
 		hV0RtFit[1][0][1][2]->Draw("same");
+		hV0RtFit[1][0][0][2]->Draw("same");
 		hV0RtFit[1][0][2][2]->Draw("same");
-		cRtDistro->Update();
-		mHandler->DrawCut(0.5,0,cRtDistro);
-		mHandler->DrawCut(1.,0,cRtDistro);
-		mHandler->DrawCut(1.5,0,cRtDistro);
-		cRtDistro->Update();
+		cRtRawYield->Update();
+		mHandler->DrawCut(0.5,0,cRtRawYield);
+		mHandler->DrawCut(1.,0,cRtRawYield);
+		mHandler->DrawCut(1.5,0,cRtRawYield);
+		cRtRawYield->Update();
 		TLegend *leg1 = new TLegend(0.45,0.55,0.85,0.85);
 		mHandler->MakeNiceLegend(leg1,0.037,1);
 		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
-		leg1->AddEntry(hRt2,"R_{T} = N_{ch}^{trans} / <N_{ch}^{trans}>","pl");
+		
 		leg1->AddEntry((TObject*)0,"","");
 		leg1->AddEntry(hV0RtFit[1][0][0][2],"K_{s}^{0} raw yield #bf{Trans}","pl");
 		leg1->AddEntry(hV0RtFit[1][0][1][2],"K_{s}^{0} raw yield #bf{Near}","pl");
 		leg1->AddEntry(hV0RtFit[1][0][2][2],"K_{s}^{0} raw yield #bf{Away}","pl");
-		hRt2->GetYaxis()->SetRangeUser(10.,20.*hRt2->GetMaximum());
-		cRtDistro->Update();
+		//
+		cRtRawYield->Update();
 		leg1->Draw();
 
-		cRtDistro->Write();
-		cRtDistro->SaveAs("plots/rtdistro.png");
+		cRtRawYield->Write();
+		cRtRawYield->SaveAs("plots/rtrawyields.png");
 	}
 
 }
