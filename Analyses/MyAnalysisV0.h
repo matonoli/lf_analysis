@@ -177,6 +177,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hParticleMonitor;
 
 		// EVENT INFO HISTOGRAMS
+		TH1D* hEventCuts;
 		TH1D* hEventV0MCentrality;
 		TH1D* hEventRefMult;
 		TH2D* hEventV0MCentvRefMult;

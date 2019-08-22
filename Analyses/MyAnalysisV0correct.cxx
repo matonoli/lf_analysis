@@ -231,8 +231,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		if (NormEv == 0) NormEv = 1;
 
 		printf("Normalising histogram %s by event count %f \n", hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(), NormEv);
-		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEv);
-		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEta);
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEv);
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1./NormEta);
 		
 	} } } }
 
@@ -319,8 +319,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 		if (NormEv == 0) NormEv = 1;
 		printf("Normalising histogram %s by event count %f \n", hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->GetName(), NormEv);
-		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEv);
-		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEta);
+		//hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEv);
+		//hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEta);
 
 
 		/*Int_t leftbin = hNchTrans->FindBin(RTBINS0[iRtBin]*rt_den);

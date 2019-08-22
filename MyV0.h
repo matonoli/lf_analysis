@@ -31,6 +31,7 @@ class MyV0: public TObject {
 
 		Double_t* CalculateAP();
 		Double_t GetPhi();
+		Double_t CalculateY(Int_t Sp);
 		
 		ClassDef(MyV0,1);
 
@@ -40,5 +41,7 @@ class MyV0: public TObject {
 		Double_t mAP[2];
 		Bool_t mPhicalculated;
 		Double_t mPhi;
+		Bool_t mYcalculated[4];
+		Double_t mY[4];
 };
 #endif

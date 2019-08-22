@@ -52,3 +52,20 @@ Double_t MyV0::GetPhi() {
 		return mPhi; 
 	}
 }
+
+Double_t MyV0::CalculateY(Int_t Sp) {
+
+	if (mYcalculated[Sp]) {
+		return mY[Sp];
+	} 
+	else {
+		if (Sp > 3) return -99;
+		TLorentzVector mom;
+		Double_t V0mass[] = { 0., 0.497614, 1.11568, 1.11568};
+		mom.SetPtEtaPhiM(this->GetPt(),this->GetEta(),this->GetPhi(),V0mass[Sp]);
+
+		mY[Sp] = mom.Rapidity();
+		mYcalculated[Sp] = true;
+		return mY[Sp]; 
+	}
+}

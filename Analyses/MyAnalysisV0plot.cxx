@@ -77,6 +77,10 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	hRt2			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
 	hNchvLeadPt2	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hNchvLeadPt2");
 
+	hNchTransRCvMC 		= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hNchTransRCvMC");
+	hLeadPtvNchTrans 	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hLeadPtvNchTrans");
+	hLeadPtvNchTrans0 	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hLeadPtvNchTrans0");
+
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		hV0Efficiency[iSp] = (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
@@ -84,7 +88,15 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		hV0EfficiencyRt[iSp][iReg] = (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]));
 	} }
 
-	/*Int_t nType = (mHandler->GetFlagMC()) ? NTYPE : 1;
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+		hProtonNchTransvPt[iReg] 	= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hProtonNchTransvPt_%s",REGIONS[iReg]));
+		hPionNchTransvPt[iReg] 		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hPionNchTransvPt_%s",REGIONS[iReg]));
+		hLambdaNchTransvPt[iReg] 	= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]));
+		hK0sNchTransvPt[iReg] 		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hK0sNchTransvPt_%s",REGIONS[iReg]));
+
+	}
+
+	Int_t nType = (mHandler->GetFlagMC()) ? NTYPE : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
@@ -153,7 +165,7 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0PtRtFitCorr_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
 
 
-	} } } }	*/
+	} } } }	
 
 
 }
@@ -219,9 +231,9 @@ Int_t MyAnalysisV0plot::Finish() {
 
 
 	BorrowHistograms();
-	//loneHistograms();
-	//MakeFinalFiguresSpherocity();
-	MakeFinalFiguresEvent();
+	CloneHistograms();
+	MakeFinalFiguresSpherocity();
+	//MakeFinalFiguresEvent();
 	//MakeFinalFiguresRt();
 
 	return 0;	
@@ -367,7 +379,7 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 		}
 	}*/
 
-	{
+	/*{
 		TCanvas* cDphi = new TCanvas("cDphi","",1000,900);
 		TH1D* hDphi0 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd0",1,4);
 		TH1D* hDphi1 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd1",7,14);
@@ -398,6 +410,180 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 
 		cDphi->Write();
 		cDphi->SaveAs("plots/rtdphi.png");
+	}
+
+	{
+		TCanvas* cPpi = new TCanvas("cPpi","",1000,900);
+		Double_t rt_den = hNchTrans->GetMean();
+		TLegend *leg1 = new TLegend(0.13,0.50,0.50,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV  Pythia","");
+		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
+		leg1->AddEntry((TObject*)0,"","");
+		{		
+		TH1D* hPpi0 	= (TH1D*)hProtonNchTransvPt[0]->ProjectionX("hPpi0",1,-1);
+		TH1D* h 		= (TH1D*)hPionNchTransvPt[0]->ProjectionX("h",1,-1);
+		hPpi0->Divide(hPpi0,h,1.,1.,"");
+		TH1D* hPpi1 	= (TH1D*)hProtonNchTransvPt[0]->ProjectionX("hPpi1",1,2+TMath::FloorNint(1.*rt_den));
+		h 				= (TH1D*)hPionNchTransvPt[0]->ProjectionX("h",1,2+TMath::FloorNint(1.*rt_den));
+		hPpi1->Divide(hPpi1,h,1.,1.,"");
+		TH1D* hPpi2 	= (TH1D*)hProtonNchTransvPt[0]->ProjectionX("hPpi2",3+TMath::FloorNint(1.*rt_den),50);
+		h 				= (TH1D*)hPionNchTransvPt[0]->ProjectionX("h",3+TMath::FloorNint(1.*rt_den),50);
+		hPpi2->Divide(hPpi2,h,1.,1.,"");
+
+		mHandler->MakeNiceHistogram(hPpi0,COLOURS[0]);
+		mHandler->MakeNiceHistogram(hPpi1,COLOURS[0]);
+		mHandler->MakeNiceHistogram(hPpi2,COLOURS[0]);
+
+		hPpi0->SetLineWidth(3);
+		hPpi1->SetLineWidth(2);hPpi1->SetLineStyle(2);
+		hPpi2->SetLineWidth(2);hPpi2->SetLineStyle(9);
+
+		leg1->AddEntry(hPpi0,"#bf{Trans} R_{T} inc.","l");
+		leg1->AddEntry(hPpi1,"#bf{Trans} R_{T} < 1","l");
+		leg1->AddEntry(hPpi2,"#bf{Trans} R_{T} > 1","l");
+
+		hPpi0->GetXaxis()->SetRangeUser(0.,7.);
+		hPpi0->GetYaxis()->SetRangeUser(0.,0.55);
+		hPpi0->GetYaxis()->SetTitle("p / #pi");
+		hPpi0->Draw("hist l");
+		hPpi1->Draw("hist l same");
+		hPpi2->Draw("hist l same");}
+
+		{		
+		TH1D* hPpi0 	= (TH1D*)hProtonNchTransvPt[1]->ProjectionX("hPpi01",1,-1);
+		TH1D* h 		= (TH1D*)hPionNchTransvPt[1]->ProjectionX("h",1,-1);
+		hPpi0->Divide(hPpi0,h,1.,1.,"");
+		TH1D* hPpi1 	= (TH1D*)hProtonNchTransvPt[1]->ProjectionX("hPpi11",1,2+TMath::FloorNint(1.*rt_den));
+		h 				= (TH1D*)hPionNchTransvPt[1]->ProjectionX("h",1,2+TMath::FloorNint(1.*rt_den));
+		hPpi1->Divide(hPpi1,h,1.,1.,"");
+		TH1D* hPpi2 	= (TH1D*)hProtonNchTransvPt[1]->ProjectionX("hPpi21",3+TMath::FloorNint(1.*rt_den),50);
+		h 				= (TH1D*)hPionNchTransvPt[1]->ProjectionX("h",3+TMath::FloorNint(1.*rt_den),50);
+		hPpi2->Divide(hPpi2,h,1.,1.,"");
+
+		mHandler->MakeNiceHistogram(hPpi0,COLOURS[1]);
+		mHandler->MakeNiceHistogram(hPpi1,COLOURS[1]);
+		mHandler->MakeNiceHistogram(hPpi2,COLOURS[1]);
+
+		hPpi0->SetLineWidth(3);
+		hPpi1->SetLineWidth(2);hPpi1->SetLineStyle(2);
+		hPpi2->SetLineWidth(2);hPpi2->SetLineStyle(9);
+
+
+		leg1->AddEntry(hPpi0,"#bf{Near} R_{T} inc.","l");
+		leg1->AddEntry(hPpi1,"#bf{Near} R_{T} < 1","l");
+		leg1->AddEntry(hPpi2,"#bf{Near} R_{T} > 1","l");
+
+		hPpi0->Draw("hist l same");
+		hPpi1->Draw("hist l same");
+		hPpi2->Draw("hist l same");}
+		leg1->Draw();
+		cPpi->Write();
+		cPpi->SaveAs("plots/cppi.png");
+
+		/*{		
+		TH1D* hPpi0 	= (TH1D*)hProtonNchTransvPt[2]->ProjectionX("hPpi02",1,-1);
+		TH1D* h 		= (TH1D*)hPionNchTransvPt[2]->ProjectionX("h",1,-1);
+		hPpi0->Divide(hPpi0,h,1.,1.,"");
+		TH1D* hPpi1 	= (TH1D*)hProtonNchTransvPt[2]->ProjectionX("hPpi12",1,2+TMath::FloorNint(rt_den));
+		h 				= (TH1D*)hPionNchTransvPt[2]->ProjectionX("h",1,2+TMath::FloorNint(rt_den));
+		hPpi1->Divide(hPpi1,h,1.,1.,"");
+		TH1D* hPpi2 	= (TH1D*)hProtonNchTransvPt[2]->ProjectionX("hPpi22",3+TMath::FloorNint(rt_den),50);
+		h 				= (TH1D*)hPionNchTransvPt[2]->ProjectionX("h",3+TMath::FloorNint(rt_den),50);
+		hPpi2->Divide(hPpi2,h,1.,1.,"");
+
+		mHandler->MakeNiceHistogram(hPpi0,COLOURS[2]);
+		mHandler->MakeNiceHistogram(hPpi1,COLOURS[2]);
+		mHandler->MakeNiceHistogram(hPpi2,COLOURS[2]);
+
+		hPpi0->SetLineWidth(3);
+		hPpi1->SetLineWidth(2);hPpi1->SetLineStyle(2);
+		hPpi2->SetLineWidth(2);hPpi2->SetLineStyle(9);
+
+		hPpi0->Draw("hist l same");
+		hPpi1->Draw("hist l same");
+		hPpi2->Draw("hist l same");}*/
+
+
+		
+		/*mHandler->MakeNiceHistogram(hDphi0,COLOURS[0]);
+		mHandler->MakeNiceHistogram(hDphi1,COLOURS[1]);
+		mHandler->MakeNiceHistogram(hDphi2,COLOURS[2]);
+		//cDphi->SetLogy();
+
+		hDphi0->Rebin(8); hDphi0->Scale(1./hDphi0->Integral(0,-1));
+		hDphi1->Rebin(8); hDphi1->Scale(1./hDphi1->Integral(0,-1));
+		hDphi2->Rebin(8); hDphi2->Scale(1./hDphi2->Integral(0,-1));
+
+		hDphi0->GetYaxis()->SetTitle("a.u.");
+		hDphi0->Draw("");
+		hDphi1->Draw("same");
+		hDphi2->Draw("same");
+		cDphi->Update();
+		
+		TLegend *leg1 = new TLegend(0.64,0.60,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry(hDphi0,"low R_{T}","pl");
+		leg1->AddEntry(hDphi1,"average R_{T}","pl");
+		leg1->AddEntry(hDphi2,"high R_{T}","pl");
+		
+		cDphi->Update();
+		leg1->Draw();
+
+		cDphi->Write();
+		cDphi->SaveAs("plots/rtdphi.png");*/
+	
+
+	if (mHandler->GetFlagMC() ) {
+		TCanvas* cRtRCvMC = new TCanvas("cRtRCvMC","",900,900);
+
+		hNchTransRCvMC->GetXaxis()->SetTitle("generated N_{ch}^{trans}");
+		hNchTransRCvMC->GetYaxis()->SetTitle("reconstructed N_{ch}^{trans}");
+		hNchTransRCvMC->GetYaxis()->SetTitleSize(0.045);
+		hNchTransRCvMC->GetXaxis()->SetTitleSize(0.045);
+
+		hNchTransRCvMC->SetStats(0);
+		cRtRCvMC->SetLogz();
+		hNchTransRCvMC->Draw("colz");
+
+		cRtRCvMC->Write();
+		cRtRCvMC->SaveAs("plots/rtrcmc.png");
+	}
+
+	{
+		TCanvas* cPtLvRt = new TCanvas("cPtLvRt","",1000,900);
+
+		hLeadPtvNchTrans0->GetYaxis()->SetTitleSize(0.045);
+		hLeadPtvNchTrans0->GetXaxis()->SetTitleSize(0.045);
+
+		TProfile* pfx1 = hLeadPtvNchTrans0->ProfileX();
+		mHandler->MakeNiceHistogram((TH1D*)pfx1,kRed);
+
+		hLeadPtvNchTrans0->SetStats(0);
+		cPtLvRt->SetLogz();
+		hLeadPtvNchTrans0->Draw("colz");
+		pfx1->Draw("same");
+
+		cPtLvRt->Write();
+		cPtLvRt->SaveAs("plots/ptlvrt.png");
+	}
+
+	{
+		TCanvas* cPtLvRt = new TCanvas("cPtLvRt1","",1000,900);
+
+		hLeadPtvNchTrans->GetYaxis()->SetTitleSize(0.045);
+		hLeadPtvNchTrans->GetXaxis()->SetTitleSize(0.045);
+
+		TProfile* pfx1 = hLeadPtvNchTrans->ProfileX();
+		mHandler->MakeNiceHistogram((TH1D*)pfx1,kRed);
+
+		hLeadPtvNchTrans->SetStats(0);
+		cPtLvRt->SetLogz();
+		hLeadPtvNchTrans->Draw("colz");
+		pfx1->Draw("same");
+
+		cPtLvRt->Write();
+		cPtLvRt->SaveAs("plots/ptlvrt1.png");
 	}
 
 
@@ -565,6 +751,29 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		cBtoM[3]->SaveAs(Form("plots/btomrt_Hard.png"));
 
 
+	{TCanvas* cBtoMRegs = new TCanvas("cBtoMRegs","",1000,900);
+		
+		mHandler->MakeNiceHistogram(hBtoMRt[0][0],COLOURS[0]);
+		mHandler->MakeNiceHistogram(hBtoMRt[1][0],COLOURS[1]);
+		mHandler->MakeNiceHistogram(hBtoMRt[2][0],COLOURS[2]);		
+
+		hBtoMRt[0][0]->Draw();
+		hBtoMRt[1][0]->Draw("same");
+		hBtoMRt[2][0]->Draw("same");
+		
+		TLegend *leg1 = new TLegend(0.45,0.55,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry(hBtoMRt[0][0],"#bf{Trans} R_{T} inc.","pl");
+		leg1->AddEntry(hBtoMRt[1][0],"#bf{Near} R_{T} inc.","pl");
+		leg1->AddEntry(hBtoMRt[2][0],"#bf{Away} R_{T} inc.","pl");
+		//
+		leg1->Draw();
+
+		cBtoMRegs->Write();
+		cBtoMRegs->SaveAs("plots/rtregs.png");
+	}
+
+
 	// SELF-NORMALISED YIELDS VS RT
 
 	TCanvas* cYieldsRt[4];
@@ -724,7 +933,8 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			
 			for (Int_t iSph = 0; iSph < 3; ++iSph)	{
 
-				mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[iMu+iSph+(iSph>0)-(iMu>1&&iSph>0)]);
+				//mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[iMu+iSph+(iSph>0)-(iMu>1&&iSph>0)]);
+				mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[1+iSph]);
 				hV0PtFitCorr[iSp][0][iMu][iSph]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");		
 
 			}
@@ -752,14 +962,16 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			legPt->Draw();
 
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][1],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.1,3.2);
+				cPt[iSp][iMu-1], 0.4,1.6);
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][2],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.1,3.2);
+				cPt[iSp][iMu-1], 0.4,1.6);
 
 			cPt[iSp][iMu-1]->Write();
 			cPt[iSp][iMu-1]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[iMu]));
 		}
 	}
+
+	return;
 
 	// RT PT SPECTRA
 	TCanvas* cPtRt[4];

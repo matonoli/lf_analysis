@@ -63,9 +63,11 @@ Int_t MyAnalysisV0::Init() {
 
 	mList = (TList*)mHandler->directory()->GetList();
 
+	// initialising treebug checker
 	bugR = 0;
 	bugPt = 0;
 
+	// spherocities
 	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
 	for (Int_t iMu = 0; iMu < NMULTI-1; ++iMu)	{
 		mTS[iType][iMu] = new TransverseSpherocity();
@@ -145,7 +147,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 		
 
-		if (SelectTrack(t)) {
+		if (SelectTrack(t)) {				// primary dca cut
 			if (t.GetPt() > ptLead) {
 				ptLead = t.GetPt();
 				phiLead = t.GetPhi();	}
@@ -154,6 +156,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		//+add tpc refit 
 		if (!t.IskITSrefit()) 		continue;
 		if (!t.IsTPCOnlyRefit())	continue;
+		//0.15 cut ?
 
 		// for Data calc. s0 from tracks
 		if (isEventCentral) {
@@ -251,10 +254,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!SelectTrack(t)) continue;
 
 		ProcessTrack(t,D,multMB,sphMB);
-		ProcessTrack(t,RC,multMB,sphMB);
+		if (mFlagMC) ProcessTrack(t,RC,multMB,sphMB);
+
 		if (isEventFHM) {
 			ProcessTrack(t,D,V0M,sphMB);
-			ProcessTrack(t,RC,V0M,sphMB);
+			if (mFlagMC)	ProcessTrack(t,RC,V0M,sphMB);
 			if (isEventJetty[V0M])		ProcessTrack(t,D,V0M,Jetty);
 			if (isEventIso[V0M])		ProcessTrack(t,D,V0M,Iso);			//
 			if (isEventJettyMC[V0M])	ProcessTrack(t,RC,V0M,Jetty);		// study tracks also for true sphero, stored under RC
@@ -320,7 +324,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (isEventRT && isEventFHM) hNchTransvSpherocityV0M->Fill(eventTS,nChTrans);
 	if (isEventRT && isEventMHM) hNchTransvSpherocityNCharged->Fill(eventTS,nChTrans);
 
-
+	// STUDY DPHI DISTRIBUTION IN RT EVENTS
 	if (isEventRT) for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
@@ -396,6 +400,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				if (TMath::Abs(p.GetPdgCode())==211) 	hPionNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
 				if (TMath::Abs(p.GetPdgCode())==3122) 	hLambdaNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
 				if (TMath::Abs(p.GetPdgCode())==310) 	hK0sNchTransvPt[region]->Fill(p.GetPt(),nChTransMC);
+				// b/m study in MC
 
 			}
 		}
@@ -499,6 +504,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!mHandler->v0(iV0)) continue;
 		MyV0 v0(mHandler->v0(iV0));
 
+
 		if (mFlagMC) {
 			MyParticle v0mc;
 			Bool_t MCfound = false;
@@ -591,12 +597,16 @@ Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev) {
 	//if (!ev.IsGoodAliEvent())			return false;
 	//if(bV0s->GetEntriesFast() < 1)		return false;
 	//if(bTracks->GetEntriesFast() < 1)		return false;
-	if (ev.IsPileupFromSPD())			return false;
+	hEventCuts->Fill(0);
 	if (!ev.AcceptVertex())				return false;
-	if (!ev.CheckFlag())				return false;
+	hEventCuts->Fill(1);
+	if (ev.IsPileupFromSPD())			return false;
+	hEventCuts->Fill(2);
+	//if (!ev.CheckFlag())				return false;
 	//if (!ev.IsCollisionCandidate())		return false;
 	//if (ev.GetCentralityQuality() != 0)	return false;
 
+	return true;
 }
 
 
@@ -667,15 +677,16 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	//printf("is primary %i \n", v0.IsMCPrimary());
 
 	if (Type>0) {
-		
 		if (v0.GetMCPdgCode() != PDG_IDS[Sp])	return false; }
 		
 		//if (!v0.IsMCPrimary())					return false; } // always 1 ?
 
 	//if (Type==0 && Sp==2) if (TMath::Abs(v0.GetIML()) > 0.01) return false;
 
-	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
-	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+	//if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
+	//if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+	if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
+	if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
 	if (v0.GetPt() < cuts::V0_PT[0]) 	return false;
 	if (v0.GetPt() > cuts::V0_PT[1]) 	return false;
 	if (v0.GetDCAdd() > cuts::V0_DCADD) return false;
@@ -748,8 +759,10 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 
-	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
-	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	//if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+	//if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	if (p.GetY() < cuts::V0_Y[0]) 		return false;
+	if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3])	return false;
@@ -782,6 +795,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hParticleMonitor 		= new TH1D("hParticleMonitor","; Step; Entries",10,-0.5,9.5);
 
 	// EVENT INFO HISTOGRAMS
+	hEventCuts	 			= new TH1D("hEventCuts","; Step; Entries",10,-0.5,9.5);
 	hEventV0MCentrality		= new TH1D("hEventV0MCentrality","; V0M Centrality; Entries",300,0,150);
 	hEventRefMult			= new TH1D("hEventRefMult","; Reference multiplicity; Entries",150,0,150);
 	hEventV0MCentvRefMult	= new TH2D("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"
@@ -981,8 +995,10 @@ Int_t MyAnalysisV0::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
+
 	TH1D* hLeadPt = hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);
+	
 
 	//MAKE RT BINNING
 	hRt2 = (TH1D*)hNchTrans->Clone("hRt2");
@@ -992,7 +1008,7 @@ Int_t MyAnalysisV0::Finish() {
 	//cout << "nb " << nbins << " rt " << rtbins << endl;
 	for (int iBin = 0; iBin < nbins+1; ++iBin)	{
 		//cout << "a bin " << hNchTrans->GetBinLowEdge(iBin+1) << endl;
-		rtbins[iBin] = (double)hNchTrans->GetBinLowEdge(iBin+1)/rt_den;
+		if (rt_den>0) rtbins[iBin] = (double)hNchTrans->GetBinLowEdge(iBin+1)/rt_den;
 		//cout << "b bin " << rtbins[iBin] << endl;
 	}
 

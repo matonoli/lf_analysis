@@ -182,9 +182,9 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	GetTemplates();
 
-	//ProducePtSpectraFromHists();
-	ProducePtSpectraFromTrees();
-	ProduceRtSpectraFromTrees();
+	ProducePtSpectraFromHists();
+	//ProducePtSpectraFromTrees();
+	//ProduceRtSpectraFromTrees();
 
 	//DrawConstraints();
 	
@@ -207,7 +207,7 @@ void MyAnalysisV0extract::GetTemplates() {
 
 	TCanvas* cPars[NSPECIES];
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		int iType = 0; int iMu = 3; int iSph = 0;
+		int iType = 0; int iMu = 0; int iSph = 0;
 
 		Float_t fitMin = -0.03, fitMax = 0.03;
 
