@@ -635,6 +635,9 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 
 	hV0Pt[Sp][Type][Mu][Sph]->Fill(v0.GetPt());
 	hV0Eta[Sp][Type][Mu][Sph]->Fill(v0.GetEta());
+	hV0Y[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp));
+	//printf("particle %i with y %f and eta %f   %i %i %i \n", Sp, v0.CalculateY(Sp), v0.GetEta(), Type, Mu, Sph);
+	hV0EtavY[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp),v0.GetEta());
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
 
@@ -865,6 +868,11 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			//";V0 Pt (GeV/#it{c}); Entries",								400, 0, 20);
 		hV0Eta[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; Entries", 										200, -1., 1.);
+		hV0Y[iSp][iType][iMu][iSph]				= new TH1D(Form("hV0Y_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+			";V0 y; Entries", 										200, -1., 1.);
+
+		hV0EtavY[iSp][iType][iMu][iSph]			= new TH2D(Form("hV0EtavY_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+			";V0 #eta; V0 y; Entries", 										200, -1., 1., 200, -1., 1.);
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
 

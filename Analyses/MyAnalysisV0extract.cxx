@@ -180,7 +180,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	//StudyIMShapeRC();
 
-	GetTemplates();
+	//GetTemplates();
 
 	ProducePtSpectraFromHists();
 	//ProducePtSpectraFromTrees();
@@ -1198,7 +1198,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFit(TH1D* hist, Int_t Type, Int_t MB)
 	if (spNumber==1) nPolBg.setRange(0.,hmax);
 
 	//constrain parameters
-	Double_t fixv;
+	/*Double_t fixv;
 	fixv = fPol1_0[spNumber]->Eval(4.);
 	//pGaus1A.setVal(fixv);
 	//pGaus1A.setConstant(kTRUE);
@@ -1214,7 +1214,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFit(TH1D* hist, Int_t Type, Int_t MB)
 	nGaus1.setVal(fixv); 
 	if (muNumber>2) nGaus1.setConstant(kTRUE);
 	nGaus2.setVal(1.-fixv); 
-	if (muNumber>2) nGaus2.setConstant(kTRUE);
+	if (muNumber>2) nGaus2.setConstant(kTRUE);*/
 
 	RooAddPdf fGaus("fGaus","fGaus",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 	RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,1e08);

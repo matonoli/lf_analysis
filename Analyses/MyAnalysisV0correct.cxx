@@ -173,6 +173,10 @@ Int_t MyAnalysisV0correct::Finish() {
 	DoEfficiencyFromFile();
 	CorrectSpectra();
 
+
+	printf("mb k0s spectrum final \n");
+	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << " at " << hV0PtFitCorr[1][0][0][0]->GetBinLowEdge(30) << endl;
+
 	return 0;	
 }
 
@@ -194,8 +198,9 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		printf("Event type %i containing %f events\n", iBin, hEventType->GetBinContent(iBin));
 	}*/
 
-	Double_t NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
-	printf("Normalising all histograms by dEta %f \n", NormEta);
+	//Double_t NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+	Double_t NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
+	printf("Normalising all histograms by dY %f \n", NormEta);
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -236,6 +241,11 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		
 	} } } }
 
+	printf("mb k0s spectrum from fit \n");
+	cout << hV0PtFit[1][0][0][0]->GetBinContent(30) << endl;
+	printf("mb k0s spectrum from norm \n");
+	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << endl;
+
 
 	// normalise rt spectra
 	Int_t increm = 2;
@@ -250,17 +260,17 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 	for (int iB = 0; iB < nbins; ++iB)	{
 		Int_t binA = hNchTrans->FindBin(hRt2Rebin->GetBinLowEdge(iB));
 		Int_t binB = hNchTrans->FindBin(hRt2Rebin->GetBinLowEdge(iB+1));
-		cout << "bin a " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB) << endl;
-		cout << "bin b " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB+1) << endl;
+		//cout << "bin a " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB) << endl;
+		//cout << "bin b " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB+1) << endl;
 		Double_t integr = 0;
 		for (int i = binA; i < binB; ++i)
 		{
-			cout << "in bin " << i << " integrating " << integr << " + " << hNchTrans->GetBinContent(i) << endl;
+			//cout << "in bin " << i << " integrating " << integr << " + " << hNchTrans->GetBinContent(i) << endl;
 			integr += hNchTrans->GetBinContent(i);
 		}
 		Double_t error;
 		Double_t content 	= hNchTrans->IntegralAndError(binA,binB-1,error,"");
-		cout << "integral is " << integr << " vs " << content << endl;
+		//cout << "integral is " << integr << " vs " << content << endl;
 		hRt2Rebin->SetBinContent(iB,content);
 		hRt2Rebin->SetBinError(iB,error);
 	}
@@ -448,6 +458,13 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 
 	}	}	}	}
+
+
+	printf("mb k0s eff \n");
+	cout << hV0Efficiency[1]->GetBinContent(30) << endl;
+
+	printf("mb k0s spectrum after corr \n");
+	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << endl;
 
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{

@@ -53,14 +53,14 @@ namespace V0consts {
 		3.80, 4.50, 5.50, 6.50, 8.00, 
 		10.00, 12.00, 14.00 };*/
 
-	const Int_t NPTBINS2 = 28;
+	/*const Int_t NPTBINS2 = 28;
 	const Double_t XBINS2[NPTBINS2+1] = { 
 		0.00, 0.12, 0.16, 0.20, 0.30, 0.40, 
 		0.50, 0.60, 0.70, 0.80, 0.90,
     	1.00, 1.20, 1.40, 1.60, 1.80, 
 		2.00, 2.40, 2.80, 3.20, 3.60, 
 		4.00, 5.00, 6.00, 7.00, 8.00, 
-		10.00, 12.00, 14.00 };
+		10.00, 12.00, 14.00 };*/
 
 	/*const Int_t NPTBINS2 = 18;
 	const Double_t XBINS2[NPTBINS2+1] = { 
@@ -69,14 +69,14 @@ namespace V0consts {
 		2.20, 2.80, 3.40, 4.00, 5.50, 
 		7.00, 9.00,	11.00, 14.00 };*/
 
-	/*const Int_t NPTBINS2 = 55; 
+	const Int_t NPTBINS2 = 55; 
 	const Double_t XBINS2[NPTBINS+1] = { 
 		0.00, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 
 		0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
     	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 		1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
 		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
-		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };*/
+		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };
 
 	//const Int_t NRTBINS = 26;
 	//const Double_t RTBINS[NRTBINS+1] = {
@@ -228,6 +228,8 @@ class MyAnalysisV0: public MyAnalysis {
 		// V0 HISTOGRAMS
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2D* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		// V0 NTUPLES

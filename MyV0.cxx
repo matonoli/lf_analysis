@@ -8,6 +8,7 @@ ClassImp(MyV0)
 MyV0::MyV0(AliAnalysisPIDV0* v0) : mAliV0(v0), 
 	mAPcalculated(false), mPhicalculated(false) { 
 
+	for (int iSp = 0; iSp < 4; iSp++) mYcalculated[iSp] = false;
 	mAP[0] = 0;
 	mAP[1] = 0;
 	mPhi = 0;
@@ -66,6 +67,7 @@ Double_t MyV0::CalculateY(Int_t Sp) {
 
 		mY[Sp] = mom.Rapidity();
 		mYcalculated[Sp] = true;
+		//cout << "rap for sp " << Sp << " is " << mY[Sp] << endl;
 		return mY[Sp]; 
 	}
 }
