@@ -242,6 +242,7 @@ class MyAnalysisV0: public MyAnalysis {
 
 		// V0 HISTOGRAMS
 		TH1D* hV0Radius;
+		TH1D* hV0ProperT;
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

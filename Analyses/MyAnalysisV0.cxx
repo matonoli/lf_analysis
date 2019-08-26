@@ -559,6 +559,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		//for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 		
 		hV0Radius->Fill(v0.GetRadius());
+		hV0ProperT->Fill(v0.GetIML()*v0.GetRadius()/v0.GetPt());
 		for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 			if (IsV0(v0,iSp,D)) {
 
@@ -860,6 +861,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// V0 HISTOGRAMS
 	hV0Radius		= new TH1D("hV0Radius",";V0 radius; Entries",400,0.,150.);
+	hV0ProperT		= new TH1D("hV0ProperT",";V0 proper #tau; Entries",400,0.,150.);
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
