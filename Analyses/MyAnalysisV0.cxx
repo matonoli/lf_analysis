@@ -693,24 +693,29 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	//if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
 	if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
 	if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
-	if (v0.GetPt() < cuts::V0_PT[0]) 	return false;
-	if (v0.GetPt() > cuts::V0_PT[1]) 	return false;
-	if (v0.GetDCAdd() > cuts::V0_DCADD) return false;
-	if (v0.GetCPA() < cuts::V0_CPA) 	return false;
-	if (v0.GetRadius() < cuts::V0_R[0]) return false;
-	if (v0.GetRadius() > cuts::V0_R[1]) return false;
-
+	if (v0.GetPt() < cuts::V0_PT[0]) 		return false;
+	if (v0.GetPt() > cuts::V0_PT[1]) 		return false;
+	if (v0.GetDCAdd() > cuts::V0_DCADD) 	return false;
+	if (v0.GetCPA() < cuts::V0_CPA) 		return false;
+	if (v0.GetRadius() < cuts::V0_R[0]) 	return false;
+	if (v0.GetRadius() > cuts::V0_R[1]) 	return false;
+	if (!v0.HasFastSignal())				return false;
+	
 	//if (!Sp) return true;
 	MyTrack trP(v0.GetPosTrack()); 
 	MyTrack trN(v0.GetNegTrack());
 	if (!SelectV0Daughter(trP)) return false;
 	if (!SelectV0Daughter(trN)) return false;
 
+	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	switch (Sp) {
 		default : 
 			break;
 		case 1 	: // K0s
 			if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
+			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
+			if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
+			if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
@@ -719,7 +724,8 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		case 2 	: // L
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
-			if (v0.GetIML()*v0.GetRadius()/v0.GetPt() > 5.)		return false;
+			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
+			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
 			if (trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
@@ -728,6 +734,8 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		case 3 	: // Lbar
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
+			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
+			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;

@@ -71,3 +71,15 @@ Double_t MyV0::CalculateY(Int_t Sp) {
 		return mY[Sp]; 
 	}
 }
+
+Bool_t MyV0::HasFastSignal() {
+  
+  // logical or
+  Bool_t hasFast = kFALSE;
+  if ((this->GetNegTrack()->GetStatus() & AliESDtrack::kITSrefit)) hasFast = kTRUE;
+  if ((this->GetPosTrack()->GetStatus() & AliESDtrack::kITSrefit)) hasFast = kTRUE;
+  if (this->GetNegTrack()->HasTOFPID()) hasFast = kTRUE;
+  if (this->GetPosTrack()->HasTOFPID()) hasFast = kTRUE;
+    
+  return hasFast;
+}

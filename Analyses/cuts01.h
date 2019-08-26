@@ -27,12 +27,16 @@ namespace cuts {
 	const Float_t K0S_D_NSIGTPC[2] 		= {-4., 4.};
 	const Float_t K0S_D_ETA[2]			= {-0.8, 0.8};
 	const Float_t K0S_D_DCAPVXY			= 0.05;
+	const Float_t K0S_COMP_M			= 0.005;
+	const Float_t K0S_TAU				= 20.;
 	//const Float_t K0S_NSIGTOF[2] 		= {-3., 3.};
 	const Float_t L_NSIGTPC[2] 			= {-3., 3.};
 	//const Float_t L_NSIGTOF[2] 		= {-3., 3.}; 
 	const Float_t LBAR_NSIGTPC[2] 		= {-3., 3.};
 	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.};
 	const Float_t L_PT[2] 		= {0.4, 14.}; 	//weird stuff in mc for 0.3-0.4
+	const Float_t L_COMP_M				= 0.010;
+	const Float_t L_TAU					= 30.;
 
 	// PRIMARY TRACK SELECTION
 	const Float_t TR_PRIMARY_PAR[3]		= {0.0182, 0.0350, 1.01}; // dont use this for spherocity!

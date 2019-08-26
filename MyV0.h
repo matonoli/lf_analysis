@@ -32,6 +32,7 @@ class MyV0: public TObject {
 		Double_t* CalculateAP();
 		Double_t GetPhi();
 		Double_t CalculateY(Int_t Sp);
+		Bool_t HasFastSignal();
 		
 		ClassDef(MyV0,1);
 
