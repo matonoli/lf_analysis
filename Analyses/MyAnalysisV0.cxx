@@ -557,6 +557,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 		//for (int iMu = 0; iMu < isEventFHM+isEventMHM+isEventRT+1; ++iMu) {
 		//for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
+		
+		hV0Radius->Fill(v0.GetRadius());
 		for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 			if (IsV0(v0,iSp,D)) {
 
@@ -716,6 +718,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		case 2 	: // L
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
+			if (v0.GetIML()*v0.GetRadius()/v0.GetPt() > 30.)		return false;
 			if (trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
@@ -856,6 +859,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	}
 
 	// V0 HISTOGRAMS
+	hV0Radius		= new TH1D("hV0Radius",";V0 radius; Entries",400,0.,150.);
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
