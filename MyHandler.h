@@ -10,6 +10,8 @@ class MyAnalysis;	// forward declaration
 class TChain;
 class TFile;
 class TCanvas;
+class TPad;
+class TVirtualPad;
 class TH1D;
 class TLegend;
 class TDirectory;
@@ -58,7 +60,7 @@ class MyHandler: public TObject {
 		AliAnalysisPIDParticle* particle(Int_t i)	const {return (AliAnalysisPIDParticle*)bParticles->At(i);};
 		
 
-		void DrawCut(Double_t cut, Int_t direction, TCanvas* can);
+		void DrawCut(Double_t cut, Int_t direction, TVirtualPad* can);
 		void MakeNiceHistogram(TH1D* h, Int_t col);
 		void MakeNiceLegend(TLegend* leg, Float_t size = 0.07, Int_t columns = 2);
 		void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high);

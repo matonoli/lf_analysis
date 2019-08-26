@@ -3,6 +3,8 @@
 #include <TString.h>
 #include <TGraph.h>
 #include <TCanvas.h>
+#include <TPad.h>
+#include <TVirtualPad.h>
 #include <TH1D.h>
 #include <TLegend.h>
 
@@ -136,15 +138,15 @@ Int_t MyHandler::Finish() {
 	return 0;	
 }
 
-void MyHandler::DrawCut(Double_t cut, Int_t direction, TCanvas* can) {
+void MyHandler::DrawCut(Double_t cut, Int_t direction, TVirtualPad* can) {
 
 	Double_t x[2] = {cut, cut};
 	Double_t y[2];
 	y[0] = can->GetUymin(); y[1] = can->GetUymax();
 
 	TGraph* gcut = new TGraph(2, x, y);
-	if (direction==2) gcut->SetLineWidth(-402);
-	if (direction==1) gcut->SetLineWidth(402);
+	if (direction==2) gcut->SetLineWidth(-202);
+	if (direction==1) gcut->SetLineWidth(202);
 	if (direction==0) gcut->SetLineWidth(2);
 	gcut->SetLineColor(kRed);
 	gcut->SetFillColor(kRed);

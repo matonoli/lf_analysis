@@ -153,10 +153,15 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
+		hSidebandMean[iSp]	= new TH1D(Form("hSidebandMean_%s", SPECIES[iSp]),"; p_{T} bin; SB #mu;",NPTBINS,XBINS);
+		hSidebandSigma[iSp]	= new TH1D(Form("hSidebandSigma_%s", SPECIES[iSp]),"; p_{T} bin; SB #sigma;",NPTBINS,XBINS);
+
+		/*
 		hFitParam0[iSp]	= new TH1D(Form("hFitParam0_%s", SPECIES[iSp]),"; p_{T} bin; gaus1 #mu;",NPTBINS,XBINS);
 		hFitParam1[iSp]	= new TH1D(Form("hFitParam1_%s", SPECIES[iSp]),"; p_{T} bin; gaus1 #sigma;",NPTBINS,XBINS);
 		hFitParam2[iSp]	= new TH1D(Form("hFitParam2_%s", SPECIES[iSp]),"; p_{T} bin; gaus2 #sigma;",NPTBINS,XBINS);
 		hFitParam3[iSp]	= new TH1D(Form("hFitParam3_%s", SPECIES[iSp]),"; p_{T} bin; gaus1 fraction;",NPTBINS,XBINS);
+		*/
 	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -182,6 +187,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	//GetTemplates();
 
+	DefineSidebands();
 	ProducePtSpectraFromHists();
 	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
@@ -201,6 +207,70 @@ void MyAnalysisV0extract::DrawConstraints() {
 	hFitParam2[1]->Draw("same");
 }
 
+void MyAnalysisV0extract::DefineSidebands() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		int iType = 0; int iMu = 0; int iSph = 0;
+
+		Float_t fitMin = -0.03, fitMax = 0.03;
+
+		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
+
+			TH1D* hist = (TH1D*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
+				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, iBin),
+				iBin,iBin);
+
+			Bool_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)) == 0);
+			if (empty) continue;
+			Double_t hmax = hist->GetMaximum();
+
+			RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
+			hist->Rebin(8);
+			RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
+
+			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.005,0.005);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.007,0.0005,0.01);
+			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
+			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e08);
+		
+			//RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
+			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.001,0.03);
+			RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
+			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e08);
+		
+			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-2,2);
+			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-2,2);
+			RooChebychev fPolBg = RooChebychev("fPolBg","fPolBg",MassDT,RooArgSet(pPolBgA));
+			RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e08);
+
+			RooAddPdf fGaus("fGaus","fGaus",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
+			RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,1e08);
+
+			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus,fPolBg),RooArgList(nGaus,nPolBg));
+
+			RooFitResult* fR = 0; 
+			//if (!empty) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+			if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
+
+			// GENERATE RMS
+			RooDataSet* histSigma = fGaus.generate(MassDT,100000);
+			Double_t Sigma = histSigma->sigma(MassDT);
+
+			// SAVE PARS
+			hSidebandMean[iSp]->SetBinContent(iBin,pGaus1A.getVal());
+			hSidebandMean[iSp]->SetBinError(iBin,pGaus1A.getError());
+			hSidebandSigma[iSp]->SetBinContent(iBin,Sigma);
+			Double_t SigmaError = TMath::Sqrt(pGaus1B.getError()*pGaus1B.getError()+pGaus2B.getError()*pGaus2B.getError());
+			hSidebandSigma[iSp]->SetBinError(iBin,0.0002+SigmaError);
+
+		}
+
+		// INTERPOLATE SIGMA
+		hSidebandSigma[iSp]->Fit("pol1");
+
+	}
+
+}
 
 void MyAnalysisV0extract::GetTemplates() {
 
@@ -943,10 +1013,11 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	iCan = 0;
+
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
-	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	for (int iMu = 0; iMu < 1; ++iMu)		{
+	for (int iSph = 0; iSph < 1; ++iSph)	{
 
 		if (iMu > 2 && (iSph < 3 && iSph)) continue;
 		if (iMu < 3 && iSph > 2) continue; 
@@ -961,10 +1032,14 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1+binSize)	{
 		//for (int iBin = 10; iBin < 11; ++iBin)	{
 			
-			yield = ExtractYieldFit((TH1D*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
+			/*yield = ExtractYieldFit((TH1D*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
 				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, binCounter),
 				iBin,iBin+binSize),		iType,	(iType==0&&iMu==3&&iSph==0) );		// should be perhaps changed to FindBin
-			
+			*/
+			yield = ExtractYieldSB((TH1D*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
+				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, binCounter),
+				iBin,iBin+binSize));
+
 			hV0PtFit[iSp][iType][iMu][iSph]->SetBinContent(binCounter,*(yield+0));
 			hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(binCounter,*(yield+1));
 			binCounter++;
@@ -1111,7 +1186,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 			yield = ExtractYieldFitRt((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
 				Form("lPt>%f && lPt<%f && lNchTrans>%f && lNchTrans<%f",RT_PTRANGE[iPtBin][0],RT_PTRANGE[iPtBin][1],
 					iBin-1E-4, iBin-1E-4+increm)),			iType);
-//					RTBINS[iBin]*rt_den,RTBINS[iBin+1]*rt_den)),		0);
+					//RTBINS[iBin]*rt_den,RTBINS[iBin+1]*rt_den)),		0);
 			
 			hV0RtFit[iSp][iType][iReg][iPtBin]->SetBinContent(iBin+1,*(yield+0));
 			hV0RtFit[iSp][iType][iReg][iPtBin]->SetBinError(iBin+1,*(yield+1));
@@ -1152,6 +1227,140 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
 	mHandler->root()->SetBatch(kFALSE);
 }
+
+Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
+
+	static Double_t val[2];
+	val[0] = 0; val[1] = 0;
+	Float_t fitMin = -0.05, fitMax = 0.05;
+
+	TString histName(hist->GetName());
+	TString binName(histName(histName.Index("iBin")+4,2));
+	Int_t binNumber = binName.Atoi();
+	TString spName(histName(histName.Index("iSp")+3,1));
+	Int_t spNumber = spName.Atoi();
+	TString muName(histName(histName.Index("iMu")+3,1));
+	Int_t muNumber = muName.Atoi();
+
+	Bool_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)) == 0);
+
+	Double_t Mean = hSidebandMean[spNumber]->GetBinContent(binNumber);
+	Double_t Sigma = hSidebandSigma[spNumber]->GetFunction("pol1")->Eval(XBINS[binNumber-1]);
+
+	Double_t N 	= hist->Integral(hist->FindBin(Mean-4*Sigma),hist->FindBin(Mean+4*Sigma));
+	Double_t Bg = hist->Integral(hist->FindBin(Mean-8*Sigma),hist->FindBin(Mean-4*Sigma));
+			Bg += hist->Integral(hist->FindBin(Mean+4*Sigma),hist->FindBin(Mean+8*Sigma));
+
+	val[0] = N - Bg;
+	val[1] = TMath::Sqrt(N);
+
+	cFits[canCounter/nBins]->cd(1+canCounter%nBins);
+	mHandler->MakeNiceHistogram(hist,kBlack);
+	hist->SetMarkerSize(0.5); hist->GetXaxis()->SetLabelSize(0.055);
+	hist->Rebin(8);
+	hist->Draw();
+	hist->GetXaxis()->SetRangeUser(fitMin,fitMax);
+	cFits[canCounter/nBins]->Update();
+	mHandler->DrawCut(Mean+8.*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+	mHandler->DrawCut(Mean+4.*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+	mHandler->DrawCut(Mean-4.*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+	mHandler->DrawCut(Mean-8.*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+	
+	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+	mHandler->MakeNiceLegend(leg1, 0.10, 1.);
+	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[binNumber-1],xBins[binNumber])," ");
+	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
+	leg1->Draw();
+	
+	canCounter++;
+	return val;
+}
+/*Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
+
+	static Double_t val[2];
+	val[0] = 0; val[1] = 0;
+	Float_t fitMin = -0.03, fitMax = 0.03;
+
+	Double_t hmax = hist->GetMaximum();
+
+	Bool_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)) == 0);
+
+	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
+	hist->Rebin(8);
+	RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
+
+	TString histName(hist->GetName());
+	TString binName(histName(histName.Index("iBin")+4,2));
+	Int_t binNumber = binName.Atoi();
+	TString spName(histName(histName.Index("iSp")+3,1));
+	Int_t spNumber = spName.Atoi();
+	TString muName(histName(histName.Index("iMu")+3,1));
+	Int_t muNumber = muName.Atoi();
+
+	RooRealVar pGaus1A("pGaus1A","Mean 1",-0.005,0.005);
+	RooRealVar pGaus1B("pGaus1B","Sigma 1",0.0005,0.01);
+	RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
+	RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e08);
+		
+	//RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
+	RooRealVar pGaus2B("pGaus2B","Sigma 2",0.001,0.03);
+	RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
+	RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e08);
+		
+	RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-2,2);
+	RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-2,2);
+	RooChebychev fPolBg = RooChebychev("fPolBg","fPolBg",MassDT,RooArgSet(pPolBgA));
+	RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e08);
+
+	RooAddPdf fGaus("fGaus","fGaus",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
+	RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,1e08);
+
+	RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus,fPolBg),RooArgList(nGaus,nPolBg));
+
+	RooFitResult* fR = 0; 
+	//if (!empty) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+	if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
+
+	// GENERATE RMS
+	RooDataSet* histSigma = fGaus.generate(MassDT,100000);
+	Double_t Sigma = histSigma->mean(MassDT);
+	cout << "" << Sigma << endl;
+		
+	//	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
+	//RooFormulaVar nGaus("nGaus","nGaus1",RooArgList(nGaus1));
+
+	cFits[canCounter/nBins]->cd(1+canCounter%nBins);
+	RooPlot* plot1 = MassDT.frame(Title(" "));
+	DT_set.plotOn(plot1,MarkerSize(0.4));
+	if (!empty) {
+		fTotal.plotOn(plot1,Components(fGaus2),LineStyle(2),LineWidth(2),LineColor(kRed));
+		fTotal.plotOn(plot1,Components(fGaus1),LineStyle(2),LineWidth(2),LineColor(kRed));
+		//if (Type==0) fTotal.plotOn(plot1,Components(fPolBg),LineStyle(1),LineWidth(2),LineColor(kBlue));
+		fTotal.plotOn(plot1,LineWidth(2),LineColor(kRed)); }
+	plot1->SetMinimum(1e-05);
+	plot1->SetMaximum(1.40*plot1->GetMaximum());
+	plot1->GetXaxis()->SetTitleSize(0.05);
+	plot1->GetYaxis()->SetTitleSize(0.05);
+	plot1->Draw();
+
+	Double_t chi2ndf = (!empty) ? plot1->chiSquare() : -1.;
+
+	if (!empty) {
+		val[0] = nGaus.getVal();
+		//printf("STATUS: int from fit is %f \n", val[0]);
+		val[1] = nGaus.getPropagatedError(*fR);}
+
+	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+	mHandler->MakeNiceLegend(leg1, 0.10, 1.);
+	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[binNumber-1],xBins[binNumber])," ");
+	leg1->AddEntry((TObject*)0,Form("%s , #chi^{2}/ndf = %4.2f",SPECNAMES[spNumber],chi2ndf)," ");
+	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
+	leg1->Draw();
+	
+	canCounter++;
+
+	return val;
+}*/
 
 Double_t* MyAnalysisV0extract::ExtractYieldFit(TH1D* hist, Int_t Type, Int_t MB) {
 

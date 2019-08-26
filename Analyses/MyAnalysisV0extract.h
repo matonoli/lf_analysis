@@ -32,11 +32,14 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Int_t Finish();
 		Bool_t BorrowHistograms();
 		Bool_t CreateHistograms();
+		Double_t* ExtractYieldSB(TH1D* hist = 0);
 		Double_t* ExtractYieldFit(TH1D* hist = 0, Int_t Type = 0, Int_t MB = 0);
 		Double_t* ExtractYieldFitRt(TTree* tree = 0, Int_t Type = 0);
 		Double_t* ExtractYieldFitPtTree(TTree* tree = 0, Int_t Type = 0);
 
+
 		void DrawConstraints();
+		void DefineSidebands();
 		void GetTemplates();
 		void StudyIMShapeRC();
 
@@ -65,6 +68,10 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Int_t nPads;
 		Int_t nchmax;
 		Int_t increm;
+
+		//SIDEBANDS
+		TH1D* hSidebandMean[V0consts::NSPECIES];
+		TH1D* hSidebandSigma[V0consts::NSPECIES];
 
 
 		// V0 HISTOGRAMS
