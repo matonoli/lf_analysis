@@ -719,7 +719,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		case 2 	: // L
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
-			if (v0.GetIML()*v0.GetRadius()/v0.GetPt() < 15.)		return false;
+			if (v0.GetIML()*v0.GetRadius()/v0.GetPt() > 5.)		return false;
 			if (trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
