@@ -246,11 +246,11 @@ void MyAnalysisV0extract::DefineSidebands() {
 			RooAddPdf fGaus("fGaus","fGaus",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 			RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,1e08);
 
-			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus,fPolBg),RooArgList(nGaus,nPolBg));
+			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus1,fPolBg),RooArgList(nGaus1,nPolBg));
 
 			RooFitResult* fR = 0; 
-			//if (!empty) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
-			if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
+			if (!empty) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+			//if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 
 			// GENERATE RMS
 			RooDataSet* histSigma = fGaus.generate(MassDT,100000);
