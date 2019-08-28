@@ -44,13 +44,13 @@ namespace V0consts {
 		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
 		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };*/
 
-	const Int_t NPTBINS = 43;		//official MB spectra
+	const Int_t NPTBINS = 44;		//official MB spectra
 	const Double_t XBINS[NPTBINS+1] = {
 		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
 		1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
 		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 3.6, 3.9, 4.2, 
 		4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 7.5, 8.0, 8.5, 9.2, 
-		10.0, 11.0, 12.0, 13.5 };
+		10.0, 11.0, 12.0, 13.5, 15.0 };
 
 	/*const Int_t NPTBINS = 18;
 	const Double_t XBINS[NPTBINS+1] = { 
@@ -126,11 +126,12 @@ namespace V0consts {
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
 	const Int_t COLOURS[6] = {kAzure-3,kOrange+8,kGreen+2,kPink+10,kMagenta+2, kViolet+10};
 
-	const Int_t NEVENTTYPES = 20; //1+2+2+4+6+4
+	const Int_t NEVENTTYPES = 23; //1+2+2+4+6+4+3
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
 			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY",
 			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
-			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" };
+			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" ,
+			"MB post-ES no V", "MB post-ES has V", "MB post-ES vz"};
 
 	const Float_t RT_DEN		= 7.449;
 	const Float_t RT_DEN_MC		= 7.525; 
@@ -152,7 +153,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
-		Bool_t SelectEvent(MyEvent &ev);
+		Bool_t SelectEvent(MyEvent &ev, Int_t flag);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
 		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);
@@ -193,6 +194,7 @@ class MyAnalysisV0: public MyAnalysis {
 
 		// EVENT INFO HISTOGRAMS
 		TH1D* hEventCuts;
+		TH1D* hEventVz;
 		TH1D* hEventV0MCentrality;
 		TH1D* hEventRefMult;
 		TH2D* hEventV0MCentvRefMult;

@@ -91,11 +91,25 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	MyEvent event(mHandler->event());
 	hEventMonitor->Fill(1);
 
+
+	
 	// EVENT SELECTION
 	hEventType->Fill(EVENTTYPES[0],1);	//preES MB
-	if (!SelectEvent(event)) return 0;
+	Int_t evFlag = (511-4-8-32); // MB xcheck 511;
+	if (!SelectEvent(event,evFlag)) return 0;
 	hEventType->Fill(EVENTTYPES[1],1);	//postES MB
+	if (!event.HasVertex())	{
+		hEventType->Fill(EVENTTYPES[20],1);
+		return 0; }
+	hEventVz->Fill(event.GetZ());
+	hEventType->Fill(EVENTTYPES[21],1);
+	if (!event.AcceptVertex()) return 0;
+	hEventType->Fill(EVENTTYPES[22],1);
 	hEventMonitor->Fill(2);
+
+	/*cout << "ev accepted w flag " << event.GetEventFlags() << endl;
+	cout << "flag to be checked " << event.GetCheckFlag() << endl;
+	cout << "cf " << event.CheckFlag() << endl;*/
 
 	// BUG HOTFIX FOR AURORATREES
 	MyV0 bugfix;
@@ -595,16 +609,20 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	return 0;	
 }
 
-Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev) {
+Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
+
+	
+	ev.SetCheckFlag(flag);
+	if (!ev.IsGoodAliEvent()) return false;
 
 	//if (!ev.IsGoodAliEvent())			return false;
 	//if(bV0s->GetEntriesFast() < 1)		return false;
 	//if(bTracks->GetEntriesFast() < 1)		return false;
-	hEventCuts->Fill(0);
-	if (!ev.AcceptVertex())				return false;
-	hEventCuts->Fill(1);
-	if (ev.IsPileupFromSPD())			return false;
-	hEventCuts->Fill(2);
+	//hEventCuts->Fill(0);
+	//if (!ev.AcceptVertex())				return false;
+	//hEventCuts->Fill(1);
+	//if (ev.IsPileupFromSPD())			return false;
+	//hEventCuts->Fill(2);
 	//if (!ev.CheckFlag())				return false;
 	//if (!ev.IsCollisionCandidate())		return false;
 	//if (ev.GetCentralityQuality() != 0)	return false;
@@ -813,6 +831,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// EVENT INFO HISTOGRAMS
 	hEventCuts	 			= new TH1D("hEventCuts","; Step; Entries",10,-0.5,9.5);
+	hEventVz				= new TH1D("hEventVz","; vz; Entries",400,-50,50);
 	hEventV0MCentrality		= new TH1D("hEventV0MCentrality","; V0M Centrality; Entries",300,0,150);
 	hEventRefMult			= new TH1D("hEventRefMult","; Reference multiplicity; Entries",150,0,150);
 	hEventV0MCentvRefMult	= new TH2D("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"

@@ -209,10 +209,15 @@ void MyAnalysisV0extract::DrawConstraints() {
 
 void MyAnalysisV0extract::DefineSidebands() {
 
+	mHandler->root()->SetBatch(kTRUE);
+	nPads = TMath::Nint(TMath::Sqrt(NPTBINS));
+
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		int iType = 0; int iMu = 0; int iSph = 0;
 
 		Float_t fitMin = -0.03, fitMax = 0.03;
+		cFitsSB[iSp] = new TCanvas(Form("cFitsSB_iSp%i",iSp),"",2800,2000);
+		cFitsSB[iSp]->Divide(nPads+1,nPads,0.00005,0.00005);
 
 		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
 
@@ -263,12 +268,36 @@ void MyAnalysisV0extract::DefineSidebands() {
 			Double_t SigmaError = TMath::Sqrt(pGaus1B.getError()*pGaus1B.getError()+pGaus2B.getError()*pGaus2B.getError());
 			hSidebandSigma[iSp]->SetBinError(iBin,0.0002+SigmaError);
 
+			cFitsSB[iSp]->cd(iBin);
+			RooPlot* plot1 = MassDT.frame(Title(" "));
+			DT_set.plotOn(plot1,MarkerSize(0.4));
+			if (!empty) {
+				//fTotal.plotOn(plot1,Components(fGaus2),LineStyle(2),LineWidth(2),LineColor(kRed));
+				fTotal.plotOn(plot1,Components(fGaus1),LineStyle(2),LineWidth(2),LineColor(kRed));
+				fTotal.plotOn(plot1,Components(fPolBg),LineStyle(1),LineWidth(2),LineColor(kBlue));
+			}
+			plot1->SetMinimum(1e-05);
+			plot1->SetMaximum(1.40*plot1->GetMaximum());
+			plot1->GetXaxis()->SetTitleSize(0.05);
+			plot1->GetYaxis()->SetTitleSize(0.05);
+			plot1->Draw();
+
+			TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+			mHandler->MakeNiceLegend(leg1, 0.10, 1.);
+			leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",XBINS[iBin-1],XBINS[iBin])," ");
+			leg1->AddEntry((TObject*)0,Form("%s",SPECNAMES[iSp])," ");
+			leg1->Draw();
+
 		}
 
+		//cFitsSB[iSp]->SaveAs(Form("tmp/%s.png",cFitsSB[iSp]->GetName()));
+		cFitsSB[iSp]->Write();
+
 		// INTERPOLATE SIGMA
-		hSidebandSigma[iSp]->Fit("pol1");
+		hSidebandSigma[iSp]->Fit("pol1","0");
 
 	}
+	mHandler->root()->SetBatch(kFALSE);
 
 }
 
@@ -1016,8 +1045,8 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iMu = 0; iMu < 1; ++iMu)		{
-	for (int iSph = 0; iSph < 1; ++iSph)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
 		if (iMu > 2 && (iSph < 3 && iSph)) continue;
 		if (iMu < 3 && iSph > 2) continue; 
@@ -1025,7 +1054,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 		printf("Extracting yield for pt spectrum iSp%i_iType%i_iMu%i_iSph%i \n",iSp,iType,iMu,iSph);
 
 		cFits[iCan] = new TCanvas(Form("cFits_iSp%i_iType%i_iMu%i_iSph%i",iSp,iType,iMu,iSph),"",2800,2000);
-		cFits[iCan]->Divide(nPads+1,nPads,0.00005,0.00005);
+		cFits[iCan]->Divide(nPads+2,nPads,0.00005,0.00005);
 			
 		Double_t* yield = 0;
 		Int_t binCounter = 1;
@@ -1045,6 +1074,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 			binCounter++;
 		}
 
+		//cFits[iCan]->SaveAs(Form("tmp/%s.png",cFits[iCan]->GetName()));
 		cFits[iCan]->Write();
 		iCan++;
 
@@ -1085,7 +1115,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 
 		cFitsPtTree[iCan] = new TCanvas(Form("cFitsPtTree_iSp%i_iType%i_iReg%i_iRtBin%i",iSp,iType,iReg,iRtBin),"",2800,2000);
-		cFitsPtTree[iCan]->Divide(nPads+1,nPads,0.00005,0.00005);
+		cFitsPtTree[iCan]->Divide(nPads+2,nPads,0.00005,0.00005);
 			
 		Double_t* yield = 0;
 		Float_t leftrtb =	RTBINS0[iRtBin]*rt_den;
@@ -1247,12 +1277,17 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	Double_t Mean = hSidebandMean[spNumber]->GetBinContent(binNumber);
 	Double_t Sigma = hSidebandSigma[spNumber]->GetFunction("pol1")->Eval(XBINS[binNumber-1]);
 
-	Double_t N 	= hist->Integral(hist->FindBin(Mean-4*Sigma),hist->FindBin(Mean+4*Sigma));
-	Double_t Bg = hist->Integral(hist->FindBin(Mean-8*Sigma),hist->FindBin(Mean-4*Sigma));
-			Bg += hist->Integral(hist->FindBin(Mean+4*Sigma),hist->FindBin(Mean+8*Sigma));
+	Double_t NSig = 6;
+	Double_t N 	= hist->Integral(hist->FindBin(Mean-NSig*Sigma),hist->FindBin(Mean+NSig*Sigma));
+	Double_t Bg = hist->Integral(hist->FindBin(Mean-2*NSig*Sigma),hist->FindBin(Mean-NSig*Sigma));
+			Bg += hist->Integral(hist->FindBin(Mean+NSig*Sigma),hist->FindBin(Mean+2*NSig*Sigma));
 
 	val[0] = N - Bg;
 	val[1] = TMath::Sqrt(N);
+
+	/*cout << " ib " << binNumber << endl;
+	cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
+	" p " << canCounter%nBins << endl;*/
 
 	cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 	mHandler->MakeNiceHistogram(hist,kBlack);

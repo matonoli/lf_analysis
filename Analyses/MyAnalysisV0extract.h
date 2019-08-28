@@ -59,6 +59,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Int_t iCan = 0;
 		Int_t canCounter = 0;
 		Int_t canCounterRt = 0;
+		TCanvas* cFitsSB[V0consts::NSPECIES];
 		TCanvas* cFits[(V0consts::NSPECIES-1) * V0consts::NMULTI * V0consts::NSPHERO * 2];
 		TCanvas* cFitsRt[(V0consts::NSPECIES-1) * 2 * V0consts::NREGIONS * V0consts::NRTPTBINS];
 		TCanvas* cFitsPtTree[(V0consts::NSPECIES-1) * V0consts::NREGIONS * V0consts::NRTBINS0 * 2];
