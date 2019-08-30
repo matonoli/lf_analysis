@@ -234,7 +234,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
 
 			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.005,0.005);
-			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.007,0.0005,0.01);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.0005,0.01);
 			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e08);
 		

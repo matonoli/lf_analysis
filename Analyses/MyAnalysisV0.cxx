@@ -611,7 +611,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
 
-	
+
 	ev.SetCheckFlag(flag);
 	if (!ev.IsGoodAliEvent()) return false;
 
@@ -707,10 +707,10 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 
 	//if (Type==0 && Sp==2) if (TMath::Abs(v0.GetIML()) > 0.01) return false;
 
-	//if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
-	//if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
-	if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
-	if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
+	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
+	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+	//if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
+	//if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
 	if (v0.GetPt() < cuts::V0_PT[0]) 		return false;
 	if (v0.GetPt() > cuts::V0_PT[1]) 		return false;
 	if (v0.GetDCAdd() > cuts::V0_DCADD) 	return false;
@@ -730,7 +730,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		default : 
 			break;
 		case 1 	: // K0s
-			if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
+			//if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
 			if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
 			if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
@@ -788,16 +788,17 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 	if (tr.GetEta() < cuts::K0S_D_ETA[0])	return false;
 	if (tr.GetEta() > cuts::K0S_D_ETA[1])	return false;
 	if (TMath::Abs(tr.GetDCApvXY()) < cuts::K0S_D_DCAPVXY)	return false;
+	//if (!tr.IsITSTPC2011())	return false;
 
 	return true;
 }
 
 Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 
-	//if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
-	//if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
-	if (p.GetY() < cuts::V0_Y[0]) 		return false;
-	if (p.GetY() > cuts::V0_Y[1]) 		return false;
+	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	//if (p.GetY() < cuts::V0_Y[0]) 		return false;
+	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3])	return false;
