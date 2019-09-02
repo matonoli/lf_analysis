@@ -179,7 +179,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	DoEfficiencyFromFile();
 	CorrectSpectra();
 
-	if (!mHandler->GetFlagMC()) StudyCuts();
+	//if (!mHandler->GetFlagMC()) StudyCuts();
 
 
 	printf("mb k0s spectrum final \n");
@@ -532,6 +532,8 @@ void MyAnalysisV0correct::StudyCuts() {
 		hV0PtCutMC[iCut]->Divide(hV0PtCutMC[iCut-1]);
 		mHandler->MakeNiceHistogram(hV0PtCut[iCut],kRed);
 		mHandler->MakeNiceHistogram(hV0PtCutMC[iCut],kBlue);
+		hV0PtCut[iCut]->SetMarkerSize(0.6);
+		hV0PtCutMC[iCut]->SetMarkerSize(0.6);
 		cCuts->cd(iCut);
 		hV0PtCut[iCut]->Draw();
 		hV0PtCutMC[iCut]->Draw("same");

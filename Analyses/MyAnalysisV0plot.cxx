@@ -234,7 +234,7 @@ Int_t MyAnalysisV0plot::Finish() {
 	CloneHistograms();
 	MakeFinalFiguresSpherocity();
 	//MakeFinalFiguresEvent();
-	//MakeFinalFiguresRt();
+	MakeFinalFiguresRt();
 
 	return 0;	
 }
@@ -971,10 +971,10 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 		}
 	}
 
-	return;
+	//return;
 
 	// RT PT SPECTRA
-	TCanvas* cPtRt[4];
+	/*TCanvas* cPtRt[4];
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)
 	{
 		mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][3][0],kRed);
@@ -1022,7 +1022,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			cPtRt[iSp]->Write();
 			cPtRt[iSp]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[3]));
 
-	}
+	}*/
 
 	// B/M RATIO
 	//TH1D* hBtoM[NMULTI][NSPHERO];

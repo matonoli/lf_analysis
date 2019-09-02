@@ -188,6 +188,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		//+add tpc refit 
 		if (!t.IskITSrefit()) 		continue;
 		if (!t.IsTPCOnlyRefit())	continue;
+		if (t.GetPt() < 0.15)		continue;
 		//0.15 cut ?
 
 		// for Data calc. s0 from tracks
@@ -756,7 +757,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	
 	//printf("is primary %i \n", v0.IsMCPrimary());
 
-	Bool_t isPromising = (TMath::Abs(v0.GetIMK0s())<0.002) && (Type==mFlagMC);
+	Bool_t isPromising = (TMath::Abs(v0.GetIMK0s())<0.002) && (Type==mFlagMC) && (Sp == 1);
 	Int_t cutN = 1;
 
 	if (Type>0) {
@@ -778,15 +779,15 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//4
 	if (v0.GetPt() > cuts::V0_PT[1]) 		return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	if (v0.GetDCAdd() > cuts::V0_DCADD) 	return false;
+	//if (v0.GetDCAdd() > cuts::V0_DCADD) 	return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	if (v0.GetCPA() < cuts::V0_CPA) 		return false;
+	//if (v0.GetCPA() < cuts::V0_CPA) 		return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//7
-	if (v0.GetRadius() < cuts::V0_R[0]) 	return false;
+	//if (v0.GetRadius() < cuts::V0_R[0]) 	return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	if (v0.GetRadius() > cuts::V0_R[1]) 	return false;
+	//if (v0.GetRadius() > cuts::V0_R[1]) 	return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	if (!v0.HasFastSignal())				return false;
+	//if (!v0.HasFastSignal())				return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	
 	//if (!Sp) return true;
@@ -803,9 +804,9 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			break;
 		case 1 	: // K0s
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//13
-			if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
+			//if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//14
-			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
+			//if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());

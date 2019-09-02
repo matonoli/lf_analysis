@@ -197,7 +197,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	DefineSidebands();
 	ProducePtSpectraFromHists();
-	//ProducePtSpectraFromTrees();
+	ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
 
 
@@ -1120,6 +1120,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	iCan = 0;
 	canCounter = 0;
+	
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
@@ -1134,14 +1135,20 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 		//		cout << "left " << leftrtb << " right " << rightrtb << endl;
 		printf("Extracting yield for pt spectrum from trees iSp%i_iType%i_iReg%i_iRtBin%i \n",iSp,iType,iReg,iRtBin);
 		TString treeName = tV0massRt[iSp][iType][iReg]->GetName();
+		Int_t binCounter = 1;
 		for (int iBin = 0; iBin < NPTBINS2; ++iBin)	{
 
 			
 			tV0massRt[iSp][iType][iReg]->SetName(Form("treept_iSp%i_iBin%i",iSp,iBin));
 
-			yield = ExtractYieldFitPtTree((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
+			/*yield = ExtractYieldFitPtTree((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
 				Form("lPt>%f && lPt<%f && lNchTrans>=%f && lNchTrans<%f",XBINS2[iBin],XBINS2[iBin+1],
-					leftrtb-1E-05,rightrtb)),     iType);
+					leftrtb-1E-05,rightrtb)),     iType);*/
+			TH1D* tmp = new TH1D("tmp",";V0 m (GeV/#it{c}^{2}); Entries", 1000, -0.1, 0.1);
+			tV0massRt[iSp][iType][iReg]->Draw("MassDT>>tmp",Form("lPt>%f && lPt<%f && lNchTrans>=%f && lNchTrans<%f",XBINS2[iBin],XBINS2[iBin+1],
+					leftrtb-1E-05,rightrtb));
+			tmp->SetName(Form("treept_iSp%i_iBin%i",iSp,iBin));
+			yield = ExtractYieldSB(tmp);
 
 			tV0massRt[iSp][iType][iReg]->SetName(treeName);
 
@@ -1149,7 +1156,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 			hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetBinContent(iBin+1,*(yield+0));	//+1 for underflow bin
 			hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetBinError(iBin+1,*(yield+1));
 			//hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(binCounter,*(yield+1));
-			//binCounter++;
+			binCounter++;
 		}
 
 		cFitsPtTree[iCan]->Write();
@@ -1280,8 +1287,10 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	Int_t binNumber = binName.Atoi();
 	TString spName(histName(histName.Index("iSp")+3,1));
 	Int_t spNumber = spName.Atoi();
-	TString muName(histName(histName.Index("iMu")+3,1));
-	Int_t muNumber = muName.Atoi();
+
+	Bool_t isTree = histName.Contains("tree");
+	/*TString muName(histName(histName.Index("iMu")+3,1));
+	Int_t muNumber = muName.Atoi();*/
 
 	Bool_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)) == 0);
 
@@ -1299,6 +1308,66 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	/*cout << " ib " << binNumber << endl;
 	cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
 	" p " << canCounter%nBins << endl;*/
+
+	if (!isTree) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
+		else cFitsPtTree[canCounter/NPTBINS2]->cd(1+canCounter%NPTBINS2);
+	//cout << "bool " << isTree << " ccounter " << canCounter << " cding into " << 1+canCounter%NPTBINS2 << endl;
+	mHandler->MakeNiceHistogram(hist,kBlack);
+	hist->SetMarkerSize(0.5); hist->GetXaxis()->SetLabelSize(0.055);
+	hist->Rebin(8);
+	hist->Draw();
+	hist->GetXaxis()->SetRangeUser(fitMin,fitMax);
+	if (!isTree) {
+		cFits[canCounter/nBins]->Update();
+		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean+NSig*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean-NSig*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins)); }
+	else {
+		cFitsPtTree[canCounter/nBins]->Update();
+		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFitsPtTree[canCounter/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean+NSig*Sigma,2,cFitsPtTree[canCounter/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean-NSig*Sigma,1,cFitsPtTree[canCounter/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFitsPtTree[canCounter/nBins]->GetPad(1+canCounter%nBins));
+	}
+	
+	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+	mHandler->MakeNiceLegend(leg1, 0.10, 1.);
+	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[binNumber-1],xBins[binNumber])," ");
+	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
+	leg1->Draw();
+	
+	canCounter++;
+	return val;
+}
+
+/*Double_t* MyAnalysisV0extract::ExtractYieldSBPtTree(TTree* hist) {
+
+	static Double_t val[2];
+	val[0] = 0; val[1] = 0;
+	Float_t fitMin = -0.05, fitMax = 0.05;
+
+	TString histName(hist->GetName());
+	TString binName(histName(histName.Index("iBin")+4,2));
+	Int_t binNumber = binName.Atoi();
+	TString spName(histName(histName.Index("iSp")+3,1));
+	Int_t spNumber = spName.Atoi();
+	TString muName(histName(histName.Index("iMu")+3,1));
+	Int_t muNumber = muName.Atoi();
+
+	Bool_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)) == 0);
+
+	Double_t Mean = hSidebandMean[spNumber]->GetBinContent(binNumber);
+	Double_t Sigma = hSidebandSigma[spNumber]->GetFunction("pol1")->Eval(XBINS[binNumber-1]);
+
+	Double_t NSig = 6;
+	Double_t N 	= hist->Integral(hist->FindBin(Mean-NSig*Sigma),hist->FindBin(Mean+NSig*Sigma));
+	Double_t Bg = hist->Integral(hist->FindBin(Mean-2*NSig*Sigma),hist->FindBin(Mean-NSig*Sigma));
+			Bg += hist->Integral(hist->FindBin(Mean+NSig*Sigma),hist->FindBin(Mean+2*NSig*Sigma));
+
+	val[0] = N - Bg;
+	val[1] = TMath::Sqrt(N);
+
 
 	cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 	mHandler->MakeNiceHistogram(hist,kBlack);
@@ -1320,7 +1389,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	
 	canCounter++;
 	return val;
-}
+}*/
 /*Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 
 	static Double_t val[2];
