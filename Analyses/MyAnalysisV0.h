@@ -235,6 +235,7 @@ class MyAnalysisV0: public MyAnalysis {
 
 		// MC PARTICLE HISTOGRAMS
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
+		TH1D* hV0EfficiencyEta[V0consts::NSPECIES];
 		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TH1D* hV0Feeddown[V0consts::NSPECIES];
 		TH1D* hV0FeeddownPDG[V0consts::NSPECIES];
@@ -252,6 +253,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtCut[25];
 
 		// V0 NTUPLES
 		TNtuple* tV0PtMCMB[V0consts::NSPECIES];

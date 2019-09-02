@@ -488,6 +488,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				if (p.GetPdgCode() == PDG_IDS[iSp])		{
 
 					hV0Pt[iSp][MC][multMB][sphMB]->Fill(p.GetPt());
+					hV0Eta[iSp][MC][multMB][sphMB]->Fill(p.GetEta());
+					hV0Y[iSp][MC][multMB][sphMB]->Fill(p.GetY());
+
 					tV0PtMCMB[iSp]->Fill(p.GetPt());
 
 					if (isEventFHM) {
@@ -541,14 +544,17 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle v0mc;
 			Bool_t MCfound = false;
 			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
-				if (PartLabels[iP] == v0.GetMCLabel()) {
+				if (PartLabels[iP] == v0.GetMCLabel()) {		// check if just once
 					v0mc = MyParticle(mHandler->particle(PartIds[iP]));
 					if (v0mc.GetPdgCode() != v0mc.GetMotherPdgCode() 
 							&& TMath::Abs(v0mc.GetMotherPdgCode()) != 311
 							&& TMath::Abs(v0mc.GetMotherPdgCode()) > 10)	{
 						v0mc.SetIsPrimary(0);	}
+					if (MCfound) {
+						cout << "PARTICLE FOUND TWICE" << endl;
+						return 1; }
 					MCfound = true;
-					break;	}
+						}
 			}
 
 			if (MCfound) {
@@ -750,6 +756,9 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	
 	//printf("is primary %i \n", v0.IsMCPrimary());
 
+	Bool_t isPromising = (TMath::Abs(v0.GetIMK0s())<0.002) && (Type==mFlagMC);
+	Int_t cutN = 1;
+
 	if (Type>0) {
 		if (v0.GetMCPdgCode() != PDG_IDS[Sp])	return false; }
 		
@@ -757,37 +766,59 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 
 	//if (Type==0 && Sp==2) if (TMath::Abs(v0.GetIML()) > 0.01) return false;
 
+	
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//1
 	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	//if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
 	//if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
 	if (v0.GetPt() < cuts::V0_PT[0]) 		return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//4
 	if (v0.GetPt() > cuts::V0_PT[1]) 		return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	if (v0.GetDCAdd() > cuts::V0_DCADD) 	return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	if (v0.GetCPA() < cuts::V0_CPA) 		return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//7
 	if (v0.GetRadius() < cuts::V0_R[0]) 	return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	if (v0.GetRadius() > cuts::V0_R[1]) 	return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	if (!v0.HasFastSignal())				return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	
 	//if (!Sp) return true;
 	MyTrack trP(v0.GetPosTrack()); 
 	MyTrack trN(v0.GetNegTrack());
 	if (!SelectV0Daughter(trP)) return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//11
 	if (!SelectV0Daughter(trN)) return false;
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	switch (Sp) {
 		default : 
 			break;
 		case 1 	: // K0s
-			//if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//13
+			if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//14
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//17
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//20
 			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
+				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			break;
 		case 2 	: // L
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
@@ -812,6 +843,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (trN.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			break;	}
 
+		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	return true;	
 }
 
@@ -971,6 +1003,13 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
+
+		
+	}
+
+	for (int iCut = 0; iCut < 25; ++iCut)	{
+		hV0PtCut[iCut]			= new TH1D(Form("hV0PtCut_%i",iCut),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 	}
 
 
@@ -1119,12 +1158,14 @@ void MyAnalysisV0::DoEfficiency() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		hV0Efficiency[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Efficiency_%s",SPECIES[iSp]));
+		hV0EfficiencyEta[iSp] = (TH1D*)hV0Eta[iSp][1][0][0]->Clone(Form("hV0EfficiencyEta_%s",SPECIES[iSp]));
 
 		hV0Efficiency[iSp]->SetTitle("; V0 pT (GeV/#it{c}); Efficiency");
 		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
 		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
 
 		hV0Efficiency[iSp]->Divide(hV0Pt[iSp][2][0][0]);
+		hV0EfficiencyEta[iSp]->Divide(hV0Eta[iSp][2][0][0]);
 		//hV0Efficiency[iSp]->Write();
 	}
 

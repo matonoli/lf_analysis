@@ -117,6 +117,10 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	} } } }		
 
+	
+
+
+
 }
 
 Bool_t MyAnalysisV0correct::CreateHistograms() {
@@ -174,6 +178,8 @@ Int_t MyAnalysisV0correct::Finish() {
 	//LoadEfficiency();
 	DoEfficiencyFromFile();
 	CorrectSpectra();
+
+	if (!mHandler->GetFlagMC()) StudyCuts();
 
 
 	printf("mb k0s spectrum final \n");
@@ -466,13 +472,17 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 
 		funcRapCorrection->SetParameters(NormEta,MASSES[iSp]);
-		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
+		
+		//cout << "at 1.0 correcting by " << funcRapCorrection->Eval(1.0) << endl;
+
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(MBtrigEff);
 
 
 
 	}	}	}	}
+	funcRapCorrection->Write();
 
 
 	printf("mb k0s eff \n");
@@ -489,6 +499,57 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Divide(hV0Efficiency[iSp]);
 	}	}	}	}
 
+
+}
+
+void MyAnalysisV0correct::StudyCuts() {
+
+	for (int iCut = 0; iCut < 25; ++iCut)	{
+		hV0PtCut[iCut]
+			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtCut_%i",iCut) );
+		
+	}
+
+	if (!mFileMC) {
+		printf("No MC file loaded!.\n");
+		return;
+		} else {
+		TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+		for (int iCut = 0; iCut < 25; ++iCut)	{
+			TH1D* htmp
+				= (TH1D*)dirFile1->Get(Form("hV0PtCut_%i",iCut) );
+			hV0PtCutMC[iCut] = (TH1D*)htmp->Clone(Form("hV0PtCutMC_%i",iCut));
+			
+			}
+	}
+
+	TCanvas* cCuts = new TCanvas("cCuts","",2800,2000);
+	cCuts->Divide(6,5,0.00005,0.00005);
+
+	for (int iCut = 24; iCut > 0; iCut--)	{
+		//cout << "iC " << iCut << " " << hV0PtCut[iCut] << " " << hV0PtCut[iCut-1] << " " << hV0PtCutMC[iCut] << " " << hV0PtCutMC[iCut-1] << endl;
+		hV0PtCut[iCut]->Divide(hV0PtCut[iCut-1]);
+		hV0PtCutMC[iCut]->Divide(hV0PtCutMC[iCut-1]);
+		mHandler->MakeNiceHistogram(hV0PtCut[iCut],kRed);
+		mHandler->MakeNiceHistogram(hV0PtCutMC[iCut],kBlue);
+		cCuts->cd(iCut);
+		hV0PtCut[iCut]->Draw();
+		hV0PtCutMC[iCut]->Draw("same");
+
+		TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+			mHandler->MakeNiceLegend(leg1, 0.10, 1.);
+			leg1->AddEntry((TObject*)0,Form("iCut %i / iCut %i",iCut, iCut-1)," ");
+			leg1->AddEntry(hV0PtCut[24],Form("DATA"),"pl");
+			leg1->AddEntry(hV0PtCutMC[24],Form("MC rec"),"pl");
+			leg1->Draw();
+	}
+
+	cCuts->Write();
+
+	for (int iCut = 0; iCut < 25; ++iCut)	{
+		hV0PtCut[iCut]->Write();
+		hV0PtCutMC[iCut]->Write();
+	}
 
 }
 

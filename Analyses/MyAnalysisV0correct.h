@@ -50,6 +50,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void DoEfficiencyFromFile();
 		void DoEfficiencyFromTrees();
 		void CorrectSpectra();
+		void StudyCuts();
 
 		//Double_t rap_correction(Double_t* x, Double_t* par);
 
@@ -76,6 +77,8 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1D* hV0Efficiency[V0consts::NSPECIES];
 		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH1D* hV0PtCut[25];
+		TH1D* hV0PtCutMC[25];
 
 		TNtuple* tV0PtMCMB[V0consts::NSPECIES];
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
