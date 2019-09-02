@@ -42,6 +42,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		void DefineSidebands();
 		void GetTemplates();
 		void StudyIMShapeRC();
+		void DoClosureTest(Int_t opt = 0);
 
 		void SetMCInputFile(const Char_t *name);
 		void ProducePtSpectraFromHists();
@@ -79,6 +80,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		//borrowed
 		TH1D* hNchTrans;
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TNtuple* tV0massRt[V0consts::NSPECIES][2][V0consts::NREGIONS];
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
 
@@ -88,6 +90,8 @@ class MyAnalysisV0extract: public MyAnalysis {
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
+
+		TH1D* hClosureTest[V0consts::NSPECIES];
 
 		TH1D* hFitParam0[V0consts::NSPECIES];
 		TH1D* hFitParam1[V0consts::NSPECIES];

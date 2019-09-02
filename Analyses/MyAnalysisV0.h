@@ -28,6 +28,7 @@ namespace V0consts {
 	const Int_t NSPHERO = 8;
 	const Int_t NREGIONS = 3;
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
+	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RTTrans","RTNear","RTAway"};
 	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
@@ -126,12 +127,12 @@ namespace V0consts {
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
 	const Int_t COLOURS[6] = {kAzure-3,kOrange+8,kGreen+2,kPink+10,kMagenta+2, kViolet+10};
 
-	const Int_t NEVENTTYPES = 23; //1+2+2+4+6+4+3
+	const Int_t NEVENTTYPES = 24; //1+2+2+4+6+4+4
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
 			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY",
 			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
 			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" ,
-			"MB post-ES no V", "MB post-ES has V", "MB post-ES vz"};
+			"MB ES rejected", "MB post-ES no V", "MB post-ES bad V", "MB post-ES good V"};
 
 	const Float_t RT_DEN		= 7.449;
 	const Float_t RT_DEN_MC		= 7.525; 
@@ -154,6 +155,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t SelectEvent(MyEvent &ev, Int_t flag);
+		Int_t ClassifyEvent(MyEvent &event, TClonesArray* trackArray = 0);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
 		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);

@@ -36,6 +36,8 @@ using namespace RooFit;
 
 ClassImp(MyAnalysisV0correct)
 
+
+
 MyAnalysisV0correct::MyAnalysisV0correct() {
 
 }
@@ -198,8 +200,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		printf("Event type %i containing %f events\n", iBin, hEventType->GetBinContent(iBin));
 	}*/
 
-	//Double_t NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
-	Double_t NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
+	NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+	//Double_t NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
 	printf("Normalising all histograms by dY %f \n", NormEta);
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -210,7 +212,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 			
 		if (iMu > 2 && (iSph < 3 && iSph)) continue;
 		if (iMu < 3 && iSph > 2) continue; 
-		Double_t NormEv = hEventType->GetBinContent(2);	// MB
+		Double_t NormEv = hEventType->GetBinContent(24);	// MB
 		if (iMu == 1)	{	NormEv = hEventType->GetBinContent(3);		// FHM
 			if (iSph == 1)	NormEv = hEventType->GetBinContent(8);		// FHM JET
 			if (iSph == 2)	NormEv = hEventType->GetBinContent(7);	}	// FHM ISO
@@ -232,6 +234,9 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				if (iSph == 2 )	NormEv = hEventType->GetBinContent(19);	}	// MHM ISO MC
 		}
 		
+		if (NormEv>0) {
+			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+		}
 
 		if (NormEv == 0) NormEv = 1;
 
@@ -444,8 +449,11 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 }
 
 void MyAnalysisV0correct::CorrectSpectra() {
+
+	Double_t MBtrigEff = 0.7448;
 	
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
+	TF1* funcRapCorrection = new TF1("funcRapCorrection",rap_correction,XBINS[0],XBINS[NPTBINS],2);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
 	//for (int iMu = 0; iMu < 3; ++iMu)		{
@@ -456,6 +464,13 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		if (iMu < 3 && iSph > 2) continue; 
 		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1,"width");
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
+
+		funcRapCorrection->SetParameters(NormEta,MASSES[iSp]);
+		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
+
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(MBtrigEff);
+
+
 
 	}	}	}	}
 
@@ -476,3 +491,14 @@ void MyAnalysisV0correct::CorrectSpectra() {
 
 
 }
+
+/*Double_t MyAnalysisV0correct::rap_correction(Double_t* x, Double_t* par)
+{
+  Double_t pt = x[0];
+  Double_t eta  = par[0];
+  Double_t mass = par[1];
+  const Double_t mt = TMath::Sqrt(pt*pt + mass*mass);
+  const Double_t rap = TMath::ASinH(pt/mt*TMath::SinH(eta));
+  //  return rap/eta;
+  return rap/eta;
+} */

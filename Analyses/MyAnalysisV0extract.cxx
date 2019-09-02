@@ -90,6 +90,14 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 
 	} } } }
 
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		Int_t iType = 1, iMu = 0, iSph = 0;	
+
+		hV0Pt[iSp][iType][iMu][iSph] 
+			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+
+	} 
+
 	
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 	for (Int_t iType = 0; iType < nType; iType++)	{
@@ -191,6 +199,9 @@ Int_t MyAnalysisV0extract::Finish() {
 	ProducePtSpectraFromHists();
 	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
+
+
+	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 	//DrawConstraints();
 	
@@ -1763,5 +1774,21 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 	
 	
 	return val;
+}
+
+void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
+
+	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
+		Int_t iMu = 0; Int_t iSph = 0;	
+		hClosureTest[iSp]	= (TH1D*)hV0PtFit[iSp][0][iMu][iSph]->Clone(Form("hClosureTest_%s",SPECIES[iSp]));
+		TH1D* hDen = (TH1D*)hV0Pt[iSp][1][iMu][iSph]->Clone(Form("hDen"));
+		hDen->Scale(1.,"width");
+
+		mHandler->MakeNiceHistogram(hClosureTest[iSp],kBlack);
+		hClosureTest[iSp]->GetYaxis()->SetTitle("blind rec. / PID identified");
+		hClosureTest[iSp]->GetYaxis()->SetRangeUser(0.7,1.3);
+		hClosureTest[iSp]->Divide(hDen);
+		delete hDen;
+	}
 }
 

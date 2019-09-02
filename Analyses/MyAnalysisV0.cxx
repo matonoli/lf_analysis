@@ -95,7 +95,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	
 	// EVENT SELECTION
 	hEventType->Fill(EVENTTYPES[0],1);	//preES MB
-	Int_t evFlag = (511-4-8-32); // MB xcheck 511;
+	/*Int_t evFlag = (511-4-8-32); // MB xcheck 511;
 	if (!SelectEvent(event,evFlag)) return 0;
 	hEventType->Fill(EVENTTYPES[1],1);	//postES MB
 	if (!event.HasVertex())	{
@@ -105,6 +105,24 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventType->Fill(EVENTTYPES[21],1);
 	if (!event.AcceptVertex()) return 0;
 	hEventType->Fill(EVENTTYPES[22],1);
+	*/
+
+	switch (ClassifyEvent(event,mHandler->tracks())) {
+		default : break;
+		case (-2) : hEventType->Fill(EVENTTYPES[20],1);
+			return 0;
+			break;
+		case (-1) : hEventType->Fill(EVENTTYPES[21],1);
+			return 0;
+			break;
+		case (0) : hEventType->Fill(EVENTTYPES[22],1);
+			return 0;
+			break;
+		case (1) : hEventType->Fill(EVENTTYPES[23],1);
+			break;
+	}
+
+
 	hEventMonitor->Fill(2);
 
 	/*cout << "ev accepted w flag " << event.GetEventFlags() << endl;
@@ -628,6 +646,38 @@ Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
 	//if (ev.GetCentralityQuality() != 0)	return false;
 
 	return true;
+}
+
+Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, TClonesArray* trackArray)
+{
+  event.SetCheckFlag(1);
+  if(!event.IsGoodAliEvent()) {
+    //    cout << "Pileup or similar" << endl;
+    return -2;
+  }
+
+  if(!event.HasVertex()) {
+    return -1;
+  }
+
+  event.SetCheckFlag(448);
+  if(!event.IsGoodAliEvent()) {
+    return -1;
+  }
+  
+  if(TMath::Abs(event.GetZ())>10) {
+    return 0;
+  }
+
+  if(trackArray->GetEntries()<1) { 
+    return 1;
+  }
+
+  // Update TOF response
+  //AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)trackArray->At(0);
+  //track->UpdateTOFResponse(event);
+  
+  return 1;
 }
 
 

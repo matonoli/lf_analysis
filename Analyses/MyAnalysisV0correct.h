@@ -6,6 +6,7 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "TMath.h"
 #include "../MyAnalysis.h"
 #include "MyAnalysisV0.h"
 
@@ -19,6 +20,16 @@ class MyEvent;
 class MyTrack;
 class MyParticle;
 
+Double_t rap_correction(Double_t* x, Double_t* par)
+{
+  Double_t pt = x[0];
+  Double_t eta  = par[0];
+  Double_t mass = par[1];
+  const Double_t mt = TMath::Sqrt(pt*pt + mass*mass);
+  const Double_t rap = TMath::ASinH(pt/mt*TMath::SinH(eta));
+  //  return rap/eta;
+  return rap/eta;
+}
 
 class MyAnalysisV0correct: public MyAnalysis {
 
@@ -40,6 +51,8 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void DoEfficiencyFromTrees();
 		void CorrectSpectra();
 
+		//Double_t rap_correction(Double_t* x, Double_t* par);
+
 		ClassDef(MyAnalysisV0correct,1);
 
 	protected:
@@ -48,6 +61,8 @@ class MyAnalysisV0correct: public MyAnalysis {
 		//TFile* mFileOut;
 		TFile* mFileMC;
 		TList* mList;
+
+		Double_t NormEta = 0;
 
 		// V0 HISTOGRAMS
 		//borrowed
