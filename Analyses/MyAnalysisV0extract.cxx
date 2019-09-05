@@ -197,7 +197,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	DefineSidebands();
 	ProducePtSpectraFromHists();
-	ProducePtSpectraFromTrees();
+	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
 
 
@@ -228,7 +228,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 		Float_t fitMin = -0.03, fitMax = 0.03;
 		cFitsSB[iSp] = new TCanvas(Form("cFitsSB_iSp%i",iSp),"",2800,2000);
-		cFitsSB[iSp]->Divide(nPads+1,nPads,0.00005,0.00005);
+		cFitsSB[iSp]->Divide(nPads+1,nPads-1,0.00005,0.00005);
 
 		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
 
@@ -305,8 +305,35 @@ void MyAnalysisV0extract::DefineSidebands() {
 		cFitsSB[iSp]->Write();
 
 		// INTERPOLATE SIGMA
-		hSidebandSigma[iSp]->Fit("pol1","0");
+		hSidebandSigma[iSp]->Fit("pol1","");
 
+	}
+	
+	{
+		TCanvas* cSBmu = new TCanvas("cSBmu","",1800,900);
+		cSBmu->Divide(2,1);
+		TCanvas* cSBsig = new TCanvas("cSBsig","",900,900);
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+			cSBmu->cd(1);
+			mHandler->MakeNiceHistogram(hSidebandMean[iSp],COLOURS[iSp]);
+			mHandler->MakeNiceHistogram(hSidebandSigma[iSp],COLOURS[iSp]);
+			hSidebandSigma[iSp]->GetFunction("pol1")->SetLineColor(COLOURS[iSp]);
+			cSBmu->cd(1);
+			hSidebandMean[iSp]->Draw("same");
+			cSBmu->cd(2);
+			hSidebandSigma[iSp]->Draw("same");
+		}
+		TLegend* leg1 = new TLegend(0.19,0.13,0.9,0.25);//cFits[canCounter/NPTBINS]->BuildLegend();
+		mHandler->MakeNiceLegend(leg1, 0.065, 3);
+		leg1->AddEntry(hSidebandMean[1],Form("%s",SPECNAMES[1]),"pl");
+		leg1->AddEntry(hSidebandMean[2],Form("%s",SPECNAMES[2]),"pl");
+		leg1->AddEntry(hSidebandMean[3],Form("%s",SPECNAMES[3]),"pl");
+		leg1->Draw();
+		//cSBmu->cd();
+		cSBmu->Write();
+		//cSBsig->cd();
+		//leg1->Draw();
+		cSBsig->Write();
 	}
 	mHandler->root()->SetBatch(kFALSE);
 
@@ -1085,7 +1112,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 			binCounter++;
 		}
 
-		//cFits[iCan]->SaveAs(Form("tmp/%s.png",cFits[iCan]->GetName()));
+		//if (iType==0&&iMu==0&&iSph==0) cFits[iCan]->SaveAs(Form("tmp/%s.png",cFits[iCan]->GetName()));
 		cFits[iCan]->Write();
 		iCan++;
 
@@ -1303,7 +1330,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 			Bg += hist->Integral(hist->FindBin(Mean+NSig*Sigma),hist->FindBin(Mean+2*NSig*Sigma));
 
 	val[0] = N - Bg;
-	val[1] = TMath::Sqrt(N);
+	val[1] = TMath::Sqrt(N + Bg);
 
 	/*cout << " ib " << binNumber << endl;
 	cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
@@ -1847,6 +1874,10 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 
 void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 
+	// DIVIDING BLINDLY REC. MC DATA BY PDG-ID'D PT SPECTRA
+	// NUM HAS FEEDDOWN, DEN DOESN'T -- really though ?
+
+	mHandler->root()->SetBatch(kTRUE);
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
 		hClosureTest[iSp]	= (TH1D*)hV0PtFit[iSp][0][iMu][iSph]->Clone(Form("hClosureTest_%s",SPECIES[iSp]));
@@ -1857,7 +1888,16 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 		hClosureTest[iSp]->GetYaxis()->SetTitle("blind rec. / PID identified");
 		hClosureTest[iSp]->GetYaxis()->SetRangeUser(0.7,1.3);
 		hClosureTest[iSp]->Divide(hDen);
+		TCanvas* cClosure = new TCanvas("cClosure","",900,900);
+		hClosureTest[iSp]->Draw();
+		TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+		mHandler->MakeNiceLegend(leg1, 0.05, 1.);
+		leg1->AddEntry((TObject*)0,Form("%s",SPECNAMES[iSp])," ");
+		leg1->Draw();
+		cClosure->SaveAs(Form("tmp/closure_%s.png",SPECIES[iSp]));
 		delete hDen;
+		
 	}
+	mHandler->root()->SetBatch(kFALSE);
 }
 

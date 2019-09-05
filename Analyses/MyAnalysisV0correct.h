@@ -51,6 +51,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void DoEfficiencyFromTrees();
 		void CorrectSpectra();
 		void StudyCuts();
+		void DoClosureTest(Int_t opt = 0);
 
 		//Double_t rap_correction(Double_t* x, Double_t* par);
 
@@ -79,6 +80,9 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TH1D* hV0PtCut[25];
 		TH1D* hV0PtCutMC[25];
+		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+
+		TH1D* hClosureTestCorr[V0consts::NSPECIES];
 
 		TNtuple* tV0PtMCMB[V0consts::NSPECIES];
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];

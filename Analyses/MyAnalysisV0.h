@@ -31,7 +31,7 @@ namespace V0consts {
 	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RTTrans","RTNear","RTAway"};
-	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","N_{ch} 0-10%", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
+	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
 	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso","0-1","1-2","2-3","3-4","4-5"};
 	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
 	//const Int_t NPTBINS = 35;
@@ -137,7 +137,7 @@ namespace V0consts {
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
-	const Int_t COLOURS[6] = {kAzure-3,kOrange+8,kGreen+2,kPink+10,kMagenta+2, kViolet+10};
+	const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
 
 	const Int_t NEVENTTYPES = 24; //1+2+2+4+6+4+4
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",

@@ -94,8 +94,15 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		if (iMu < 3 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-		
+
 	} } } }
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		Int_t iType = 2; Int_t iMu = 0; Int_t iSph = 0;
+		hV0Pt[iSp][iType][iMu][iSph] 
+			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+			//cout << " loaded " << hV0Pt[iSp][2][iMu][iSph] << endl;
+	}
 
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -180,6 +187,8 @@ Int_t MyAnalysisV0correct::Finish() {
 	CorrectSpectra();
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
+
+	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 
 	printf("mb k0s spectrum final \n");
@@ -436,6 +445,8 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		hV0Efficiency[iSp]->Divide(hDen);
 		delete hDen;
 
+
+
 		// rt histos
 		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
 			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
@@ -450,6 +461,23 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
 			delete hDen;
 		}
+	}
+
+	{
+		TCanvas* cEffi = new TCanvas("cSBmu","",2700,900);
+		cEffi->Divide(3,1,0.0005,0.0005);
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+			cEffi->cd(iSp);
+			mHandler->MakeNiceHistogram(hV0Efficiency[iSp],COLOURS[iSp]);
+			hV0Efficiency[iSp]->Draw("same");
+		}
+		TLegend* leg1 = new TLegend(0.19,0.13,0.9,0.25);//cFits[canCounter/NPTBINS]->BuildLegend();
+		mHandler->MakeNiceLegend(leg1, 0.065, 3);
+		leg1->AddEntry(hV0Efficiency[1],Form("%s",SPECNAMES[1]),"pl");
+		leg1->AddEntry(hV0Efficiency[2],Form("%s",SPECNAMES[2]),"pl");
+		leg1->AddEntry(hV0Efficiency[3],Form("%s",SPECNAMES[3]),"pl");
+		leg1->Draw();
+		cEffi->Write();
 	}
 
 }
@@ -565,3 +593,45 @@ void MyAnalysisV0correct::StudyCuts() {
   //  return rap/eta;
   return rap/eta;
 } */
+
+void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
+
+	// DIVIDING BLINDLY REC. MC DATA (CORRECTED) W MC GENERATED PARTICLES
+
+	mHandler->root()->SetBatch(kTRUE);
+	Double_t NormEv = hEventType->GetBinContent(24);	// MB
+	if (NormEv>0) {
+			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+		}
+	Double_t MBtrigEff = 0.7448;
+	TF1* funcRapCorrection = new TF1("funcRapCorrection",rap_correction,XBINS[0],XBINS[NPTBINS],2);
+
+
+	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
+		Int_t iMu = 0; Int_t iSph = 0;	
+		hClosureTestCorr[iSp]	= (TH1D*)hV0PtFitCorr[iSp][1][iMu][iSph]->Clone(Form("hClosureTestCorr_%s",SPECIES[iSp]));
+		cout << " " << hV0Pt[iSp][2][iMu][iSph] << endl;
+		TH1D* hDen = (TH1D*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
+		hDen->Scale(1./NormEv);
+		hDen->Scale(1./NormEta);
+		hDen->Scale(MBtrigEff);
+		hDen->Scale(1.,"width");
+		funcRapCorrection->SetParameters(NormEta,MASSES[iSp]);
+		hDen->Divide(funcRapCorrection,1.);
+
+		mHandler->MakeNiceHistogram(hClosureTestCorr[iSp],kBlack);
+		hClosureTestCorr[iSp]->GetYaxis()->SetTitle("blind rec. / MC generated");
+		hClosureTestCorr[iSp]->GetYaxis()->SetRangeUser(0.7,1.3);
+		hClosureTestCorr[iSp]->Divide(hDen);
+		TCanvas* cClosureCorr = new TCanvas("cClosureCorr","",900,900);
+		hClosureTestCorr[iSp]->Draw();
+		TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+		mHandler->MakeNiceLegend(leg1, 0.05, 1.);
+		leg1->AddEntry((TObject*)0,Form("%s",SPECNAMES[iSp])," ");
+		leg1->Draw();
+		cClosureCorr->SaveAs(Form("tmp/closureCorr_%s.png",SPECIES[iSp]));
+		delete hDen;
+		
+	}
+	mHandler->root()->SetBatch(kFALSE);
+}
