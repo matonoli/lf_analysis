@@ -348,9 +348,13 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		}
 
 		if (NormEv == 0) NormEv = 1;
+		else { 
+			//NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+		}
+
 		printf("Normalising histogram %s by event count %f \n", hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->GetName(), NormEv);
-		//hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEv);
-		//hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEta);
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEv);
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEta);
 
 
 		/*Int_t leftbin = hNchTrans->FindBin(RTBINS0[iRtBin]*rt_den);
@@ -449,13 +453,13 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 
 		// rt histos
 		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
-			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS);
 			TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
 			tV0massRt[iSp][1][iReg]->Draw(Form("lPt>>hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"","goff");
 			tV0PtMCRt[iSp][iReg]->Draw("lPt>>hDen","","goff");
 
-			hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
+			//hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
 			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,14.0);
 
 			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
@@ -464,7 +468,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 	}
 
 	{
-		TCanvas* cEffi = new TCanvas("cSBmu","",2700,900);
+		TCanvas* cEffi = new TCanvas("cEffi","",2700,900);
 		cEffi->Divide(3,1,0.0005,0.0005);
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 			cEffi->cd(iSp);
@@ -478,6 +482,38 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		leg1->AddEntry(hV0Efficiency[3],Form("%s",SPECNAMES[3]),"pl");
 		leg1->Draw();
 		cEffi->Write();
+	}
+
+	{
+		TCanvas* cEffi[NSPECIES];
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+			cEffi[iSp] = new TCanvas(Form("cEffiReg_%s",SPECIES[iSp]),"",1000,900);
+			
+			mHandler->MakeNiceHistogram(hV0Efficiency[iSp],kBlue);
+			hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(-0.01,0.8);
+			hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.0,5.0);
+			hV0Efficiency[iSp]->Draw();
+			for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+				mHandler->MakeNiceHistogram(hV0EfficiencyRt[iSp][iReg],COLOURS[iReg]);
+				hV0EfficiencyRt[iSp][iReg]->Draw("same");
+			}
+
+			cEffi[iSp]->Update();
+			TLegend *leg1 = new TLegend(0.45,0.60,0.85,0.85);
+			mHandler->MakeNiceLegend(leg1,0.037,1);
+			leg1->AddEntry((TObject*)0,Form("#bf{%s} pp #sqrt{s} = 13 TeV",SPECNAMES[iSp]),"");
+			leg1->AddEntry((TObject*)0,"","");
+			leg1->AddEntry(hV0Efficiency[iSp],"MB","pl");
+			leg1->AddEntry(hV0EfficiencyRt[iSp][0],"R_{T} Trans.","pl");
+			leg1->AddEntry(hV0EfficiencyRt[iSp][1],"R_{T} Near","pl");
+			leg1->AddEntry(hV0EfficiencyRt[iSp][2],"R_{T} Away","pl");
+			
+			cEffi[iSp]->Update();
+			leg1->Draw();
+
+			cEffi[iSp]->Write();
+			cEffi[iSp]->SaveAs(Form("plots/cEffiReg_%s.png",SPECIES[iSp]));
+		}
 	}
 
 }
@@ -519,12 +555,18 @@ void MyAnalysisV0correct::CorrectSpectra() {
 	printf("mb k0s spectrum after corr \n");
 	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << endl;
 
-
+	TF1* funcRapCorrection2 = new TF1("funcRapCorrection2",rap_correction,XBINS2[0],XBINS2[NPTBINS2],2);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Divide(hV0Efficiency[iSp]);
+
+		funcRapCorrection2->SetParameters(NormEta,MASSES[iSp]);
+		
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Divide(funcRapCorrection2,1.);
+
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(MBtrigEff);
 	}	}	}	}
 
 

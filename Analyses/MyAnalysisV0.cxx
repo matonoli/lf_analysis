@@ -709,7 +709,7 @@ Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
 
 Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph) {
 	
-	//printf("v0 pt is %f, args are %i , %i , %i \n", v0.GetPt(), Sp, Mu, Sph);
+	//printf("V0 p_{T} is %f, args are %i , %i , %i \n", v0.GetPt(), Sp, Mu, Sph);
 
 	hV0Pt[Sp][Type][Mu][Sph]->Fill(v0.GetPt());
 	hV0Eta[Sp][Type][Mu][Sph]->Fill(v0.GetEta());
@@ -983,8 +983,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		if (iMu > 2 && (iSph < 3 && iSph)) continue;
 		if (iMu < 3 && iSph > 2) continue; 
 		hV0Pt[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-			//";V0 Pt (GeV/#it{c}); Entries",								400, 0, 20);
+			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+			//";V0 p_{T} (GeV/#it{c}); Entries",								400, 0, 20);
 		hV0Eta[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; Entries", 										200, -1., 1.);
 		hV0Y[iSp][iType][iMu][iSph]				= new TH1D(Form("hV0Y_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
@@ -993,10 +993,10 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0EtavY[iSp][iType][iMu][iSph]			= new TH2D(Form("hV0EtavY_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; V0 y; Entries", 										200, -1., 1., 200, -1., 1.);
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-			";V0 Pt (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
 
 		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-		//	";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		//	";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		
 
 	} } } }
@@ -1010,7 +1010,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	for (int iCut = 0; iCut < 25; ++iCut)	{
 		hV0PtCut[iCut]			= new TH1D(Form("hV0PtCut_%i",iCut),
-			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 	}
 
 
@@ -1096,7 +1096,7 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 
 
 		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-		//	";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		//	";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		
 	} } } }	
 
@@ -1161,7 +1161,7 @@ void MyAnalysisV0::DoEfficiency() {
 		hV0Efficiency[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Efficiency_%s",SPECIES[iSp]));
 		hV0EfficiencyEta[iSp] = (TH1D*)hV0Eta[iSp][1][0][0]->Clone(Form("hV0EfficiencyEta_%s",SPECIES[iSp]));
 
-		hV0Efficiency[iSp]->SetTitle("; V0 pT (GeV/#it{c}); Efficiency");
+		hV0Efficiency[iSp]->SetTitle("; V0 p_{T} (GeV/#it{c}); Efficiency");
 		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
 		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
 
@@ -1177,7 +1177,7 @@ void MyAnalysisV0::DoEfficiencyFromTrees() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		
 		// minimum bias histos
-		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 p_{T} (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
 		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
 		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),"","goff");
@@ -1191,7 +1191,7 @@ void MyAnalysisV0::DoEfficiencyFromTrees() {
 
 		// rt histos
 		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
-			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
+			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 p_{T} (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
 			TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
 			tV0massRt[iSp][1][iReg]->Draw(Form("lPt>>hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"","goff");
@@ -1212,7 +1212,7 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		//hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 
-		hV0Feeddown[iSp]->SetTitle("; V0 pT (GeV/#it{c}); Feed-down fraction");
+		hV0Feeddown[iSp]->SetTitle("; V0 p_{T} (GeV/#it{c}); Feed-down fraction");
 		hV0Feeddown[iSp]->GetYaxis()->SetRangeUser(0.,0.30);
 		hV0Feeddown[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
 

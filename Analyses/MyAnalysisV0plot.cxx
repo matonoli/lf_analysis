@@ -232,9 +232,9 @@ Int_t MyAnalysisV0plot::Finish() {
 
 	BorrowHistograms();
 	CloneHistograms();
-	MakeFinalFiguresSpherocity();
-	//MakeFinalFiguresEvent();
-	//MakeFinalFiguresRt();
+	//MakeFinalFiguresSpherocity();
+	MakeFinalFiguresEvent();
+	MakeFinalFiguresRt();
 
 	return 0;	
 }
@@ -280,17 +280,16 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 		mHandler->MakeNiceHistogram(hRt2,kBlack);
 		cRtDistro->SetLogy();
 
-		hRt2->GetXaxis()->SetRangeUser(-0.01,6.01);
-		hRt2->GetYaxis()->SetRangeUser(1.,30.*hRt2->GetMaximum());
-		hRt2->GetXaxis()->SetTitle("R_{T}");
+		hRt2->GetXaxis()->UnZoom();
+		hRt2->GetYaxis()->SetRangeUser(1.,10.*hRt2->GetMaximum());
+		hRt2->GetXaxis()->SetTitle("#it{R}_{T}");
 		hRt2->Draw("");
 		cRtDistro->Update();
-		TLegend *leg1 = new TLegend(0.45,0.60,0.85,0.85);
+		TLegend *leg1 = new TLegend(0.35,0.70,0.85,0.85);
 		mHandler->MakeNiceLegend(leg1,0.037,1);
 		leg1->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
-		leg1->AddEntry((TObject*)0,"5.0 < p_{T}^{lead} < 40.0 (GeV/#it{c})","");
-		leg1->AddEntry(hRt2,"R_{T} = N_{ch}^{trans} / <N_{ch}^{trans}>","pl");
-		leg1->AddEntry((TObject*)0,Form("<N_{ch}^{trans}> = %1.3f",rt_den),"");
+		leg1->AddEntry((TObject*)0,"5.0 < #it{p}_{T}^{lead} < 40.0 (GeV/#it{c})","");
+		//leg1->AddEntry((TObject*)0,Form("<N_{ch}^{trans}> = %1.3f",rt_den),"");
 		cRtDistro->Update();
 		leg1->Draw();
 
@@ -324,7 +323,7 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 		cRtDistro->SaveAs("plots/rtdistro.png");
 	}*/
 
-	{
+	/*{
 		Double_t rt_den = hNchTrans->GetMean();
 		TCanvas* cRtDistro = new TCanvas("cRtDistro","",1000,900);
 		mHandler->MakeNiceHistogram(hRt2,kBlack);
@@ -346,7 +345,7 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 
 		cRtDistro->Write();
 		cRtDistro->SaveAs("plots/rtdistro.png");
-	}
+	}*/
 
 	/*{
 		TCanvas* cEffi[NSPECIES];
@@ -355,6 +354,7 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 			
 			mHandler->MakeNiceHistogram(hV0Efficiency[iSp],kBlack);
 			hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(-0.01,0.8);
+			hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.0,5.0);
 			hV0Efficiency[iSp]->Draw();
 			for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
 				mHandler->MakeNiceHistogram(hV0EfficiencyRt[iSp][iReg],COLOURS[iReg]);
@@ -379,7 +379,7 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 		}
 	}*/
 
-	/*{
+	{
 		TCanvas* cDphi = new TCanvas("cDphi","",1000,900);
 		TH1D* hDphi0 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd0",1,4);
 		TH1D* hDphi1 = (TH1D*)hV0DPhivNchTrans->ProjectionY("hd1",7,14);
@@ -412,7 +412,7 @@ void MyAnalysisV0plot::MakeFinalFiguresEvent() {
 		cDphi->SaveAs("plots/rtdphi.png");
 	}
 
-	{
+	/*{
 		TCanvas* cPpi = new TCanvas("cPpi","",1000,900);
 		Double_t rt_den = hNchTrans->GetMean();
 		TLegend *leg1 = new TLegend(0.13,0.50,0.50,0.85);
@@ -596,6 +596,8 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 
 	const char* isMC = (mHandler->GetFlagMC()) ? "MC^{blind}_{rec}" : "Data";
 
+	Double_t rangePtL = 0.0;
+	Double_t rangePtH = 4.999;
 	// RT PT SPECTRA for different regions
 	TCanvas* cPtRt[4][3];
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
@@ -609,11 +611,14 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 			hV0PtRtFitCorr[iSp][0][iReg][iRtBin]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");		
 		}
 
-		cPtRt[iSp][iReg] = new TCanvas(Form("cPtRt2_%s_%s",SPECIES[iSp],REGIONS[iReg]),"",1000,900);
+		cPtRt[iSp][iReg] = new TCanvas(Form("cPtRt2_%s_%s",SPECIES[iSp],REGIONS[iReg]),"",900,1200);
 		cPtRt[iSp][iReg]->SetLogy(1);
-		Double_t lowerRange = 0.1*hV0PtRtFitCorr[iSp][0][iReg][2]->GetBinContent(hV0PtRtFitCorr[iSp][0][iReg][2]->FindLastBinAbove());
+		Double_t lowerRange = 10*hV0PtRtFitCorr[iSp][0][iReg][2]->GetBinContent(hV0PtRtFitCorr[iSp][0][iReg][2]->FindLastBinAbove());
+		//Double_t lowerRange = 0.1*hV0PtRtFitCorr[iSp][0][iReg][2]->GetBinContent(
+		//		hV0PtRtFitCorr[iSp][0][iReg][2]->FindLastBinAbove(0.,1,1,hV0PtRtFitCorr[iSp][0][iReg][2]->FindBin(rangePtH)));
 		hV0PtRtFitCorr[iSp][0][iReg][0]->GetYaxis()->SetRangeUser(lowerRange,10.*hV0PtRtFitCorr[iSp][0][iReg][NRTBINS0-1]->GetMaximum());
-		hV0PtRtFitCorr[iSp][0][iReg][0]->Draw();
+		hV0PtRtFitCorr[iSp][0][iReg][0]->SetAxisRange(rangePtL,rangePtH,"X");
+		hV0PtRtFitCorr[iSp][0][iReg][0]->Draw("axis");
 		cPtRt[iSp][iReg]->Update();
 		//hV0PtFitCorr[iSp][0][3][0]->Draw("same");
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
@@ -621,31 +626,50 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		}
 			//hV0PtFitCorr[iSp][0][3][6]->Draw("same");
 		//hV0PtFitCorr[iSp][0][3][7]->Draw("same");
-		TLegend* legPt = new TLegend(0.65,0.45,0.85,0.88);
+		TLegend* legPt = new TLegend(0.60,0.65,0.85,0.85);
 		mHandler->MakeNiceLegend(legPt,0.04,1);
 			
 		legPt->AddEntry((TObject*)0,Form("#bf{%s}   |#eta| < 0.8, %s", SPECNAMES[iSp], isMC),"");
 		legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
 		legPt->AddEntry((TObject*)0,"","");
-		legPt->AddEntry((TObject*)0,Form("#bf{%s}", REGIONS[iReg]),"");
-		legPt->AddEntry((TObject*)0,"","");
-		legPt->AddEntry(hV0PtRtFitCorr[iSp][0][iReg][0],"R_{T} inc.","pl");
+		legPt->AddEntry((TObject*)0,Form("#bf{%s}", PLOTS_REGIONS[iReg]),"");
+		//legPt->AddEntry((TObject*)0,"","");
+		TLegend* legPt2 = new TLegend(0.20,0.07,0.47,0.28);
+		mHandler->MakeNiceLegend(legPt2,0.04,1);
+		//legPt2->AddEntry(hV0PtRtFitCorr[iSp][0][iReg][0],"R_{T} inc.","pl");
 		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
-			legPt->AddEntry(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
+			legPt2->AddEntry(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
 		}
 			//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][6],Form("%s %s",PLOTS_MULTI[3],SPHERO[6]),"pl");
 		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][7],Form("%s %s",PLOTS_MULTI[3],SPHERO[7]),"pl");
 		legPt->Draw();
+		legPt2->Draw();
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
 			mHandler->MakeRatioPlot(hV0PtRtFitCorr[iSp][0][iReg][iRtBin],hV0PtRtFitCorr[iSp][0][iReg][0],
-			cPtRt[iSp][iReg], -0.1,4.2);
+				cPtRt[iSp][iReg], -0.1,5.2, rangePtL, rangePtH);
+			hV0PtRtFitCorr[iSp][0][iReg][iRtBin]->GetXaxis()->SetRangeUser(rangePtL,rangePtH);
 		}
-			
+		
+		cPtRt[iSp][iReg]->Update();	
 		cPtRt[iSp][iReg]->Write();
+		cPtRt[iSp][iReg]->SaveAs(Form("plots/ptrt_%s_%s.png",SPECIES[iSp],REGIONS[iReg]));
 		cPtRt[iSp][iReg]->SaveAs(Form("plots/ptrt_%s_%s.png",SPECIES[iSp],REGIONS[iReg]));
 
 	}	}
+
+	// CREATE OUTPUT FILE WITH SPECTRA
+	{
+		TFile* fileSpectra = new TFile("v0_spectra.root","RECREATE");
+		for (int iSp = 1; iSp < 2; ++iSp)		{
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+		for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)		{
+			if (iRtBin==1) continue;
+			hV0PtRtFitCorr[iSp][0][iReg][iRtBin]->Write();
+		}	}	}
+		mDirFile->cd();
+
+	}
 
 	// B/M Ratio
 	TCanvas* cBtoM[NREGIONS+1];
@@ -664,7 +688,8 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		
 		hBtoMRt[iReg][0]->GetYaxis()->SetRangeUser(0.,1.0);
 		mHandler->MakeNiceHistogram(hBtoMRt[iReg][0],kBlack);
-		hBtoMRt[iReg][0]->Draw();
+		hBtoMRt[iReg][0]->GetXaxis()->SetRangeUser(rangePtL,rangePtH);
+		hBtoMRt[iReg][0]->Draw("axis");
 		cBtoM[iReg]->Update();
 
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
@@ -674,23 +699,26 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 
 		}
 
-		TLegend* legBtoM = new TLegend(0.60,0.49,0.85,0.85);
+		TLegend* legBtoM = new TLegend(0.60,0.70,0.85,0.85);
 		mHandler->MakeNiceLegend(legBtoM,0.04,1);
 		legBtoM->AddEntry((TObject*)0,Form("|#eta| < 0.8, %s", isMC),"");
 		legBtoM->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
 		legBtoM->AddEntry((TObject*)0,"","");
-		legBtoM->AddEntry((TObject*)0,Form("#bf{%s}", REGIONS[iReg]),"");
-		legBtoM->AddEntry((TObject*)0,"","");
-		legBtoM->AddEntry(hBtoMRt[iReg][0],"R_{T} inc.","pl");
+		legBtoM->AddEntry((TObject*)0,Form("#bf{%s}", PLOTS_REGIONS[iReg]),"");
+		//legBtoM->AddEntry((TObject*)0,"","");
+		TLegend* legBtoM2 = new TLegend(0.16,0.60,0.38,0.80);
+		mHandler->MakeNiceLegend(legBtoM2,0.04,1);
+		//legBtoM2->AddEntry(hBtoMRt[iReg][0],"R_{T} inc.","pl");
 		//legPt->AddEntry(hV0PtFitCorr[iSp][0][3][0],Form("%s (any)",PLOTS_MULTI[3]),"pl");
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
-			legBtoM->AddEntry(hBtoMRt[iReg][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
+			legBtoM2->AddEntry(hBtoMRt[iReg][iRtBin],Form("%1.1f < R_{T} < %1.1f",RTBINS0[iRtBin],RTBINS0[iRtBin+1]),"pl");
 		}
 		legBtoM->Draw();
+		legBtoM2->Draw();
 
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
 			mHandler->MakeRatioPlot(hBtoMRt[iReg][iRtBin],hBtoMRt[iReg][0],
-			cBtoM[iReg], 0.5,1.7);
+			cBtoM[iReg], 0.5,2.0, rangePtL, rangePtH);
 		}
 
 		cBtoM[iReg]->Write();
@@ -744,7 +772,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 
 		for (int iRtBin = 2; iRtBin < NRTBINS0; ++iRtBin)		{
 			mHandler->MakeRatioPlot(hBtoMRt[3][iRtBin],hBtoMRt[3][0],
-			cBtoM[3], -2.5,2.5);
+			cBtoM[3], -2.5,2.5, rangePtL, rangePtH);
 		}
 
 		cBtoM[3]->Write();
@@ -757,13 +785,14 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		mHandler->MakeNiceHistogram(hBtoMRt[1][0],COLOURS[1]);
 		mHandler->MakeNiceHistogram(hBtoMRt[2][0],COLOURS[2]);		
 
+		hBtoMRt[0][0]->GetXaxis()->SetRangeUser(rangePtL,rangePtH);
 		hBtoMRt[0][0]->Draw();
 		hBtoMRt[1][0]->Draw("same");
 		hBtoMRt[2][0]->Draw("same");
 		
-		TLegend *leg1 = new TLegend(0.45,0.55,0.85,0.85);
+		TLegend *leg1 = new TLegend(0.45,0.70,0.85,0.85);
 		mHandler->MakeNiceLegend(leg1,0.037,1);
-		leg1->AddEntry(hBtoMRt[0][0],"#bf{Trans} R_{T} inc.","pl");
+		leg1->AddEntry(hBtoMRt[0][0],"#bf{Trans.} R_{T} inc.","pl");
 		leg1->AddEntry(hBtoMRt[1][0],"#bf{Near} R_{T} inc.","pl");
 		leg1->AddEntry(hBtoMRt[2][0],"#bf{Away} R_{T} inc.","pl");
 		//
@@ -802,7 +831,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		legRtYield->AddEntry((TObject*)0,Form("#bf{%s}  |#eta| < 0.8, %s", SPECNAMES[iSp], isMC),"");
 		legRtYield->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
 		legRtYield->AddEntry((TObject*)0,"","");
-		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][0][0]," #bf{Trans}","l");
+		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][0][0]," #bf{Trans.}","l");
 		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][1][0]," #bf{Near}","l");
 		legRtYield->AddEntry(hV0RtFitCorr[iSp][0][2][0]," #bf{Away}","l");
 		legRtYield->AddEntry(dummy1,Form("%1.1f < p_{T} < %1.1f (GeV/#it{c})",RT_PTRANGE[0][0],RT_PTRANGE[0][1]),"p");
@@ -926,6 +955,8 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 
 	// PT SPECTRA
 	TCanvas* cPt[4][2];
+	Double_t rangePtL = 0.;
+	Double_t rangePtH = 15.;
 	for (Int_t iSp = 1; iSp < NSPECIES; ++iSp)	{				
 	
 		mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][0][0],COLOURS[0]);
@@ -964,14 +995,16 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			legPt->Draw();
 
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][1],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.4,1.6);
+				cPt[iSp][iMu-1], 0.4,1.6,rangePtL,rangePtH);
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][2],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.4,1.6);
+				cPt[iSp][iMu-1], 0.4,1.6,rangePtL,rangePtH);
 
 			cPt[iSp][iMu-1]->Write();
 			cPt[iSp][iMu-1]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[iMu]));
 		}
 	}
+
+
 
 	//return;
 

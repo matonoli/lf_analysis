@@ -34,6 +34,7 @@ namespace V0consts {
 	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
 	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso","0-1","1-2","2-3","3-4","4-5"};
 	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
+	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away"};
 	//const Int_t NPTBINS = 35;
 	//const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 	/*const Int_t NPTBINS = 55;
@@ -80,18 +81,25 @@ namespace V0consts {
 
 	/*const Int_t NPTBINS2 = 18;
 	const Double_t XBINS2[NPTBINS2+1] = { 
-		0.00, 0.15, 0.20, 0.30, 0.40, 
+		0.00, 0.10, 0.20, 0.30, 0.40, 
 		0.60, 0.80, 1.00, 1.40, 1.80, 
 		2.20, 2.80, 3.40, 4.00, 5.50, 
-		7.00, 9.00,	11.00, 14.00 };*/
+		7.00, 9.00,	11.00, 15.00 };*/
 
-	const Int_t NPTBINS2 = 44;		//official MB spectra
+	const Int_t NPTBINS2 = 18;
+	const Double_t XBINS2[NPTBINS2+1] = { 
+		0.00, 0.10, 0.20, 0.30, 0.40, 
+		0.60, 0.80, 1.00, 1.40, 1.80, 
+		2.20, 2.80, 3.40, 4.00, 5.00, 
+		7.00, 9.00,	11.00, 15.00 };
+
+	/*const Int_t NPTBINS2 = 44;		//official MB spectra
 	const Double_t XBINS2[NPTBINS2+1] = {
 		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
 		1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
 		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 3.6, 3.9, 4.2, 
 		4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 7.5, 8.0, 8.5, 9.2, 
-		10.0, 11.0, 12.0, 13.5, 15.0 };
+		10.0, 11.0, 12.0, 13.5, 15.0 };*/
 
 	/*const Int_t NPTBINS2 = 55; 
 	const Double_t XBINS2[NPTBINS2+1] = { 
@@ -137,7 +145,8 @@ namespace V0consts {
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
-	const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
+	//const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
+	const Int_t COLOURS[7] = {kRed, kBlack, kGreen+2, kBlue, kViolet+10,kPink+10,kGreen+2};
 
 	const Int_t NEVENTTYPES = 24; //1+2+2+4+6+4+4
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",

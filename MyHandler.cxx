@@ -182,7 +182,7 @@ void MyHandler::MakeNiceLegend(TLegend *leg, Float_t size, Int_t columns)	{
 
 }
 
-void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high) {
+void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
 	
 	c->cd();
 
@@ -223,6 +223,7 @@ void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Doub
 	TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
 	hr->SetMinimum(low);
 	hr->SetMaximum(high);
+	hr->GetXaxis()->SetRangeUser(lowx,highx);
 	hr->Divide(hd);
 
 	hr->GetYaxis()->SetTitle("ratio");
