@@ -1293,8 +1293,9 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 		for (int iC = 1; iC < nCols+1; ++iC)	{
 			Double_t integral = hV0FeeddownMatrix[iSp]->Integral(iC,iC,1,nRows);
 			for (int iR = 1; iR < nRows+1; ++iR) {
-				Double_t binContent = hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR);
-				hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
+				//cout << "wtf " << hV0FeeddownMatrix[iSp] << endl;
+				Double_t binContent = hV0FeeddownMatrix[iSp]->GetBinContent(iC,iR);
+				if (binContent>0) hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
 			}
 		}
 	}
