@@ -125,6 +125,11 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	} } } }		
 
 	
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+		hV0FeeddownMatrix[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		hV0FeeddownMotherPt[iSp]	= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
+		//cout << "3mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
+	}		// should be loaded from external files instead
 
 
 
@@ -173,6 +178,12 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 
 	} } } }
 
+
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+		hV0PtFeeddown[iSp]	= (TH1D*)hV0PtFitCorr[iSp][0][0][0]->Clone(
+			Form("hV0PtFeeddown_%s",SPECIES[iSp]));
+	}
+
 }
 
 Int_t MyAnalysisV0correct::Finish() {
@@ -181,7 +192,10 @@ Int_t MyAnalysisV0correct::Finish() {
 	mDirFile->cd();
 
 	CloneHistograms();
+	
+	CorrectForFeeddown();
 	NormaliseSpectra();
+
 	//LoadEfficiency();
 	DoEfficiencyFromFile();
 	CorrectSpectra();
@@ -205,6 +219,25 @@ void MyAnalysisV0correct::SetMCInputFile(const Char_t *name) {
 		printf("MC File %s loaded in. \n", fileName.Data()); }
 	else {
 		printf("No MC file loaded.");
+	}
+}
+
+void MyAnalysisV0correct::CorrectForFeeddown() {
+
+	//cout << "joo " << hV0FeeddownMatrix[2] << endl;
+	//cout << "blaa " << hV0FeeddownMotherPt[2] << endl;
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+
+		for (int iBin = 1; iBin < hV0PtFeeddown[iSp]->GetNbinsX()+1; ++iBin)	{
+			Double_t sum = 0;
+			for (int iMotherBin = 1; iMotherBin < hV0FeeddownMotherPt[iSp]->GetNbinsX()+1; ++iMotherBin)	{
+				sum += 
+					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) * hV0FeeddownMotherPt[iSp]->GetBinContent(iMotherBin);
+			}
+			hV0PtFeeddown[iSp]->SetBinContent(iBin,2*sum);
+		}
+
+		hV0PtFeeddown[iSp]->Divide(hV0PtFitCorr[iSp][0][0][0]);
 	}
 }
 
@@ -517,6 +550,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 	}
 
 }
+
 
 void MyAnalysisV0correct::CorrectSpectra() {
 

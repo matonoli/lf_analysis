@@ -1067,7 +1067,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
 
 		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NPTBINS, XBINS, NPTBINS, XBINS);
-		//hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NPTBINS, XBINS);
+		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NPTBINS, XBINS);
+		cout << "mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 	}
 
 	for (int iCut = 0; iCut < 25; ++iCut)	{
@@ -1289,7 +1290,9 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 
 		Int_t nCols = hV0FeeddownMatrix[iSp]->GetNbinsX();
 		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
+		//cout << "1mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 		hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
+		//cout << "2mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 		for (int iC = 1; iC < nCols+1; ++iC)	{
 			Double_t integral = hV0FeeddownMatrix[iSp]->Integral(iC,iC,1,nRows);
 			for (int iR = 1; iR < nRows+1; ++iR) {
