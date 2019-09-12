@@ -481,7 +481,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					hTrackPt[MC][iMu+iMu*(!isEventFHM)][iSph+iSph*(!isEventJetty)]->Fill(p.GetPt());
 				}	}*/
 
-			if (!SelectParticle(p)) continue;
+			if (!SelectParticle(p)) continue;		// also contains Xi's now
 			PartLabels.push_back(p.GetLabel());
 			PartIds.push_back(iP);
 
@@ -545,25 +545,83 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle v0mc;
 			Bool_t MCfound = false;
 			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
-				if (PartLabels[iP] == v0.GetMCLabel()) {		// check if just once
+				if (PartLabels[iP] == v0.GetMCLabel()) {		// perhaps ask for pdgid as well?
+					
 					v0mc = MyParticle(mHandler->particle(PartIds[iP]));
-					if (v0mc.GetPdgCode() != v0mc.GetMotherPdgCode() 
-							&& TMath::Abs(v0mc.GetMotherPdgCode()) != 311
-							&& TMath::Abs(v0mc.GetMotherPdgCode()) > 10)	{
-						v0mc.SetIsPrimary(0);	}
+
+					//if (v0mc.GetPdgCode() != v0.GetMCPdgCode()) {
+						//printf("Codes are %i and %i and pt %f \n",v0mc.GetPdgCode(),v0.GetMCPdgCode(), v0.GetPt());
+						//cout << "WRONG PARTICLE-V0 ASSOCIATION" << endl;
+						//return 1; }
+					//}
+
+					//if (v0mc.GetPdgCode() != v0mc.GetMotherPdgCode() 
+					//		&& TMath::Abs(v0mc.GetMotherPdgCode()) != 311
+					//		&& TMath::Abs(v0mc.GetMotherPdgCode()) > 10)	{
+					//	v0mc.SetIsPrimary(0);	}
 					if (MCfound) {
 						cout << "PARTICLE FOUND TWICE" << endl;
 						return 1; }
-					MCfound = true;
-						}
+
+					if (v0mc.GetPdgCode() != v0.GetMCPdgCode()) MCfound = true;
+				}
 			}
 
-			if (MCfound) {
+			//if (MCfound) {		// check if this is OK (could be buggy?)
 				for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 					if (IsV0(v0,iSp,RC)) {
-						if (v0mc.GetIsPrimary()) hV0Feeddown[iSp]->Fill(v0.GetPt());
-						else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
+						// (v0mc.GetIsPrimary()) hV0Feeddown[iSp]->Fill(v0.GetPt());
+						//else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
 						
+						
+
+						// ask for primary
+						// get the MC label of mother
+						// get the Xi
+						// fill histo  l.pt and xi.pt
+						//printf("primary %i and grandma pdg code %i \n", v0.IsMCPrimary(), v0.GetMCPrimaryPdgCode());
+						/*if (!v0.IsMCPrimary()) {			// ask for secondary
+							hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode());
+							
+							if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {	// consider Xi->L
+								MyParticle priMC;
+								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{	// find particle Xi
+									if (PartLxiabels[iP] == v0.GetMCPrimaryLabel()) {
+										priMC = MyParticle(mHandler->particle(PartIds[iP]));
+									}
+								}
+
+								if (TMath::Abs(priMC.GetPdgCode()) != 3312) {
+									cout << "GRANDMOTHER NOT XI" << endl;
+									return 1;
+								}
+
+								hV0FeeddownMatrix[iSp]->Fill(priMC.GetPt(),v0.GetPt());
+							}
+							continue;
+						}*/
+
+						if (!v0.IsMCPrimary()) {
+							cout << "v0 not primary " << iSp << endl;
+							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
+							if (iSp>1) {
+								MyParticle xiMC;
+								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
+									xiMC = MyParticle(mHandler->particle(PartIds[iP]));
+									cout << "found particle w id " << xiMC.GetPdgCode() << endl;
+									if (xiMC.GetPdgCode() == 3312 && iSp==2){
+										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									}
+									if (xiMC.GetPdgCode() == -3312 && iSp==3){
+										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									}
+								}
+							}
+						}
+
+
+						if (!MCfound) continue;
+
 						ProcessV0toHist(v0,iSp,RC,multMB,sphMB);		
 						ProcessV0toTree(v0,iSp,RC,0);		
 
@@ -591,7 +649,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						}
 					}
 				}
-			}
+			//}
 		}
 
 		//for (int iMu = 0; iMu < isEventFHM+isEventMHM+isEventRT+1; ++iMu) {
@@ -884,7 +942,9 @@ Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
-		&& p.GetPdgCode() != PDG_IDS[3])	return false;
+		&& p.GetPdgCode() != PDG_IDS[3]
+		&& p.GetPdgCode() != 3312			// also Xi pm for feed-down study
+		&& p.GetPdgCode() != -3312 )		return false;
 	
 	//printf("code is %i and %i \n", p.GetPdgCode(), p.GetMotherPdgCode());
 
@@ -1005,6 +1065,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
 
+		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NPTBINS, XBINS, NPTBINS, XBINS);
 		
 	}
 

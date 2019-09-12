@@ -659,7 +659,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 	}	}
 
 	// CREATE OUTPUT FILE WITH SPECTRA
-	{
+	/*{
 		TFile* fileSpectra = new TFile("v0_spectra.root","RECREATE");
 		for (int iSp = 1; iSp < 2; ++iSp)		{
 		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
@@ -669,7 +669,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRt() {
 		}	}	}
 		mDirFile->cd();
 
-	}
+	}*/
 
 	// B/M Ratio
 	TCanvas* cBtoM[NREGIONS+1];
