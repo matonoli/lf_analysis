@@ -27,8 +27,8 @@ class MyV0: public TObject {
 
 		Double_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
 		Int_t IsMCPrimary() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherPrimary();};
-		Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
-		Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
+		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
+		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
 		Int_t GetMCPdgCode()				const { return mAliV0->GetMCPdgCode();};
 
 		Double_t* CalculateAP();

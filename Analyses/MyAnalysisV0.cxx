@@ -563,7 +563,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						cout << "PARTICLE FOUND TWICE" << endl;
 						return 1; }
 
-					if (v0mc.GetPdgCode() != v0.GetMCPdgCode()) MCfound = true;
+					if (v0mc.GetPdgCode() == v0.GetMCPdgCode()) MCfound = true;
 				}
 			}
 
@@ -609,10 +609,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 									xiMC = MyParticle(mHandler->particle(PartIds[iP]));
 									cout << "found particle w id " << xiMC.GetPdgCode() << endl;
-									if (xiMC.GetPdgCode() == 3312 && iSp==2){
+									if (xiMC.GetPdgCode() == 3312 && iSp==2)	{
 										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 									}
-									if (xiMC.GetPdgCode() == -3312 && iSp==3){
+									if (xiMC.GetPdgCode() == -3312 && iSp==3)	{
 										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 									}
 								}
@@ -870,6 +870,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//17
+			//cout << "tpc " << trP.GetNSigmaPionTPC() << " " << trN.GetNSigmaPionTPC() << endl;
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
