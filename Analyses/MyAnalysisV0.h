@@ -261,6 +261,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0Feeddown[V0consts::NSPECIES];
 		TH1D* hV0FeeddownPDG[V0consts::NSPECIES];
 		TH2D* hV0FeeddownMatrix[V0consts::NSPECIES];
+		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
 
 		TH2D* hProtonNchTransvPt[V0consts::NREGIONS];
 		TH2D* hPionNchTransvPt[V0consts::NREGIONS];

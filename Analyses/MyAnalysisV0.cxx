@@ -602,13 +602,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						}*/
 
 						if (!v0.IsMCPrimary()) {
-							cout << "v0 not primary " << iSp << endl;
+							//cout << "v0 not primary " << iSp << endl;
 							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
 							if (iSp>1) {
 								MyParticle xiMC;
 								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 									xiMC = MyParticle(mHandler->particle(PartIds[iP]));
-									cout << "found particle w id " << xiMC.GetPdgCode() << endl;
+									//cout << "found particle w id " << xiMC.GetPdgCode() << endl;
 									if (xiMC.GetPdgCode() == 3312 && iSp==2)	{
 										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 									}
@@ -1067,7 +1067,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
 
 		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NPTBINS, XBINS, NPTBINS, XBINS);
-		
+		//hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NPTBINS, XBINS);
 	}
 
 	for (int iCut = 0; iCut < 25; ++iCut)	{
@@ -1165,6 +1165,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		hV0Feeddown[iSp] 	= (TH1D*)mDirFile->Get(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] = (TH1D*)mDirFile->Get(Form("hV0FeeddownPDG_%s",SPECIES[iSp]));
+
+
 	}
 
 	Int_t nType = (mFlagMC) ? 2 : 1;
@@ -1271,7 +1273,7 @@ void MyAnalysisV0::DoEfficiencyFromTrees() {
 
 void MyAnalysisV0::DoLambdaFeeddown() {
 
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	/*for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		//hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 
 		hV0Feeddown[iSp]->SetTitle("; V0 p_{T} (GeV/#it{c}); Feed-down fraction");
@@ -1280,6 +1282,21 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 
 		hV0Feeddown[iSp]->Divide(hV0Pt[iSp][1][0][0]);
 		//hV0Efficiency[iSp]->Write();
+	}*/
+
+	// NORMALIZING 
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+
+		Int_t nCols = hV0FeeddownMatrix[iSp]->GetNbinsX();
+		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
+		hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
+		for (int iC = 1; iC < nCols+1; ++iC)	{
+			Double_t integral = hV0FeeddownMatrix[iSp]->Integral(iC,iC,1,nRows);
+			for (int iR = 1; iR < nRows+1; ++iR) {
+				Double_t binContent = hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR);
+				hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
+			}
+		}
 	}
 
 }
