@@ -56,8 +56,8 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	MyAnalysisV0plot* analysisV0plot 		= new MyAnalysisV0plot();
 
 	handler->AddAnalysis(analysisV0);
-	handler->AddAnalysis(analysisV0extract);
-	handler->AddAnalysis(analysisV0correct);
+	//handler->AddAnalysis(analysisV0extract);
+	//handler->AddAnalysis(analysisV0correct);
 	//handler->AddAnalysis(analysisV0plot);
 
 	// Initialise analyses

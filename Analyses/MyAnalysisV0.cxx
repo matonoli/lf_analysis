@@ -886,6 +886,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
 			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
 			//if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
+			if (v0.GetCPA() < cuts::L_CPA)					 		return false;
 			if (trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
@@ -897,6 +898,7 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
 			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
 			//if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
+			if (v0.GetCPA() < cuts::L_CPA)					 		return false;
 			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
@@ -931,6 +933,8 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 	if (tr.GetEta() > cuts::K0S_D_ETA[1])	return false;
 	if (TMath::Abs(tr.GetDCApvXY()) < cuts::K0S_D_DCAPVXY)	return false;
 	//if (!tr.IsITSTPC2011())	return false;
+
+	if ( cuts::V0_D_GOODTRACK && !tr.IsGoodV0daughter())	return false;
 
 	return true;
 }
@@ -1066,8 +1070,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
 
-		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NPTBINS, XBINS, NPTBINS, XBINS);
-		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NPTBINS, XBINS);
+		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS);
+		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
 		cout << "mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 	}
 

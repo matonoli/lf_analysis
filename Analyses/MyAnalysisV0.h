@@ -142,6 +142,10 @@ namespace V0consts {
 			{ 2.0 , 5.0 },
 			{ 0.15 , 14.0 } };
 
+	const Int_t NXIPTBINS = 7; 
+  	const Double_t XIXBINS[NXIPTBINS+1] = 
+  		{0.6, 1.2, 1.6, 2.2, 2.8, 3.6, 5.0, 6.5};
+
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};

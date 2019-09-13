@@ -237,6 +237,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 			hV0PtFeeddown[iSp]->SetBinContent(iBin,2*sum);
 		}
 
+		hV0PtFeeddown[iSp]->Scale(1,"width");
 		hV0PtFeeddown[iSp]->Divide(hV0PtFitCorr[iSp][0][0][0]);
 	}
 }
