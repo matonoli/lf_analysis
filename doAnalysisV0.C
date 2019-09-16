@@ -65,6 +65,7 @@ void doAnalysisV0(Int_t nEvents=10, const Char_t *inputFile="test.list",
 	handler->Init();
 	analysisV0extract->SetMCInputFile(MCinputFile);
 	analysisV0correct->SetMCInputFile(MCinputFile);
+	//analysisV0correct->SetXiSpectraFile("official/xi_HM_spectra_sep_9_2019.root");
 
 	// Start an event loop
 	Int_t nEntries = (handler->GetFlagHist()) ? 0 : handler->chain()->GetEntries();

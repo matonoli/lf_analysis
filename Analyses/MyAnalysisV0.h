@@ -29,6 +29,7 @@ namespace V0consts {
 	const Int_t NREGIONS = 3;
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
+	const Float_t XIMASS = 1.32171;
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RTTrans","RTNear","RTAway"};
 	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
@@ -142,9 +143,17 @@ namespace V0consts {
 			{ 2.0 , 5.0 },
 			{ 0.15 , 14.0 } };
 
-	const Int_t NXIPTBINS = 7; 
+	/*const Int_t NXIPTBINS = 7; 
   	const Double_t XIXBINS[NXIPTBINS+1] = 
-  		{0.6, 1.2, 1.6, 2.2, 2.8, 3.6, 5.0, 6.5};
+  		{0.6, 1.2, 1.6, 2.2, 2.8, 3.6, 5.0, 6.5};*/
+
+  	const Int_t NXIPTBINS = 44;		//official MB spectra
+	const Double_t XIXBINS[NXIPTBINS+1] = {
+		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
+		1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
+		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 3.6, 3.9, 4.2, 
+		4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 7.5, 8.0, 8.5, 9.2, 
+		10.0, 11.0, 12.0, 13.5, 15.0 };
 
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};

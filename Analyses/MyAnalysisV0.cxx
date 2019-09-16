@@ -485,6 +485,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			PartLabels.push_back(p.GetLabel());
 			PartIds.push_back(iP);
 
+			if (p.GetPdgCode() == 3312) hV0FeeddownMotherPt[2]->Fill(p.GetPt());
+			if (p.GetPdgCode() == -3312) hV0FeeddownMotherPt[3]->Fill(p.GetPt());
+
 			for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 				if (p.GetPdgCode() == PDG_IDS[iSp])		{
 
@@ -1295,10 +1298,12 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 		Int_t nCols = hV0FeeddownMatrix[iSp]->GetNbinsX();
 		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
 		//cout << "1mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
-		hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
+		//hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
 		//cout << "2mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
+		hV0FeeddownMotherPt[iSp]->Scale(1,"width");
+		
 		for (int iC = 1; iC < nCols+1; ++iC)	{
-			Double_t integral = hV0FeeddownMatrix[iSp]->Integral(iC,iC,1,nRows);
+			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);
 			for (int iR = 1; iR < nRows+1; ++iR) {
 				//cout << "wtf " << hV0FeeddownMatrix[iSp] << endl;
 				Double_t binContent = hV0FeeddownMatrix[iSp]->GetBinContent(iC,iR);

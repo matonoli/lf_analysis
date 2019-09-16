@@ -9,6 +9,7 @@
 #include "TMath.h"
 #include "../MyAnalysis.h"
 #include "MyAnalysisV0.h"
+#include "TF1.h"
 
 class TFile;	// forward declaration
 class TList;
@@ -31,6 +32,40 @@ Double_t rap_correction(Double_t* x, Double_t* par)
   return rap/eta;
 }
 
+Double_t
+LevyTsallis_Func(const Double_t *x, const Double_t *p)
+{
+  /* dN/dpt */
+  
+  Double_t pt = x[0];
+  Double_t mass = p[0];
+  Double_t mt = TMath::Sqrt(pt * pt + mass * mass);
+  Double_t n = p[1];
+  Double_t C = p[2];
+  Double_t norm = p[3];
+
+  Double_t part1 = (n - 1.) * (n - 2.);
+  Double_t part2 = n * C * (n * C + mass * (n - 2.));
+  Double_t part3 = part1 / part2;
+  Double_t part4 = 1. + (mt - mass) / n / C;
+  Double_t part5 = TMath::Power(part4, -n);
+  return pt * norm * part3 * part5;
+}
+
+TF1 *
+LevyTsallis(const Char_t *name, Double_t mass, Double_t n = 5., Double_t C = 0.1, Double_t norm = 1.)
+{
+  
+  TF1 *fLevyTsallis = new TF1(name, LevyTsallis_Func, 0., 10., 4);
+  fLevyTsallis->SetParameters(mass, n, C, norm);
+  fLevyTsallis->SetParNames("mass", "n", "C", "norm");
+  fLevyTsallis->FixParameter(0, mass);
+  fLevyTsallis->SetParLimits(1, 1.e-3, 1.e3);
+  fLevyTsallis->SetParLimits(2, 1.e-3, 1.e3);
+  fLevyTsallis->SetParLimits(3, 1.e-6, 1.e6);
+  return fLevyTsallis;
+}
+
 class MyAnalysisV0correct: public MyAnalysis {
 
 	public:
@@ -45,6 +80,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		Bool_t CloneHistograms();
 
 		void SetMCInputFile(const Char_t *name);
+		void SetXiSpectraFile(const Char_t *name);
 		void NormaliseSpectra();
 		void LoadEfficiency();
 		void DoEfficiencyFromFile();
@@ -63,6 +99,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TString mOutName;
 		//TFile* mFileOut;
 		TFile* mFileMC;
+		TFile* mFileXi = 0x0;
 		TList* mList;
 
 		Double_t NormEta = 0;
@@ -99,7 +136,8 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
-		TH1D* hV0PtFeeddown[V0consts::NSPECIES];
+		TH1D* hV0PtFeeddown[V0consts::NSPECIES][V0consts::NMULTI];
+		TH1D* hXiPt[V0consts::NSPECIES][V0consts::NMULTI];
 
 };
 #endif

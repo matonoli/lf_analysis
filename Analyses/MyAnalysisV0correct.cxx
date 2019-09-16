@@ -126,7 +126,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-		hV0FeeddownMatrix[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		//hV0FeeddownMatrix[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
 		hV0FeeddownMotherPt[iSp]	= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
 		//cout << "3mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 	}		// should be loaded from external files instead
@@ -180,9 +180,10 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 
 
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-		hV0PtFeeddown[iSp]	= (TH1D*)hV0PtFitCorr[iSp][0][0][0]->Clone(
-			Form("hV0PtFeeddown_%s",SPECIES[iSp]));
-	}
+	for (int iMu = 0; iMu < 2; ++iMu)		{
+		hV0PtFeeddown[iSp][iMu]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
+			Form("hV0PtFeeddown_%s_%s",SPECIES[iSp],MULTI[iMu]));
+	}	}
 
 }
 
@@ -222,11 +223,88 @@ void MyAnalysisV0correct::SetMCInputFile(const Char_t *name) {
 	}
 }
 
+void MyAnalysisV0correct::SetXiSpectraFile(const Char_t *name) {
+
+	TString fileName = TString(name);
+	if (fileName.Data() != "") {
+		mFileXi = new TFile(fileName,"READ");
+		printf("Xi spectrum file %s loaded in. \n", fileName.Data()); }
+	else {
+		printf("No Xi file loaded.");
+	}
+}
+
 void MyAnalysisV0correct::CorrectForFeeddown() {
 
 	//cout << "joo " << hV0FeeddownMatrix[2] << endl;
 	//cout << "blaa " << hV0FeeddownMotherPt[2] << endl;
+
+
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+		hXiPt[iSp][iMu] = 0x0;
+	}	}
+
+	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+		hV0FeeddownMatrix[iSp]	= (TH2D*)dirFile1->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		if (!hV0FeeddownMatrix[iSp]) {
+			printf("Feed-down matrix not found, no correction performed.\n");
+			return;
+		}
+	}
+
+	if (!mFileXi) {
+		printf("No Xi file loaded in, using MC Xi spectra instead. \n");
+		hXiPt[2][0] = hV0FeeddownMotherPt[2];
+		hXiPt[3][0] = hV0FeeddownMotherPt[3];
+	} else {
+
+		hXiPt[2][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
+		hXiPt[3][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
+	}
+
+	// INTERPOLATE XI SPECTRA
+	TF1* funcLT = LevyTsallis("LT",XIMASS);
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+	
+		if (!hXiPt[iSp][iMu]) continue;
+		cout << iSp << " " << iMu << " " << hXiPt[iSp][iMu] << endl;
+		//if (!mFileXi) hXiPt[iSp][iMu]->Scale(1,"width");
+		hXiPt[iSp][iMu]->Fit(funcLT,"I");
+		hXiPt[iSp][iMu]->Write();
+
+		for (int iBin = 1; iBin < hV0PtFeeddown[iSp][iMu]->GetNbinsX()+1; ++iBin)	{
+			Double_t sum = 0;
+			for (int iMotherBin = 1; iMotherBin < hV0FeeddownMatrix[iSp]->GetNbinsX()+1; ++iMotherBin)	{
+				Double_t left 	= hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinLowEdge(iMotherBin);
+				Double_t right 	= hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinLowEdge(iMotherBin+1);
+				if (iBin>4 && iBin <7) printf("bin %i range %f - %f adding %f times %f -> sum before %f \n", iBin, left, right, 
+					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
+				sum +=
+					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
+					funcLT->Integral(left,right);
+			}
+			hV0PtFeeddown[iSp][iMu]->SetBinContent(iBin, 2*sum);
+		}
+		hV0PtFeeddown[iSp][iMu]->Scale(1,"width");
+
+	}	}
+
+
+	funcLT->Write();
+
+	cout << "bc " << hV0PtFeeddown[2][1]->GetBinContent(6) << " / " << hV0PtFitCorr[2][0][1][0]->GetBinContent(6) << endl;
+
+	hV0PtFeeddown[2][1]->Divide(hV0PtFitCorr[2][0][1][0]);
+	hV0PtFeeddown[3][1]->Divide(hV0PtFitCorr[3][0][1][0]);
+
+	hV0PtFeeddown[2][0]->Divide(hV0PtFitCorr[2][0][0][0]);
+	hV0PtFeeddown[3][0]->Divide(hV0PtFitCorr[3][0][0][0]);
+
+
+	/*for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 
 		for (int iBin = 1; iBin < hV0PtFeeddown[iSp]->GetNbinsX()+1; ++iBin)	{
 			Double_t sum = 0;
@@ -239,7 +317,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 
 		hV0PtFeeddown[iSp]->Scale(1,"width");
 		hV0PtFeeddown[iSp]->Divide(hV0PtFitCorr[iSp][0][0][0]);
-	}
+	}*/
 }
 
 void MyAnalysisV0correct::NormaliseSpectra() {
