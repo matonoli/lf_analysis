@@ -317,7 +317,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
 				sum +=
 					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
-					funcLT->Integral(left,right);///(right-left);
+					funcLT->Integral(left,right) / (right-left);
 
 				sumErr +=
 					(hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin) *
@@ -857,19 +857,22 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	hLLbarV0M->Add(hV0PtFitCorr[3][0][1][0]);
 	hLLbarV0M->Scale(1./0.7448);
 
+	hLLbarV0M->Divide(hOffiL);
+	hLLbarMB->Divide(hOffiLMB);
+
 	
 	TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
-	cXcheck->SetLogy();
+	//cXcheck->SetLogy();
 	mHandler->MakeNiceHistogram((TH1D*)hOffiL,kGreen+2);
 	mHandler->MakeNiceHistogram((TH1D*)hOffiLMB,kGreen+2);
 	hOffiLMB->SetMarkerStyle(21);
 	mHandler->MakeNiceHistogram(hLLbarV0M,kRed);
-	mHandler->MakeNiceHistogram(hLLbarMB,kRed);
+	mHandler->MakeNiceHistogram(hLLbarMB,kBlue);
 	hLLbarMB->SetMarkerStyle(21);
-	hOffiL->Draw();
+	//hOffiL->Draw();
 	hLLbarV0M->Draw("same");
 	hLLbarMB->Draw("same");
-	hOffiLMB->Draw("same");
+	//hOffiLMB->Draw("same");
 		
 	//mHandler->root()->SetBatch(kFALSE);
 }
