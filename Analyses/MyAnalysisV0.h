@@ -47,13 +47,13 @@ namespace V0consts {
 		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
 		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };*/
 
-	const Int_t NPTBINS = 44;		//official MB spectra
+	/*const Int_t NPTBINS = 44;		//official MB spectra
 	const Double_t XBINS[NPTBINS+1] = {
 		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
 		1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
 		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 3.6, 3.9, 4.2, 
 		4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 7.5, 8.0, 8.5, 9.2, 
-		10.0, 11.0, 12.0, 13.5, 15.0 };
+		10.0, 11.0, 12.0, 13.5, 15.0 };*/
 
 	/*const Int_t NPTBINS = 18;
 	const Double_t XBINS[NPTBINS+1] = { 
@@ -93,6 +93,13 @@ namespace V0consts {
 		0.60, 0.80, 1.00, 1.40, 1.80, 
 		2.20, 2.80, 3.40, 4.00, 5.00, 
 		7.00, 9.00,	11.00, 15.00 };
+
+	const Int_t NPTBINS = 16;
+	const Double_t XBINS[NPTBINS+1] = { 
+		0.4, 0.6, 0.8, 1.0, 1.2, 
+		1.4, 1.6, 1.8, 2.0, 2.2, 
+		2.5, 2.9, 3.4, 4.0, 5.0, 
+		6.5, 8.0 };
 
 	/*const Int_t NPTBINS2 = 44;		//official MB spectra
 	const Double_t XBINS2[NPTBINS2+1] = {

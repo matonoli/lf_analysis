@@ -1222,7 +1222,7 @@ Int_t MyAnalysisV0::Finish() {
 
 	//if (mFlagMC) DoEfficiency();
 	if (mFlagMC) DoEfficiencyFromTrees();
-	if (mFlagMC) DoLambdaFeeddown();
+	if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
 
 	return 0;	
 }
@@ -1301,7 +1301,7 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 		//hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
 		//cout << "2mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 		hV0FeeddownMotherPt[iSp]->Scale(1,"width");
-		
+
 		for (int iC = 1; iC < nCols+1; ++iC)	{
 			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);
 			for (int iR = 1; iR < nRows+1; ++iR) {

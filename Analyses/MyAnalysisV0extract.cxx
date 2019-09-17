@@ -197,7 +197,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	DefineSidebands();
 	ProducePtSpectraFromHists();
-	ProducePtSpectraFromTrees();
+	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
 
 
@@ -1083,7 +1083,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
+	for (int iMu = 0; iMu < 3; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
 		if (iMu > 2 && (iSph < 3 && iSph)) continue;

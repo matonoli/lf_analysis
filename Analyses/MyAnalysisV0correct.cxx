@@ -11,6 +11,7 @@
 #include <TNamed.h>
 #include <THashList.h>
 #include <TNtuple.h>
+#include <TCutG.h>
 
 #include "MyAnalysisV0correct.h"
 #include "../MyEvent.h"
@@ -194,8 +195,8 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	CloneHistograms();
 	
-	CorrectForFeeddown();
 	NormaliseSpectra();
+	CorrectForFeeddown();
 
 	//LoadEfficiency();
 	DoEfficiencyFromFile();
@@ -203,6 +204,7 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
 
+	DoXCheckV0M();
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 
@@ -245,6 +247,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[iSp][iMu] = 0x0;
 	}	}
 
+	TCutG* cutg;
 	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 		hV0FeeddownMatrix[iSp]	= (TH2D*)dirFile1->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
@@ -252,6 +255,19 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 			printf("Feed-down matrix not found, no correction performed.\n");
 			return;
 		}
+
+		cutg = new TCutG("CUTG",11);
+		cutg->SetPoint(0,1.10641,0.395916);
+		cutg->SetPoint(1,4.12183,2.70515);
+		cutg->SetPoint(2,8.05547,4.68511);
+		cutg->SetPoint(3,15.1932,9.98092);
+		cutg->SetPoint(4,15.0045,15.1427);
+		cutg->SetPoint(5,9.03038,10.792);
+		cutg->SetPoint(6,4.89268,5.94943);
+		cutg->SetPoint(7,4.05381,4.56584);
+		cutg->SetPoint(8,1.61654,1.82252);
+		cutg->SetPoint(9,0.346886,0.395916);
+		cutg->SetPoint(10,1.10641,0.395916);
 	}
 
 	if (!mFileXi) {
@@ -262,10 +278,16 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 
 		hXiPt[2][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
 		hXiPt[3][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
+
+		TFile* fileXIMB = new TFile("official/xi_MB_spectra_sep_9_2019_sum_rebin.root","READ");
+		hXiPt[2][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
+		hXiPt[3][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
+		mDirFile->cd();
 	}
 
 	// INTERPOLATE XI SPECTRA
 	TF1* funcLT = LevyTsallis("LT",XIMASS);
+	if (!mFileXi) funcLT->SetParameter(3,100000);
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	
@@ -275,20 +297,43 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[iSp][iMu]->Fit(funcLT,"I");
 		hXiPt[iSp][iMu]->Write();
 
+		if (hV0PtFeeddown[iSp][iMu]->GetNbinsX() != hV0FeeddownMatrix[iSp]->GetNbinsY()) {
+			printf("FD matrix has bad dimensions!\n");
+			return;
+		}
+
 		for (int iBin = 1; iBin < hV0PtFeeddown[iSp][iMu]->GetNbinsX()+1; ++iBin)	{
 			Double_t sum = 0;
+			Double_t sumErr = 0;
 			for (int iMotherBin = 1; iMotherBin < hV0FeeddownMatrix[iSp]->GetNbinsX()+1; ++iMotherBin)	{
+				
+				Double_t cX = hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinCenter(iMotherBin);
+				Double_t cY = hV0FeeddownMatrix[iSp]->GetYaxis()->GetBinCenter(iBin);
+				if (!cutg->IsInside(cX,cY)) continue;
+
 				Double_t left 	= hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinLowEdge(iMotherBin);
 				Double_t right 	= hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinLowEdge(iMotherBin+1);
-				if (iBin>4 && iBin <7) printf("bin %i range %f - %f adding %f times %f -> sum before %f \n", iBin, left, right, 
+				if (iBin>7 && iBin <10) printf("bin %i range %f - %f adding %f times %f -> sum before %f \n", iBin, left, right, 
 					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
 				sum +=
 					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
-					funcLT->Integral(left,right);
+					funcLT->Integral(left,right);///(right-left);
+
+				sumErr +=
+					(hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin) *
+					hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin)) +
+					(funcLT->IntegralError(left,right) *
+					funcLT->IntegralError(left,right));	
 			}
 			hV0PtFeeddown[iSp][iMu]->SetBinContent(iBin, 2*sum);
+			hV0PtFeeddown[iSp][iMu]->SetBinError(iBin, 0);//TMath::Sqrt(sumErr));
 		}
 		hV0PtFeeddown[iSp][iMu]->Scale(1,"width");
+
+		TH1D* htmp = (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone("htmp");
+		hV0PtFitCorr[iSp][0][iMu][0]->Add(hV0PtFeeddown[iSp][iMu],-1.);
+		hV0PtFeeddown[iSp][iMu]->Divide(htmp);
+		delete htmp;
 
 	}	}
 
@@ -297,11 +342,6 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 
 	cout << "bc " << hV0PtFeeddown[2][1]->GetBinContent(6) << " / " << hV0PtFitCorr[2][0][1][0]->GetBinContent(6) << endl;
 
-	hV0PtFeeddown[2][1]->Divide(hV0PtFitCorr[2][0][1][0]);
-	hV0PtFeeddown[3][1]->Divide(hV0PtFitCorr[3][0][1][0]);
-
-	hV0PtFeeddown[2][0]->Divide(hV0PtFitCorr[2][0][0][0]);
-	hV0PtFeeddown[3][0]->Divide(hV0PtFitCorr[3][0][0][0]);
 
 
 	/*for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
@@ -556,7 +596,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		tV0PtMCMB[iSp]->Draw("lPt>>hDen","","goff");
 
 		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
-		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
+		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,15.0);
 
 		hV0Efficiency[iSp]->Divide(hDen);
 		delete hDen;
@@ -572,14 +612,14 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 			tV0PtMCRt[iSp][iReg]->Draw("lPt>>hDen","","goff");
 
 			//hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
-			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,14.0);
+			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,15.0);
 
 			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
 			delete hDen;
 		}
 	}
 
-	{
+	/*{
 		TCanvas* cEffi = new TCanvas("cEffi","",2700,900);
 		cEffi->Divide(3,1,0.0005,0.0005);
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -594,9 +634,9 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		leg1->AddEntry(hV0Efficiency[3],Form("%s",SPECNAMES[3]),"pl");
 		leg1->Draw();
 		cEffi->Write();
-	}
+	}*/
 
-	{
+	/*{
 		TCanvas* cEffi[NSPECIES];
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 			cEffi[iSp] = new TCanvas(Form("cEffiReg_%s",SPECIES[iSp]),"",1000,900);
@@ -626,7 +666,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 			cEffi[iSp]->Write();
 			cEffi[iSp]->SaveAs(Form("plots/cEffiReg_%s.png",SPECIES[iSp]));
 		}
-	}
+	}*/
 
 }
 
@@ -635,6 +675,10 @@ void MyAnalysisV0correct::CorrectSpectra() {
 
 	Double_t MBtrigEff = 0.7448;
 	
+
+	printf("mb k0s spectrum before corr \n");
+	cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
+
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	TF1* funcRapCorrection = new TF1("funcRapCorrection",rap_correction,XBINS[0],XBINS[NPTBINS],2);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -663,10 +707,10 @@ void MyAnalysisV0correct::CorrectSpectra() {
 
 
 	printf("mb k0s eff \n");
-	cout << hV0Efficiency[1]->GetBinContent(30) << endl;
+	cout << hV0Efficiency[2]->GetBinContent(30) << endl;
 
 	printf("mb k0s spectrum after corr \n");
-	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << endl;
+	cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
 
 	TF1* funcRapCorrection2 = new TF1("funcRapCorrection2",rap_correction,XBINS2[0],XBINS2[NPTBINS2],2);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
@@ -764,7 +808,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
-		hClosureTestCorr[iSp]	= (TH1D*)hV0PtFitCorr[iSp][1][iMu][iSph]->Clone(Form("hClosureTestCorr_%s",SPECIES[iSp]));
+		hClosureTestCorr[iSp]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][iSph]->Clone(Form("hClosureTestCorr_%s",SPECIES[iSp]));
 		cout << " " << hV0Pt[iSp][2][iMu][iSph] << endl;
 		TH1D* hDen = (TH1D*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1./NormEv);
@@ -789,4 +833,43 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 		
 	}
 	mHandler->root()->SetBatch(kFALSE);
+}
+
+void MyAnalysisV0correct::DoXCheckV0M() {
+
+	
+	//mHandler->root()->SetBatch(kTRUE);
+	
+	TFile* fileV0M = new TFile("official/SpectraVsMultiplicityLambdaSum.root","READ");
+	TH1F* hOffiL01 = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00000to00100-epsPart-epsEv-Corrected");
+	TH1F* hOffiL15 = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00100to00500-epsPart-epsEv-Corrected"); 
+	TH1F* hOffiL = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00500to01000-epsPart-epsEv-Corrected"); 
+	TH1F* hOffiLMB = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00000to10000-epsPart-epsEv-Corrected"); 
+	mDirFile->cd();
+
+	hOffiL->Scale(5.); hOffiL->Add(hOffiL15,4.); hOffiL->Add(hOffiL01,1.);
+	hOffiL->Scale(1./10);
+
+	TH1D* hLLbarMB = (TH1D*)hV0PtFitCorr[2][0][0][0]->Clone("hLLbarMB");
+	hLLbarMB->Add(hV0PtFitCorr[3][0][0][0]);
+	hLLbarMB->Scale(1./0.7448);
+	TH1D* hLLbarV0M = (TH1D*)hV0PtFitCorr[2][0][1][0]->Clone("hLLbarMB"); 
+	hLLbarV0M->Add(hV0PtFitCorr[3][0][1][0]);
+	hLLbarV0M->Scale(1./0.7448);
+
+	
+	TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
+	cXcheck->SetLogy();
+	mHandler->MakeNiceHistogram((TH1D*)hOffiL,kGreen+2);
+	mHandler->MakeNiceHistogram((TH1D*)hOffiLMB,kGreen+2);
+	hOffiLMB->SetMarkerStyle(21);
+	mHandler->MakeNiceHistogram(hLLbarV0M,kRed);
+	mHandler->MakeNiceHistogram(hLLbarMB,kRed);
+	hLLbarMB->SetMarkerStyle(21);
+	hOffiL->Draw();
+	hLLbarV0M->Draw("same");
+	hLLbarMB->Draw("same");
+	hOffiLMB->Draw("same");
+		
+	//mHandler->root()->SetBatch(kFALSE);
 }

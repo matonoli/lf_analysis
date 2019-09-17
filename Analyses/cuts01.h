@@ -36,7 +36,7 @@ namespace cuts {
 	//const Float_t L_NSIGTOF[2] 		= {-3., 3.}; 
 	const Float_t LBAR_NSIGTPC[2] 		= {-3., 3.};
 	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.};
-	const Float_t L_PT[2] 				= {0.6, 15.};
+	const Float_t L_PT[2] 				= {0.4, 15.};
 	const Float_t L_COMP_M				= 0.010;
 	const Float_t L_TAU					= 30.;
 	const Float_t L_CPA					= 0.997;
