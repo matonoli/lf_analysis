@@ -939,6 +939,11 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 	if ( cuts::V0_D_GOODTRACK && !tr.IsGoodV0daughter())	return false;
 
+	//printf("values are %f and %f \n", tr.GetTPCnc(),tr.GetTPCnc()/tr.GetTPCNclsF());
+
+	if (tr.GetTPCnc() < cuts::V0_D_NCR)							return false;
+	if (tr.GetTPCNclsF() > 0 && (tr.GetTPCnc()/tr.GetTPCNclsF()) < cuts::V0_D_NRATIO)		return false;
+
 	return true;
 }
 

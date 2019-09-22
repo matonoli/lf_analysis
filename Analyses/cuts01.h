@@ -23,6 +23,8 @@ namespace cuts {
 	const Float_t V0_D_ETA[2]	= {-0.8, 0.8};
 	const Float_t V0_D_DCAPVXY 	= 0.06;
 	const Bool_t V0_D_GOODTRACK	= 0;
+	const Float_t V0_D_NCR		= 70.;
+	const Float_t V0_D_NRATIO		= 0.8;
 
 	// K0s, L, Lbar
 	const Float_t K0S_AP 				= 0.2;

@@ -31,6 +31,9 @@ class MyTrack: public TObject {
 		Bool_t IsGoodV0daughter()				const { return (mAliTrack->GetTrackCutFlag()&16);};
 		Bool_t HasTOFPID()						const { return mAliTrack->HasTOFPID();};
 
+		Float_t GetTPCnc()						const { return mAliTrack->GetTPCnc();};
+		UShort_t GetTPCNclsF()					const { return mAliTrack->GetTPCNclsF();};
+
 		// add safety measure to getters for if mAliTrack is an invalid pointer
 		
 		ClassDef(MyTrack,1);
