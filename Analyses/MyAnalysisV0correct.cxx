@@ -293,8 +293,9 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 	
 		if (!hXiPt[iSp][iMu]) continue;
 		cout << iSp << " " << iMu << " " << hXiPt[iSp][iMu] << endl;
-		//if (!mFileXi) hXiPt[iSp][iMu]->Scale(1,"width");
+		//if (mFileXi) hXiPt[iSp][iMu]->Scale(0.5);
 		hXiPt[iSp][iMu]->Fit(funcLT,"I");
+
 		hXiPt[iSp][iMu]->Write();
 
 		if (hV0PtFeeddown[iSp][iMu]->GetNbinsX() != hV0FeeddownMatrix[iSp]->GetNbinsY()) {
@@ -317,7 +318,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
 				sum +=
 					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
-					funcLT->Integral(left,right) / (right-left);
+					funcLT->Integral(left,right) / (2.*(right-left));
 
 				sumErr +=
 					(hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin) *
@@ -853,7 +854,7 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	TH1D* hLLbarMB = (TH1D*)hV0PtFitCorr[2][0][0][0]->Clone("hLLbarMB");
 	hLLbarMB->Add(hV0PtFitCorr[3][0][0][0]);
 	hLLbarMB->Scale(1./0.7448);
-	TH1D* hLLbarV0M = (TH1D*)hV0PtFitCorr[2][0][1][0]->Clone("hLLbarMB"); 
+	TH1D* hLLbarV0M = (TH1D*)hV0PtFitCorr[2][0][1][0]->Clone("hLLbarV0M"); 
 	hLLbarV0M->Add(hV0PtFitCorr[3][0][1][0]);
 	hLLbarV0M->Scale(1./0.7448);
 
