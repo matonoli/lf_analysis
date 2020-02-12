@@ -232,9 +232,9 @@ Int_t MyAnalysisV0plot::Finish() {
 
 	BorrowHistograms();
 	CloneHistograms();
-	//MakeFinalFiguresSpherocity();
+	MakeFinalFiguresSpherocity();
 	MakeFinalFiguresEvent();
-	MakeFinalFiguresRt();
+	//MakeFinalFiguresRt();
 
 	return 0;	
 }
@@ -959,7 +959,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	Double_t rangePtH = 15.;
 	for (Int_t iSp = 1; iSp < NSPECIES; ++iSp)	{				
 	
-		mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][0][0],COLOURS[0]);
+		mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][0][0],COLOURS[2]);
 		hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");
 
 		for (Int_t iMu = 1; iMu < 3; ++iMu)	{
@@ -967,7 +967,9 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			for (Int_t iSph = 0; iSph < 3; ++iSph)	{
 
 				//mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[iMu+iSph+(iSph>0)-(iMu>1&&iSph>0)]);
-				mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[1+iSph]);
+				if (iSph==0) mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[1]);
+				if (iSph==1) mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[0]);
+				if (iSph==2) mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][iMu][iSph],COLOURS[3]);
 				hV0PtFitCorr[iSp][0][iMu][iSph]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");		
 
 			}
@@ -995,9 +997,9 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			legPt->Draw();
 
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][1],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.4,1.6,rangePtL,rangePtH);
+				cPt[iSp][iMu-1], 0.4,1.9,rangePtL,rangePtH);
 			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][2],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.4,1.6,rangePtL,rangePtH);
+				cPt[iSp][iMu-1], 0.4,1.9,rangePtL,rangePtH);
 
 			cPt[iSp][iMu-1]->Write();
 			cPt[iSp][iMu-1]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[iMu]));
@@ -1101,7 +1103,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	legBtoM[1] = new TLegend(0.55,0.55,0.85,0.85);
 	mHandler->MakeNiceLegend(legBtoM[1],0.04,1);
 	mHandler->MakeNiceHistogram(hBtoM[1][1],COLOURS[0]);
-	mHandler->MakeNiceHistogram(hBtoM[1][2],COLOURS[1]);
+	mHandler->MakeNiceHistogram(hBtoM[1][2],COLOURS[3]);
 	hBtoM[1][1]->GetYaxis()->SetRangeUser(0.,1.0);
 	hBtoM[1][1]->Draw();
 	cBtoM[1]->Update();
@@ -1121,7 +1123,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	legBtoM[2] = new TLegend(0.55,0.55,0.85,0.85);
 	mHandler->MakeNiceLegend(legBtoM[2],0.04,1);
 	mHandler->MakeNiceHistogram(hBtoM[2][1],COLOURS[0]);
-	mHandler->MakeNiceHistogram(hBtoM[2][2],COLOURS[1]);
+	mHandler->MakeNiceHistogram(hBtoM[2][2],COLOURS[3]);
 	hBtoM[2][1]->GetYaxis()->SetRangeUser(0.,1.0);
 	hBtoM[2][1]->Draw();
 	cBtoM[2]->Update();
@@ -1215,7 +1217,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 		hV0toNchDR[iSp2][0][iMu][1]->GetYaxis()->SetTitle("(V0 / N_{ch} )_{HM}^{sph.} / (V0 / N_{ch} )_{HM}");
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][0],COLOURS[0]);
 		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][1],COLOURS[0]);
-		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][2],COLOURS[1]);
+		mHandler->MakeNiceHistogram(hV0toNchDR[iSp2][0][iMu][2],COLOURS[3]);
 	
 		//hV0toNchDR[iSp2][0][iMu][0]->Draw();
 		hV0toNchDR[iSp2][0][iMu][1]->Draw("");
@@ -1263,7 +1265,7 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 		}
 		legDR[iSp2][iMu-1]->Draw();
 
-		mHandler->MakeZoomPlot(hV0toNchDR[iSp2][0][iMu][1],cDR[iSp2][iMu-1],0.,2.6,0.7,1.2);
+		mHandler->MakeZoomPlot(hV0toNchDR[iSp2][0][iMu][1],cDR[iSp2][iMu-1],0.,2.6,0.75,1.15);
 		//hV0toNchDR[iSp2][0][iMu][0]->DrawCopy();
 		hV0toNchDR[iSp2][0][iMu][1]->DrawCopy("");
 		hV0toNchDR[iSp2][0][iMu][2]->DrawCopy("same");

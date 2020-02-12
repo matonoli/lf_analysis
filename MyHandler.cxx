@@ -18,7 +18,7 @@
 
 ClassImp(MyHandler)
 
-MyHandler::MyHandler() {
+MyHandler::MyHandler() : mOutName(0), mFile(0) {
 
 	mFlagMC 	= false;
 	mFlagHist	= false;
@@ -43,14 +43,16 @@ void MyHandler::AddAnalysis(MyAnalysis* ana) {
 
 Int_t MyHandler::Init() {
 
-	printf("Creating mother output file %s \n", mOutName.Data());
-	mFile = new TFile(mOutName.Data(),"RECREATE");
+	if (mOutName) {
+		printf("Creating mother output file %s \n", mOutName.Data());
+		mFile = new TFile(mOutName.Data(),"RECREATE");
+	}
 
 	printf("nAnalyses is %i \n", nAnalyses);
 	for (Int_t iAna = 0; iAna < nAnalyses; iAna++) {
 		nAna = iAna;
 		mAnalysis[iAna]->Init();
-		mFile->cd();
+		if (mFile) mFile->cd();
 	}
 	return 0;
 }
@@ -131,9 +133,11 @@ Int_t MyHandler::Finish() {
 		mAnalysis[iAna]->Finish();
 	}
 
-	mFile->cd();
-	mFile->Write();
-	printf("File written \n");
+	if (mFile) {
+		mFile->cd();
+		mFile->Write();
+		printf("File written \n");
+	}
 
 	return 0;	
 }

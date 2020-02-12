@@ -270,6 +270,17 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		cutg->SetPoint(10,1.10641,0.395916);
 	}
 
+	TH2D* hFMatrix = (TH2D*)hV0FeeddownMatrix[2]->Clone("hFMatrix");
+	for (int iMotherBin = 1; iMotherBin < hV0FeeddownMatrix[2]->GetNbinsX()+1; ++iMotherBin)	{
+		for (int iPtBin = 1; iPtBin < hV0FeeddownMatrix[2]->GetNbinsY()+1; ++iPtBin)	{
+				
+				Double_t cX = hV0FeeddownMatrix[2]->GetXaxis()->GetBinCenter(iMotherBin);
+				Double_t cY = hV0FeeddownMatrix[2]->GetYaxis()->GetBinCenter(iPtBin);
+				hFMatrix->SetBinContent(iMotherBin,iPtBin,0);
+				if (!cutg->IsInside(cX,cY)) continue;
+				hFMatrix->SetBinContent(iMotherBin,iPtBin,hV0FeeddownMatrix[2]->GetBinContent(iMotherBin,iPtBin));
+	}	}
+
 	if (!mFileXi) {
 		printf("No Xi file loaded in, using MC Xi spectra instead. \n");
 		hXiPt[2][0] = hV0FeeddownMotherPt[2];
@@ -620,7 +631,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		}
 	}
 
-	/*{
+	{
 		TCanvas* cEffi = new TCanvas("cEffi","",2700,900);
 		cEffi->Divide(3,1,0.0005,0.0005);
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -635,7 +646,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		leg1->AddEntry(hV0Efficiency[3],Form("%s",SPECNAMES[3]),"pl");
 		leg1->Draw();
 		cEffi->Write();
-	}*/
+	}
 
 	/*{
 		TCanvas* cEffi[NSPECIES];
@@ -846,6 +857,19 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	TH1F* hOffiL15 = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00100to00500-epsPart-epsEv-Corrected"); 
 	TH1F* hOffiL = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00500to01000-epsPart-epsEv-Corrected"); 
 	TH1F* hOffiLMB = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00000to10000-epsPart-epsEv-Corrected"); 
+	
+	TFile* fileMB 	= new TFile("official/k0s_spectra.root","READ");
+	TH1F* hOffiKMB 	= (TH1F*)fileMB->Get("fHistStatErrOnly"); 
+	cout << "blaaadawda " << hOffiKMB << endl;
+
+	TFile* fileMBeff 	= new TFile("official/k0s_effi.root","READ");
+	TH1F* hOffiKMBeff 	= (TH1F*)fileMBeff->Get("fHistPureEfficiency"); 
+	cout << "blaaadawdaaa " << hOffiKMBeff << endl;
+
+	TFile* fileMBraw 	= new TFile("official/k0s_raw.root","READ");
+	TH1F* hOffiKMBraw 	= (TH1F*)fileMBraw->Get("fHistPtK0ShortRaw"); 
+	
+
 	mDirFile->cd();
 
 	hOffiL->Scale(5.); hOffiL->Add(hOffiL15,4.); hOffiL->Add(hOffiL01,1.);
@@ -858,22 +882,65 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	hLLbarV0M->Add(hV0PtFitCorr[3][0][1][0]);
 	hLLbarV0M->Scale(1./0.7448);
 
-	hLLbarV0M->Divide(hOffiL);
-	hLLbarMB->Divide(hOffiLMB);
+
+
+	//hLLbarV0M->Divide(hOffiL);
+	//hLLbarMB->Divide(hOffiLMB);
 
 	
-	TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
-	//cXcheck->SetLogy();
-	mHandler->MakeNiceHistogram((TH1D*)hOffiL,kGreen+2);
-	mHandler->MakeNiceHistogram((TH1D*)hOffiLMB,kGreen+2);
-	hOffiLMB->SetMarkerStyle(21);
-	mHandler->MakeNiceHistogram(hLLbarV0M,kRed);
-	mHandler->MakeNiceHistogram(hLLbarMB,kBlue);
-	hLLbarMB->SetMarkerStyle(21);
-	//hOffiL->Draw();
-	hLLbarV0M->Draw("same");
-	hLLbarMB->Draw("same");
-	//hOffiLMB->Draw("same");
+	if (0) {
+		TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
+		cXcheck->SetLogy();
+		mHandler->MakeNiceHistogram((TH1D*)hOffiL,kGreen+2);
+		mHandler->MakeNiceHistogram((TH1D*)hOffiLMB,kGreen+2);
+		hOffiLMB->SetMarkerStyle(21);
+		mHandler->MakeNiceHistogram(hLLbarV0M,kRed);
+		mHandler->MakeNiceHistogram(hLLbarMB,kBlue);
+		hLLbarMB->SetMarkerStyle(21);
+		hOffiL->Draw();
+		hLLbarV0M->Draw("same");
+		hLLbarMB->Draw("same");
+		hOffiLMB->Draw("same");
+	}
+
+	TH1D* hK0sMB = (TH1D*)hV0PtFitCorr[1][0][0][0]->Clone("hK0sMB");
+	TH1D* hK0sMBeff = (TH1D*)hV0Efficiency[1]->Clone("hK0sMBeff");
+	TH1D* hK0sMBraw = (TH1D*)hV0PtFit[1][0][0][0]->Clone("hK0sMBraw");
+	hK0sMBraw->Scale(1./1.6);
+
+	Double_t NormEv = hEventType->GetBinContent(24);
+	NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+	hK0sMBraw->Scale(1./NormEv);
+
+	cout << "badawda " << hK0sMB << endl;
+	cout << "badawda222 " << hK0sMBeff << endl;
+
+
+	printf("atghh mb k0s eff \n");
+	cout << hV0Efficiency[1]->GetBinContent(30) << endl;
+	cout << hK0sMBeff->GetBinContent(30) << endl;
+
+	TF1* funcRapCorrection3 = new TF1("funcRapCorrection3",rap_correction,XBINS[0],XBINS[NPTBINS],2);
+	funcRapCorrection3->SetParameters(1.6,MASSES[1]);
+	hOffiKMBeff->Divide(funcRapCorrection3,1);
+
+	hK0sMB->Divide(hOffiKMB);
+	hOffiKMBeff->Divide(hK0sMBeff);
+	hK0sMBraw->Divide(hOffiKMBraw);
+
+	TCanvas* cXcheck2 = new TCanvas("cXcheck2","",900,900);
+	//cXcheck2->SetLogy();
+	//hOffiLMB->SetMarkerStyle(21);
+	mHandler->MakeNiceHistogram(hK0sMB,kRed);
+	mHandler->MakeNiceHistogram(hK0sMBeff,kBlue);
+	mHandler->MakeNiceHistogram(hK0sMBraw,kBlue);
+	//hLLbarMB->SetMarkerStyle(21);
+	hK0sMB->Draw();
+	//hOffiKMB->Draw("same");
+	
+	//hK0sMBeff->Draw("same");
+	hOffiKMBeff->Draw("same");
+	hK0sMBraw->Draw("same");
 		
 	//mHandler->root()->SetBatch(kFALSE);
 }

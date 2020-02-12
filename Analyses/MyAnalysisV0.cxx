@@ -46,7 +46,7 @@ Int_t MyAnalysisV0::Init() {
 
 	TString dfName(this->GetName());
 	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());
+	mDirFile = new TDirectoryFile(dfName,dfName,"",0);
 	mDirFile->cd();
 
 	mFlagMC = mHandler->GetFlagMC();
@@ -60,8 +60,6 @@ Int_t MyAnalysisV0::Init() {
 	TH1::SetDefaultSumw2();
 	if (mFlagHist)	BorrowHistograms();
 	else 			CreateHistograms();
-
-	mList = (TList*)mHandler->directory()->GetList();
 
 	// initialising treebug checker
 	bugR = 0;
