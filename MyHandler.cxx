@@ -18,7 +18,7 @@
 
 ClassImp(MyHandler)
 
-MyHandler::MyHandler() : mOutName(0), mFile(0) {
+MyHandler::MyHandler() : mOutName(""), mFile(0) {
 
 	mFlagMC 	= false;
 	mFlagHist	= false;
@@ -43,7 +43,7 @@ void MyHandler::AddAnalysis(MyAnalysis* ana) {
 
 Int_t MyHandler::Init() {
 
-	if (mOutName) {
+	if (mOutName.Length()) {
 		printf("Creating mother output file %s \n", mOutName.Data());
 		mFile = new TFile(mOutName.Data(),"RECREATE");
 	}
