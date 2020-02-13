@@ -46,7 +46,7 @@ Int_t MyAnalysisV0::Init() {
 
 	TString dfName(this->GetName());
 	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",0);
+	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->directory());		// removed mother dir -- unnecessary?
 	mDirFile->cd();
 
 	mFlagMC = mHandler->GetFlagMC();

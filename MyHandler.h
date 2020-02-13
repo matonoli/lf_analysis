@@ -49,6 +49,7 @@ class MyHandler: public TObject {
 		TFile* file() 						const {return mFile;};
 		TFile* filehist() 					const {return mFileHist;};
 		Int_t nAnalysis()					const {return nAna;};
+		Int_t nAnalyses()					const {return nAnalyses;};
 		MyAnalysis* analysis(Int_t iAna)	const {return mAnalysis[iAna];};
 		
 		AliAnalysisPIDEvent* event()		const {return mEvent;};
