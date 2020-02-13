@@ -18,7 +18,7 @@
 
 ClassImp(MyHandler)
 
-MyHandler::MyHandler() : mOutName(""), mFile(0), mDir(0) {
+MyHandler::MyHandler() : mOutName(""), mFile(0), mDir(0), mChain(0) {
 
 	mFlagMC 	= false;
 	mFlagHist	= false;
