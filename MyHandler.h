@@ -1,10 +1,13 @@
 // MyKit analysis handler class
 // OliverM 2019 Lund
 
+#include "inputformat.h"
+
 #ifndef __MyHandler__
 #define __MyHandler__
 #include "TObject.h"
 #include "TClonesArray.h"
+#include <AliESDEvent.h>
 
 class MyAnalysis;	// forward declaration
 class TChain;
@@ -21,7 +24,18 @@ class AliAnalysisPIDEvent;
 class AliAnalysisPIDTrack;
 class AliAnalysisPIDV0;
 class AliAnalysisPIDParticle;
-//class TClonesArray;
+
+class AliESDEvent;
+class AliESDtrack;
+class AliESDV0;
+class AliESDtrackCuts;
+
+#if INPUTFORMAT == 1
+	typedef AliAnalysisPIDEvent AnyEvent;
+#elif INPUTFORMAT == 2
+	typedef AliESDEvent AnyEvent;
+#endif
+
 
 class MyHandler: public TObject {
 
@@ -51,14 +65,36 @@ class MyHandler: public TObject {
 		Int_t nAnalysis()					const {return nAna;};
 		Int_t getNAnalyses()				const {return nAnalyses;};
 		MyAnalysis* analysis(Int_t iAna)	const {return mAnalysis[iAna];};
+
+		void SetEvent(AliESDEvent* ev)		{mEvent = ev;};	
 		
-		AliAnalysisPIDEvent* event()		const {return mEvent;};
-		TClonesArray* tracks()				const {return bTracks;};
-		TClonesArray* v0s()					const {return bV0s;};
-		TClonesArray* particles()			const {return bParticles;};
+		AnyEvent* event()					const {return mEvent;};
+		#if INPUTFORMAT == 1
+		TClonesArray* tracks()						const {return bTracks;};
+		TClonesArray* v0s()							const {return bV0s;};
+		TClonesArray* particles()					const {return bParticles;};
 		AliAnalysisPIDTrack* track(Int_t i)			const {return (AliAnalysisPIDTrack*)bTracks->At(i);};
 		AliAnalysisPIDV0* v0(Int_t i)				const {return (AliAnalysisPIDV0*)bV0s->At(i);};
 		AliAnalysisPIDParticle* particle(Int_t i)	const {return (AliAnalysisPIDParticle*)bParticles->At(i);};
+		Int_t getNtracks()							const {return bTracks->GetEntriesFast();};
+		Int_t getNv0s()								const {return bV0s->GetEntriesFast();};
+		Int_t getNparticles()						const {return bParticles->GetEntriesFast();};
+		
+		#elif INPUTFORMAT == 2
+		AliESDtrack* track(Int_t i)				const {return (AliESDtrack*)mEvent->GetTrack(i);};
+		AliESDV0* v0(Int_t i)					const {return (AliESDV0*)mEvent->GetV0(i);};
+		AliESDtrack* particle(Int_t i)			const {return (AliESDtrack*)mEvent->GetTrack(i);};
+		Int_t getNtracks()						const {return mEvent->GetNumberOfTracks();};
+		Int_t getNv0s()							const {return mEvent->GetNumberOfV0s();};
+		Int_t getNparticles()					const {return mEvent->GetNumberOfTracks();};	//needs a fix
+
+		void SetupTrackCuts();
+		AliESDtrackCuts* trackCuts2010()		const {return mTrackCuts2010;};
+		AliESDtrackCuts* trackCuts2011()		const {return mTrackCuts2011;};
+		AliESDtrackCuts* trackCutsTPCOnly()		const {return mTrackCutsTPCOnly;};
+		AliESDtrackCuts* trackCuts2011sys()		const {return mTrackCuts2011sys;};
+		AliESDtrackCuts* trackCutsV0d()			const {return mTrackCutsV0d;};
+		#endif
 		
 
 		void DrawCut(Double_t cut, Int_t direction, TVirtualPad* can);
@@ -85,7 +121,7 @@ class MyHandler: public TObject {
 		Int_t nAna = 0;
 
 
-		AliAnalysisPIDEvent* mEvent = 0;
+		AnyEvent* mEvent = 0;
 		TClonesArray* bTracks = 0;
 		TClonesArray* bV0s = 0;
 		TClonesArray* bParticles = 0;
@@ -93,6 +129,12 @@ class MyHandler: public TObject {
 		Bool_t mFlagMC = 0;
 		Bool_t mFlagHist = 0;
 		Bool_t mRebinPt;
+
+		AliESDtrackCuts* mTrackCuts2010 = 0;
+		AliESDtrackCuts* mTrackCuts2011 = 0;
+		AliESDtrackCuts* mTrackCutsTPCOnly = 0;
+		AliESDtrackCuts* mTrackCuts2011sys = 0;
+		AliESDtrackCuts* mTrackCutsV0d = 0;
 
 
 };

@@ -15,6 +15,8 @@
 #include <fstream>
 
 #include <AliAnalysisPIDEvent.h>
+#include <AliESDEvent.h>
+#include <AliESDtrackCuts.h>
 
 ClassImp(MyHandler)
 
@@ -57,7 +59,7 @@ Int_t MyHandler::Init() {
 	return 0;
 }
 
-Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName) {
+Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName) {	// this should be only called when running on local trees
 	
 	TString inputFileStr(inputFile);
 	mFlagMC = inputFileStr.Contains("MC");
@@ -113,7 +115,7 @@ Int_t MyHandler::Make(Int_t iEv) {
 	Int_t iret = 0;
 	//printf("Looping in handler %i \n", iEv);
 	
-	if (!mFlagHist) {
+	if (!mFlagHist && mChain) {
 		if (!mChain->GetEntry(iEv)) iret++;
 		//printf("iret is %i \n", iret); 
 	}
@@ -279,3 +281,27 @@ Double_t MyHandler::DeltaPhi(Double_t phi1, Double_t phi2) {
 	return dphi;
 }
 	
+
+#if INPUTFORMAT == 2
+void MyHandler::SetupTrackCuts() {
+	
+	mTrackCuts2010 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+	mTrackCuts2010->SetEtaRange(-0.8,0.8);
+
+	mTrackCuts2011 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+	mTrackCuts2011->SetEtaRange(-0.8,0.8);
+
+	mTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+	mTrackCutsTPCOnly->SetEtaRange(-0.8,0.8);
+	mTrackCutsTPCOnly->SetRequireTPCRefit(kTRUE);
+
+	mTrackCuts2011sys =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+	mTrackCuts2011sys->SetEtaRange(-0.8,0.8);
+	mTrackCuts2011sys->SetMinNCrossedRowsTPC(60);
+	mTrackCuts2011sys->SetMaxChi2PerClusterTPC(5);
+	mTrackCuts2011sys->SetMaxDCAToVertexZ(3);
+
+	mTrackCutsV0d = AliESDtrackCuts::GetStandardV0DaughterCuts();
+	mTrackCutsV0d->SetEtaRange(-0.8,0.8);
+}
+#endif
