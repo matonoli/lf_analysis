@@ -6,7 +6,7 @@
 
 #include "TObject.h"
 #include "TString.h"
-#include "../MyAnalysis.h"
+#include "MyAnalysis.h"
 #include "cuts01.h"			// namespace cuts
 
 class TFile;	// forward declaration
@@ -203,7 +203,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t SelectEvent(MyEvent &ev, Int_t flag);
-		Int_t ClassifyEvent(MyEvent &event, TClonesArray* trackArray = 0);
+		Int_t ClassifyEvent(MyEvent &event, Int_t ntracks);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
 		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);

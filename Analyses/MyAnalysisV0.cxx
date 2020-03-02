@@ -12,11 +12,11 @@
 #include <TNtuple.h>
 
 #include "MyAnalysisV0.h"
-#include "../MyEvent.h"
-#include "../MyTrack.h"
-#include "../MyParticle.h"
-#include "../MyV0.h"
-#include "../MyHandler.h"
+#include "MyEvent.h"
+#include "MyTrack.h"
+#include "MyParticle.h"
+#include "MyV0.h"
+#include "MyHandler.h"
 
 #include "RooFit.h"
 #include "RooRealVar.h"
@@ -29,7 +29,7 @@
 #include "RooDataHist.h"
 #include "RooPlot.h"
 
-#include "TransverseSpherocity/TransverseSpherocity.h"
+#include "TransverseSpherocity.h"
 
 //#include <AliAnalysisPIDV0.h>
 
@@ -57,7 +57,8 @@ Int_t MyAnalysisV0::Init() {
 
 	//if (mFlagHist) return 0;
 
-	TH1::SetDefaultSumw2();
+	TH1::SetDefaultSumw2(1);
+	TH1::AddDirectory(kTRUE);
 	if (mFlagHist)	BorrowHistograms();
 	else 			CreateHistograms();
 
@@ -105,7 +106,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventType->Fill(EVENTTYPES[22],1);
 	*/
 
-	switch (ClassifyEvent(event,mHandler->tracks())) {
+	switch (ClassifyEvent(event,mHandler->getNtracks())) {
 		default : break;
 		case (-2) : hEventType->Fill(EVENTTYPES[20],1);
 			return 0;
@@ -130,6 +131,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	// BUG HOTFIX FOR AURORATREES
 	MyV0 bugfix;
 	if (mHandler->v0(0)) { bugfix = MyV0(mHandler->v0(0));
+	bugfix.SetHandler(mHandler);
 	if (TMath::Abs(bugfix.GetRadius()-bugR) < 0.0001
 		&& TMath::Abs(bugfix.GetPt()-bugPt) < 0.0001) return 0;
 	bugR = bugfix.GetRadius(); bugPt = bugfix.GetPt(); }
@@ -164,14 +166,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// TRACK LOOP TO CONSTRUCT SPHEROCITY AND FIND LEADING
 	hEventMonitor->Fill(4);
-	Int_t nTracks = mHandler->tracks()->GetEntriesFast();
-	Int_t nParticles = (mFlagMC) ? mHandler->particles()->GetEntriesFast() : 0;
+	Int_t nTracks = mHandler->getNtracks();
+	Int_t nParticles = (mFlagMC) ? mHandler->getNparticles() : 0;
 
 	ptLead = -99.; 
 	phiLead = -99.;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
+		t.SetHandler(mHandler);
 
 		//if (!SelectTrack(t)) continue;
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
@@ -281,6 +284,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
+		t.SetHandler(mHandler);
 
 		if (!SelectTrack(t)) continue;
 
@@ -313,6 +317,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
+		t.SetHandler(mHandler);
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 		
 		// RT DETERMINATION
@@ -359,6 +364,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (isEventRT) for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));
+		t.SetHandler(mHandler);
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 		
 		if (!t.IskITSrefit()) continue;
@@ -534,12 +540,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// V0 DATA ANALYSIS: V0 CANDIDATES LOOP
 	hEventMonitor->Fill(6);
-	Int_t nV0s = mHandler->v0s()->GetEntriesFast();
+	Int_t nV0s = mHandler->getNv0s();
 	for (int iV0 = 0; iV0 < nV0s; ++iV0)	{
 		
 		hV0Monitor->Fill(0);
 		if (!mHandler->v0(iV0)) continue;
 		MyV0 v0(mHandler->v0(iV0));
+		v0.SetHandler(mHandler);
 
 
 		if (mFlagMC) {
@@ -714,7 +721,7 @@ Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
 	return true;
 }
 
-Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, TClonesArray* trackArray)
+Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, Int_t ntracks)
 {
   event.SetCheckFlag(1);
   if(!event.IsGoodAliEvent()) {
@@ -735,7 +742,7 @@ Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, TClonesArray* trackArray)
     return 0;
   }
 
-  if(trackArray->GetEntries()<1) { 
+  if(ntracks<1) { 
     return 1;
   }
 
@@ -850,8 +857,10 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	
 	//if (!Sp) return true;
-	MyTrack trP(v0.GetPosTrack()); 
+	MyTrack trP(v0.GetPosTrack());
+	trP.SetHandler(mHandler); 
 	MyTrack trN(v0.GetNegTrack());
+	trN.SetHandler(mHandler);
 	if (!SelectV0Daughter(trP)) return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//11
 	if (!SelectV0Daughter(trN)) return false;

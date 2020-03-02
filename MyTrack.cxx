@@ -16,6 +16,9 @@ Int_t MyTrack::CalculateFlag() {
 
 	if (mFlagCal) return mFlag;
 	mFlag = 0;
+	/*cout << mHandler << endl;
+	cout << mHandler->trackCuts2010() << endl;
+	cout << mAliTrack << endl;*/
 	if (mHandler->trackCuts2010()->AcceptTrack(mAliTrack)) mFlag += 1;
 	if (mHandler->trackCuts2011()->AcceptTrack(mAliTrack)) mFlag += 2;
 	if (mHandler->trackCutsTPCOnly()->AcceptTrack(mAliTrack)) mFlag += 4;
@@ -24,6 +27,17 @@ Int_t MyTrack::CalculateFlag() {
 
 	mFlagCal = true;
 	return mFlag;
+}
+
+Bool_t MyTrack::HasTOFPID() {
+	if (!(mAliTrack->GetStatus() & AliESDtrack::kTOFout)||
+		!(mAliTrack->GetStatus() & AliESDtrack::kTIME)) return 0;
+	/* check integrated length */
+	if (mAliTrack->GetIntegratedLength() < 350.) return 0;
+	/* check deltax and deltaz */
+	if (TMath::Abs(mAliTrack->GetTOFsignalDx()) > 10. ||
+		TMath::Abs(mAliTrack->GetTOFsignalDz()) > 10.) return 0;	// values taken from PIDCascade task
+	return 1;
 }
 
 #endif

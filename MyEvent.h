@@ -13,6 +13,18 @@
 	typedef AliAnalysisPIDEvent AnyEvent;
 #elif INPUTFORMAT == 2
 	typedef AliESDEvent AnyEvent;
+	enum EventFlags_t {
+	    kNotPileupInSPD = 1,
+	    kNotPileupInMV = 2,
+	    kNotPileupInMB = 4,
+	    kINELgtZERO = 8,
+	    kNoInconsistentVtx = 16,
+	    kNoV0Asym = 32,
+	    kVertexSelected2015pp=64,
+	    kSPDandTrkVtxExists=128,
+	    kPassProximityCut=256,
+	    kAll = 511
+  	};
 #endif
 
 class MyEvent: public TObject {
@@ -30,6 +42,7 @@ class MyEvent: public TObject {
 		Bool_t HasVertex()					const { return mAliEvent->HasVertex();};
 		
 		void SetCheckFlag(Int_t flag)	{ mAliEvent->SetCheckFlag(flag);};
+		Bool_t CheckFlag() 					const { return mAliEvent->CheckFlag();};
 #elif INPUTFORMAT == 2
 		Float_t GetZ()						const { return mAliEvent->GetPrimaryVertexTracks()->GetZ();};
 		Float_t GetV0MCentrality()			{ return (mV0Mmultiplicity==0) ? CalculateV0Mmultiplicity() : mV0Mmultiplicity;};
@@ -41,6 +54,8 @@ class MyEvent: public TObject {
 		Bool_t CalculateHasVertex();
 
 		void SetCheckFlag(Int_t flag)	{ mFlagToCheck = flag;};
+		Bool_t CheckFlag();
+		Bool_t CalculateVertexSelection(Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
 		//void CalculateFlags();
 #endif
 #if INPUTFORMAT == 1	
@@ -50,7 +65,6 @@ class MyEvent: public TObject {
 		Bool_t IsCollisionCandidate() 		const { return mAliEvent->IsCollisionCandidate();};
 		
 		Int_t GetEventFlags()				const { return mAliEvent->GetEventFlags();};
-		Bool_t CheckFlag() 					const { return mAliEvent->CheckFlag();};
 		Int_t GetCheckFlag()				const { return mAliEvent->GetCheckFlag();};
 		
 #endif
@@ -64,6 +78,8 @@ class MyEvent: public TObject {
 		Float_t mRefMult = 0;
 		Int_t mEventFlags = 0;
 		Int_t mFlagToCheck = 0;
+		Bool_t mVertexSelected2015pp = 0;
+
 		Bool_t mHasVertex = 0;
 		Bool_t mHasVertexCal = 0;
 #endif		

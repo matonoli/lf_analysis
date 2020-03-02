@@ -27,7 +27,7 @@ class AliAnalysisPIDParticle;
 
 class AliESDEvent;
 class AliESDtrack;
-class AliESDV0;
+class AliESDv0;
 class AliESDtrackCuts;
 
 #if INPUTFORMAT == 1
@@ -82,7 +82,7 @@ class MyHandler: public TObject {
 		
 		#elif INPUTFORMAT == 2
 		AliESDtrack* track(Int_t i)				const {return (AliESDtrack*)mEvent->GetTrack(i);};
-		AliESDV0* v0(Int_t i)					const {return (AliESDV0*)mEvent->GetV0(i);};
+		AliESDv0* v0(Int_t i)					const {return (AliESDv0*)mEvent->GetV0(i);};
 		AliESDtrack* particle(Int_t i)			const {return (AliESDtrack*)mEvent->GetTrack(i);};
 		Int_t getNtracks()						const {return mEvent->GetNumberOfTracks();};
 		Int_t getNv0s()							const {return mEvent->GetNumberOfV0s();};

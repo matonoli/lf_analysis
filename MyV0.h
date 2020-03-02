@@ -1,19 +1,36 @@
 // AliAnalysisPIDV0 wrapper class
 // OliverM 2019 Lund
 
+#include "inputformat.h"
+
 #ifndef __MyV0__
 #define __MyV0__
 #include <AliAnalysisPIDV0.h>
 #include "TObject.h"
+#include "TMath.h"
 
-class AliAnalysisPIDTrack; // forward declaration
+#include "MyHandler.h"
+
+#include <AliESDtrack.h>
+#include <AliESDv0.h>
+
+
+#if INPUTFORMAT == 1
+	typedef AliAnalysisPIDV0 AnyV0;
+	typedef AliAnalysisPIDTrack AnyTrack;
+#elif INPUTFORMAT == 2
+	typedef AliESDv0 AnyV0;
+	typedef AliESDtrack AnyTrack;
+#endif
 
 class MyV0: public TObject {
 
 	public:
 		MyV0() { }
-		MyV0(AliAnalysisPIDV0* v0);// : mAliV0(v0) { }	
+		MyV0(AnyV0* v0);// : mAliV0(v0) { }	
 		~MyV0() { }
+		void SetHandler(MyHandler* handler)		{ mHandler = handler;};
+#if INPUTFORMAT == 1
 		Double_t GetPt() 					const { return mAliV0->GetPt();};
 		Double_t GetEta() 					const { return mAliV0->GetEta();};
 		Double_t GetDCAdd() 				const { return mAliV0->GetDCAV0Daughters();};
@@ -22,24 +39,49 @@ class MyV0: public TObject {
 		Double_t GetIMK0s() 				const { return mAliV0->GetIMK0s();};
 		Double_t GetIML()					const { return mAliV0->GetIML();};
 		Double_t GetIMLbar() 				const { return mAliV0->GetIMAL();};
-		AliAnalysisPIDTrack* GetPosTrack() 	const { return mAliV0->GetPosAnalysisTrack();};
-		AliAnalysisPIDTrack* GetNegTrack() 	const { return mAliV0->GetNegAnalysisTrack();};
+		AnyTrack* GetPosTrack() 	const { return mAliV0->GetPosAnalysisTrack();};
+		AnyTrack* GetNegTrack() 	const { return mAliV0->GetNegAnalysisTrack();};
+		Double_t* CalculateAP();
+		Double_t GetPhi();
+		Double_t CalculateY(Int_t Sp);
+		Bool_t HasFastSignal();
 
 		Double_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
 		Int_t IsMCPrimary() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherPrimary();};
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
 		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
 		Int_t GetMCPdgCode()				const { return mAliV0->GetMCPdgCode();};
-
+#elif INPUTFORMAT == 2
+		Double_t GetPt() 					const { return mAliV0->Pt();};
+		Double_t GetEta() 					const { return mAliV0->Eta();};
+		Double_t GetDCAdd() 				const { return mAliV0->GetDcaV0Daughters();};
+		Double_t GetCPA() 					const { return mAliV0->GetV0CosineOfPointingAngle();};
+		Double_t GetRadius() 				const { return TMath::Sqrt(mAliV0->Xv()*mAliV0->Xv()+mAliV0->Yv()*mAliV0->Yv());};
+		Double_t GetIMK0s();
+		Double_t GetIML();
+		Double_t GetIMLbar();
+		AnyTrack* GetPosTrack() 		const { return mHandler->track(TMath::Abs(mAliV0->GetPindex()));};
+		AnyTrack* GetNegTrack() 		const { return mHandler->track(TMath::Abs(mAliV0->GetNindex()));};
 		Double_t* CalculateAP();
-		Double_t GetPhi();
-		Double_t CalculateY(Int_t Sp);
+		Double_t GetPhi()				const { return mAliV0->Phi();};
+		Double_t CalculateY(Int_t Sp)	const { return ((Sp==1) ? mAliV0->RapK0Short() : ((Sp==2 || Sp==3) ? mAliV0->RapLambda() : -999));};
 		Bool_t HasFastSignal();
+
+		Double_t GetMCLabel() 				const { return 1;};
+		Int_t IsMCPrimary() 				const { return 1;};
+		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
+		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
+		Int_t GetMCPdgCode()				const { return 1;};
+
+#endif
+
+
 		
 		ClassDef(MyV0,1);
 
 	private:
-		AliAnalysisPIDV0* mAliV0;
+		AnyV0* mAliV0;
+		MyHandler* mHandler = 0;
 		Bool_t mAPcalculated;
 		Double_t mAP[2];
 		Bool_t mPhicalculated;

@@ -62,17 +62,33 @@ Int_t MyAnalysisV0test::Make(Int_t iEv) {
 
     
 
-    Int_t nTracks = mHandler->getNtracks();           // see how many tracks there are in the event
+    /*Int_t nTracks = mHandler->getNtracks();           // see how many tracks there are in the event
     for(Int_t iTr = 0; iTr < nTracks; iTr++) {                 // loop ove rall these tracks
         
-        if (!mHandler->track(iTr));
+        if (!mHandler->track(iTr)) continue;
         MyTrack t(mHandler->track(iTr));
         t.SetHandler(mHandler);
+        
+
         //if (t.CalculateFlag()>0 && t.CalculateFlag()!=16) cout << t.GetEta() << " " <<  t.CalculateFlag() << endl;
         //hTest->Fill(t.GetDCApvXY());
         //if(!track || !track->TestFilterBit(1)) continue;                            // if we failed, skip this track
         //hTest->Fill(track->Pt());                     // plot the pt value of the track in a histogram
-    }                   
+    }*/
+
+    /*Int_t nV0s = mHandler->getNv0s();           // see how many tracks there are in the event
+    for(Int_t iV0 = 0; iV0 < nV0s; iV0++) {
+
+    	if (!mHandler->v0(iV0)) continue;
+    	MyV0 v0(mHandler->v0(iV0));
+    	v0.SetHandler(mHandler);
+
+    	if (v0.HasFastSignal()) {cout << v0.GetPt() << endl;
+    	cout << v0.HasFastSignal() << endl;
+    	cout << "--" << endl;
+    	hTest->Fill(v0.GetIMK0s());}
+    }*/
+
 	return 0;
 }
 
