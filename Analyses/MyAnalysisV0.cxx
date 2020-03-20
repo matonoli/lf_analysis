@@ -46,7 +46,7 @@ Int_t MyAnalysisV0::Init() {
 
 	TString dfName(this->GetName());
 	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->directory());		// removed mother dir -- unnecessary?
+	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());		// removed mother dir -- unnecessary?
 	mDirFile->cd();
 
 	mFlagMC = mHandler->GetFlagMC();
@@ -123,6 +123,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 
 	hEventMonitor->Fill(2);
+	//cout << "------event " << iEv << " --------- \n";
 
 	/*cout << "ev accepted w flag " << event.GetEventFlags() << endl;
 	cout << "flag to be checked " << event.GetCheckFlag() << endl;
@@ -214,9 +215,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			
 			if (!mHandler->particle(iP)) continue;
 			MyParticle p(mHandler->particle(iP));
+			if (mHandler->mcstack()) p.SetIsPrimary(mHandler->mcstack()->IsPhysicalPrimary(iP));
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0 && p.GetPt() > 0.15)	{
+				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.GetIsPrimary())	{
 
 				mTS[2][0]->AddTrack(p.GetPx(), p.GetPy());
 				mTSNorm[2][0]->AddTrack(p.GetPx()/p.GetPt(), p.GetPy()/p.GetPt());
@@ -404,9 +406,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			
 			if (!mHandler->particle(iP)) continue;
 			MyParticle p(mHandler->particle(iP));
+			if (mHandler->mcstack()) p.SetIsPrimary(mHandler->mcstack()->IsPhysicalPrimary(iP));
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0 && p.GetPt() > 0.15)	{
+				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.GetIsPrimary())	{
 
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
 				if (ptLeadMC<5.0) continue;
@@ -427,9 +430,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			
 			if (!mHandler->particle(iP)) continue;
 			MyParticle p(mHandler->particle(iP));
+			if (mHandler->mcstack()) p.SetIsPrimary(mHandler->mcstack()->IsPhysicalPrimary(iP));
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetPt() > 0.15)	{
+				&& p.GetPt() > 0.15 && p.GetIsPrimary())	{
 
 				if (p.GetSign() != 0 && TMath::Abs(p.GetPt()-ptLeadMC)>1E-5) hParticleDPhivNchTrans->Fill(nChTransMC,mHandler->DeltaPhi(phiLeadMC,p.GetPhi()));
 				Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
@@ -456,6 +460,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			if (!mHandler->particle(iP)) continue;
 			MyParticle p(mHandler->particle(iP));
 
+			//if (p.GetPdgCode() == 3122) cout << "Found L with label " << iP << endl;
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
 				&& p.GetSign() != 0)	{
@@ -486,8 +491,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				}	}*/
 
 			if (!SelectParticle(p)) continue;		// also contains Xi's now
+			p.SetLabel(iP);
 			PartLabels.push_back(p.GetLabel());
 			PartIds.push_back(iP);
+
 
 			if (p.GetPdgCode() == 3312) hV0FeeddownMotherPt[2]->Fill(p.GetPt());
 			if (p.GetPdgCode() == -3312) hV0FeeddownMotherPt[3]->Fill(p.GetPt());
@@ -552,6 +559,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (mFlagMC) {
 			MyParticle v0mc;
 			Bool_t MCfound = false;
+
+			//if (v0.GetMCPdgCode() == 3122) cout << "found lambda in rc w label " << v0.GetMCLabel() << " \n";
+
 			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 				if (PartLabels[iP] == v0.GetMCLabel()) {		// perhaps ask for pdgid as well?
 					
@@ -577,7 +587,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			//if (MCfound) {		// check if this is OK (could be buggy?)
 				for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+					//cout << "Testing 1 iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
+					
 					if (IsV0(v0,iSp,RC)) {
+
+
+						//if (iSp==1) cout << "detected k0s with label " << v0.GetMCLabel() << endl;
 						// (v0mc.GetIsPrimary()) hV0Feeddown[iSp]->Fill(v0.GetPt());
 						//else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
 						
@@ -609,6 +624,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 							continue;
 						}*/
 
+						
+
 						if (!v0.IsMCPrimary()) {
 							//cout << "v0 not primary " << iSp << endl;
 							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
@@ -627,9 +644,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 							}
 						}
 
+						
 
 						if (!MCfound) continue;
+						
 
+						//if (iSp == 2) cout << "!!!!!!!!!!!FOUND iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
 						ProcessV0toHist(v0,iSp,RC,multMB,sphMB);		
 						ProcessV0toTree(v0,iSp,RC,0);		
 
@@ -827,12 +847,16 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	Int_t cutN = 1;
 
 	if (Type>0) {
-		if (v0.GetMCPdgCode() != PDG_IDS[Sp])	return false; }
+		//cout << Sp << ": checking " << v0.GetMCPdgCode() << " vs " << PDG_IDS[Sp] << " label " << v0.GetMCLabel() << endl; 
+		if (v0.GetMCPdgCode() != PDG_IDS[Sp])	return false; 
+		//cout << "passed \n"; 
+	}
 		
 		//if (!v0.IsMCPrimary())					return false; } // always 1 ?
 
 	//if (Type==0 && Sp==2) if (TMath::Abs(v0.GetIML()) > 0.01) return false;
 
+	if (!v0.IsOffline())	return false;
 	
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//1
 	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
@@ -856,21 +880,28 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	if (!v0.HasFastSignal())				return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 	
+	
 	//if (!Sp) return true;
 	MyTrack trP(v0.GetPosTrack());
 	trP.SetHandler(mHandler); 
 	MyTrack trN(v0.GetNegTrack());
 	trN.SetHandler(mHandler);
+	
 	if (!SelectV0Daughter(trP)) return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//11
 	if (!SelectV0Daughter(trN)) return false;
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 
+	
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+	
 	switch (Sp) {
-		default : 
+		default :
+			
 			break;
-		case 1 	: // K0s
+		case 1 	: 
+			
+			// K0s
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//13
 			//if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//14
@@ -889,8 +920,10 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//20
 			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+			
 			break;
 		case 2 	: // L
+		
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
@@ -901,8 +934,10 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			
 			break;
 		case 3 	: // Lbar
+		
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
@@ -913,11 +948,15 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			if (trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
 			if (trN.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			
 			break;	}
 
+			
 		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+
+	
 	return true;	
-}
+}	
 
 Bool_t MyAnalysisV0::IsTrans(Double_t phi1, Double_t phiTrig) {
 
@@ -1120,7 +1159,18 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 Bool_t MyAnalysisV0::BorrowHistograms() {
 
-	mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");	// this was smart of me i think
+	if (mHandler->filehist()->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
+		cout << "Borrowing histograms from a TDirectoryFile" << endl;
+		mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");}
+	if (mHandler->filehist()->Get("MyAnalysisV0_0")->ClassName() == string("THashList")) {
+		cout << "Borrowing histograms from a THashList" << endl;
+		THashList* hashList = (THashList*)mHandler->filehist()->Get("MyAnalysisV0_0");
+		while (hashList->GetEntries()) {
+			mDirFile->Append(hashList->First());
+			hashList->RemoveFirst();
+		}
+	}
+	
 	//mDirFile->ls();
 
 	// MONITORS
@@ -1213,7 +1263,6 @@ Int_t MyAnalysisV0::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
-
 	TH1D* hLeadPt = hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);
 	
@@ -1232,8 +1281,8 @@ Int_t MyAnalysisV0::Finish() {
 
 	hRt2->SetBins(nbins,rtbins);
 
-	//if (mFlagMC) DoEfficiency();
-	if (mFlagMC) DoEfficiencyFromTrees();
+	if (mFlagMC) DoEfficiency();
+	//if (mFlagMC) DoEfficiencyFromTrees();
 	if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
 
 	return 0;	

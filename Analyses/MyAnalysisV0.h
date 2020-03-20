@@ -217,7 +217,7 @@ class MyAnalysisV0: public MyAnalysis {
 		void DoEfficiencyFromTrees();
 		void DoLambdaFeeddown();
 
-		ClassDef(MyAnalysisV0,1);
+		ClassDef(MyAnalysisV0,2);
 
 	protected:
 

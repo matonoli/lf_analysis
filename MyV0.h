@@ -45,8 +45,9 @@ class MyV0: public TObject {
 		Double_t GetPhi();
 		Double_t CalculateY(Int_t Sp);
 		Bool_t HasFastSignal();
+		Bool_t IsOffline()				const { return 1};
 
-		Double_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
+		Int_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
 		Int_t IsMCPrimary() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherPrimary();};
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
 		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
@@ -66,12 +67,14 @@ class MyV0: public TObject {
 		Double_t GetPhi()				const { return mAliV0->Phi();};
 		Double_t CalculateY(Int_t Sp)	const { return ((Sp==1) ? mAliV0->RapK0Short() : ((Sp==2 || Sp==3) ? mAliV0->RapLambda() : -999));};
 		Bool_t HasFastSignal();
+		Bool_t IsOffline()				const { return !mAliV0->GetOnFlyStatus();};
 
-		Double_t GetMCLabel() 				const { return 1;};
+		Int_t GetMCLabel();
+		Int_t GetMCPdgCode(); //				const { return mAliV0->GetPdgCode();}; // AliESDv0::GetPdgCode() always returns 310
 		Int_t IsMCPrimary() 				const { return 1;};
+
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
 		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
-		Int_t GetMCPdgCode()				const { return 1;};
 
 #endif
 

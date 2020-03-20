@@ -8,6 +8,7 @@
 #include "TObject.h"
 #include "TClonesArray.h"
 #include <AliESDEvent.h>
+#include <AliStack.h>
 
 class MyAnalysis;	// forward declaration
 class TChain;
@@ -29,6 +30,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliESDv0;
 class AliESDtrackCuts;
+class AliStack;
 
 #if INPUTFORMAT == 1
 	typedef AliAnalysisPIDEvent AnyEvent;
@@ -66,7 +68,9 @@ class MyHandler: public TObject {
 		Int_t getNAnalyses()				const {return nAnalyses;};
 		MyAnalysis* analysis(Int_t iAna)	const {return mAnalysis[iAna];};
 
-		void SetEvent(AliESDEvent* ev)		{mEvent = ev;};	
+		void SetEvent(AliESDEvent* ev)		{mEvent = ev;};
+		void SetMCStack(AliStack* mcst)		{mMCStack = mcst;};
+		void SetFlagMC(Bool_t mcflag)		{mFlagMC = mcflag;};	
 		
 		AnyEvent* event()					const {return mEvent;};
 		#if INPUTFORMAT == 1
@@ -83,10 +87,11 @@ class MyHandler: public TObject {
 		#elif INPUTFORMAT == 2
 		AliESDtrack* track(Int_t i)				const {return (AliESDtrack*)mEvent->GetTrack(i);};
 		AliESDv0* v0(Int_t i)					const {return (AliESDv0*)mEvent->GetV0(i);};
-		AliESDtrack* particle(Int_t i)			const {return (AliESDtrack*)mEvent->GetTrack(i);};
+		TParticle* particle(Int_t i)			const {return (mMCStack) ? (TParticle*)mMCStack->Particle(i) : 0;};
 		Int_t getNtracks()						const {return mEvent->GetNumberOfTracks();};
 		Int_t getNv0s()							const {return mEvent->GetNumberOfV0s();};
-		Int_t getNparticles()					const {return mEvent->GetNumberOfTracks();};	//needs a fix
+		Int_t getNparticles()					const {return (mMCStack) ? mMCStack->GetNtrack() : 0;};	//needs a fix
+		AliStack* mcstack()						const {return mMCStack;};
 
 		void SetupTrackCuts();
 		AliESDtrackCuts* trackCuts2010()		const {return mTrackCuts2010;};
@@ -125,6 +130,7 @@ class MyHandler: public TObject {
 		TClonesArray* bTracks = 0;
 		TClonesArray* bV0s = 0;
 		TClonesArray* bParticles = 0;
+		AliStack* mMCStack = 0;
 
 		Bool_t mFlagMC = 0;
 		Bool_t mFlagHist = 0;

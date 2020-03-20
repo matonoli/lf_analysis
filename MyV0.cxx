@@ -1,7 +1,9 @@
 #include <TVector3.h>
+#include <TParticle.h>
 
 #include "MyV0.h"
 #include "MyTrack.h"
+
 
 
 ClassImp(MyV0)
@@ -17,19 +19,20 @@ MyV0::MyV0(AnyV0* v0) : mAliV0(v0),
 
 #if INPUTFORMAT == 2
 Double_t MyV0::GetIMK0s() {
-	mAliV0->ChangeMassHypothesis(310);
-	return (mAliV0->GetEffMass()-0.497614);
+	//mAliV0->ChangeMassHypothesis(310);			// THIS ALSO CHANGES PDG ID
+	return (mAliV0->GetEffMass(2,2)-0.497614);		// Using AliEsdV0::GetEffMass(int, int) instead
+													// 0: e, 1: mu-, 2: pi+, 3: K+, 4: p
 }
 
 
 Double_t MyV0::GetIML() {
-	mAliV0->ChangeMassHypothesis(3122);
-	return (mAliV0->GetEffMass()-1.11568);
+	//mAliV0->ChangeMassHypothesis(3122);
+	return (mAliV0->GetEffMass(4,2)-1.11568);
 }
 
 Double_t MyV0::GetIMLbar() {
-	mAliV0->ChangeMassHypothesis(-3122);
-	return (mAliV0->GetEffMass()-1.11568);
+	//mAliV0->ChangeMassHypothesis(-3122);
+	return (mAliV0->GetEffMass(2,4)-1.11568);
 }
 
 Double_t* MyV0::CalculateAP() {
@@ -53,6 +56,20 @@ Bool_t MyV0::HasFastSignal() {
     
   return hasFast;
 }
+
+
+Int_t MyV0::GetMCLabel() {
+
+	TParticle* pd = mHandler->mcstack()->Particle(TMath::Abs(this->GetPosTrack()->GetLabel()));
+	return pd->GetFirstMother();
+}
+
+Int_t MyV0::GetMCPdgCode() {
+
+	TParticle* pd = mHandler->mcstack()->Particle(this->GetMCLabel());
+	return pd->GetPdgCode();
+}
+
 #endif
 
 

@@ -196,10 +196,10 @@ Int_t MyAnalysisV0correct::Finish() {
 	CloneHistograms();
 	
 	NormaliseSpectra();
-	CorrectForFeeddown();
+	//CorrectForFeeddown();
 
-	//LoadEfficiency();
-	DoEfficiencyFromFile();
+	LoadEfficiency();
+	//DoEfficiencyFromFile();
 	CorrectSpectra();
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
@@ -548,7 +548,18 @@ void MyAnalysisV0correct::LoadEfficiency() {
 		return;
 	}
 
-	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+	TDirectoryFile* dirFile1 = new TDirectoryFile("mcFile","mcFile","",mHandler->file());
+	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
+		cout << "Doing efficiency from a TDirectoryFile" << endl;
+		dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");}
+	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("THashList")) {
+		cout << "Doing efficiency from a THashList" << endl;
+		THashList* hashList = (THashList*)mFileMC->Get("MyAnalysisV0_0");
+		while (hashList->GetEntries()) {
+			dirFile1->Append(hashList->First());
+			hashList->RemoveFirst();
+		}
+	}
 
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -573,7 +584,20 @@ void MyAnalysisV0correct::DoEfficiencyFromFile() {
 		return;
 	}
 
-	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+	TDirectoryFile* dirFile1 = new TDirectoryFile("mcFile","mcFile","",mHandler->file());
+	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
+		cout << "Doing efficiency from a TDirectoryFile" << endl;
+		dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");}
+	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("THashList")) {
+		cout << "Doing efficiency from a THashList" << endl;
+		THashList* hashList = (THashList*)mFileMC->Get("MyAnalysisV0_0");
+		while (hashList->GetEntries()) {
+			dirFile1->Append(hashList->First());
+			hashList->RemoveFirst();
+		}
+	}
+
+	//TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < 2; ++iType)		{
@@ -882,13 +906,17 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	hLLbarV0M->Add(hV0PtFitCorr[3][0][1][0]);
 	hLLbarV0M->Scale(1./0.7448);
 
+	TF1* funcRapCorrectionL = new TF1("funcRapCorrectionL",rap_correction,XBINS[0],XBINS[NPTBINS],2);
+	funcRapCorrectionL->SetParameters(1.6,MASSES[2]);
+	//hLLbarMB->Divide(funcRapCorrectionL,1);
+	//hLLbarV0M->Divide(funcRapCorrectionL,1);
 
 
 	//hLLbarV0M->Divide(hOffiL);
 	//hLLbarMB->Divide(hOffiLMB);
 
 	
-	if (0) {
+	if (1) {
 		TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
 		cXcheck->SetLogy();
 		mHandler->MakeNiceHistogram((TH1D*)hOffiL,kGreen+2);

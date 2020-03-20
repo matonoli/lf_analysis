@@ -236,8 +236,8 @@ void MyAnalysisV0extract::DefineSidebands() {
 				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, iBin),
 				iBin,iBin);
 
-			Bool_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)) == 0);
-			if (empty) continue;
+			Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
+			if (empty<2) continue;
 			Double_t hmax = hist->GetMaximum();
 
 			RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
@@ -245,7 +245,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
 
 			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.005,0.005);
-			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.0005,0.01);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.0001,0.01);
 			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e08);
 		
@@ -265,7 +265,8 @@ void MyAnalysisV0extract::DefineSidebands() {
 			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus1,fPolBg),RooArgList(nGaus1,nPolBg));
 
 			RooFitResult* fR = 0; 
-			if (!empty) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+			printf("Trying to fit iSp %i bin %i \n", iSp, iBin);
+			if (empty>2) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
 			//if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 
 			// GENERATE RMS
@@ -282,7 +283,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			cFitsSB[iSp]->cd(iBin);
 			RooPlot* plot1 = MassDT.frame(Title(" "));
 			DT_set.plotOn(plot1,MarkerSize(0.4));
-			if (!empty) {
+			if (empty!=0) {
 				//fTotal.plotOn(plot1,Components(fGaus2),LineStyle(2),LineWidth(2),LineColor(kRed));
 				fTotal.plotOn(plot1,Components(fGaus1),LineStyle(2),LineWidth(2),LineColor(kRed));
 				fTotal.plotOn(plot1,Components(fPolBg),LineStyle(1),LineWidth(2),LineColor(kBlue));
