@@ -2,15 +2,43 @@
 // OliverM 2019 Lund
 
 #include <iostream>
-#include <fostream>
+#include <fstream>
 #include <string>
 using namespace RooFit;
 
 #if !defined (__CINT__) || defined (__CLING__)
-	using root = gInterpreter;
-	#include "../load_libraries.C"
+#include "../load_libraries.C"
+
+#include "AliAnalysisAlien.h"
+#include "AliAnalysisGrid.h"
+#include "AliAnalysisManager.h"
+#include "AliAODInputHandler.h"
+#include "AliESDInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliPhysicsSelection.h"
+#include "AliAnalysisTaskPIDResponse.h"
+#include "AliAnalysisTaskMyTask.h"
+#include "AliInputEventHandler.h"
+#include "AliLog.h"
+#include "TFile.h"
+#include "TObjArray.h"
+#include "TString.h"
+#include "TSystem.h"
+#include "TInterpreter.h"
+#include "TROOT.h"
+#include "TChain.h"
+#include "MyHandler.h"
+#include "MyAnalysisV0.h"
+#include "MyAnalysisV0extract.h"
+#include "MyAnalysisV0correct.h"
+#include "MyAnalysisV0plot.h"
+
+	//using rootcl = TInterpreter;
+
 #else
-	using root = gROOT;
+	//class TROOT;
+	//using rootcl = TROOT;
 #endif
 
 // THIS MACRO SHOULD BE RUN FROM A WORKING DIRECTORY INSIDE AN ANALYSIS FOLDER
@@ -30,8 +58,10 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 
 	#if !defined (__CINT__) || defined (__CLING__)
 	std::cout << "---Launching this analysis using ROOT6 \n";
+	TInterpreter* root = gInterpreter;
 	#else
 	std::cout << "---Launching this analysis using ROOT5 \n";
+	TROOT* root = gROOT;
 	#endif
 
 	// CHECK INPUT FLAGS
@@ -45,7 +75,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 
 	// SPECIFY WHAT CUTS TO USE
 	TString cutStr("cuts01.h");
-	if (gSystem->AccessPathName(Form("../%s",cutStr.Data())))
+	if (!gSystem->AccessPathName(Form("../%s",cutStr.Data())))
 		std::cout << "---Using cuts specified in file " << cutStr.Data() << "\n";
 	else {
 		std::cout << "!!!Cannot load cuts from file " << cutStr.Data() << " , aborting. \n";
@@ -136,7 +166,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		TString inputFileStr(inputFile);
 		if (inputFileStr.Contains("hist")) {
 			if (!handler->LoadInputHist(inputFile)) {					// this also determines the MC flag for analysis
-				std::cout << "!!!ERROR: No files to analyse \n";
+				std::cout << "!!!ERROR: No hist file to analyse \n";
 				return; }
 			else {
 				std::cout << "---Data (histograms) successfully loaded \n";	}
@@ -230,7 +260,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		AliAnalysisTaskMyTask *task		= reinterpret_cast<AliAnalysisTaskMyTask*>(gInterpreter->ExecuteMacro(Form("AddMyTask.C(\"myTaskV0\",%i)",mcflag)));
 		#else
 		// PHYSICS SELECTION
-		AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+		AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(mcflag,enablePileupCuts);
 		if (mcflag) physSelTask->GetPhysicsSelection()->SetAnalyzeMC();
 		// MULTIPLICITY SELECTION
 		AliMultSelectionTask* multSelTask = AddTaskMultSelection();
@@ -261,6 +291,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 
 			// INCLUDE ALL HEADERS AND SOURCE FILES
 			TString strH("compInstructions.h libpythia6_4_28.so ");
+			strH += cutStr.Data(); strH += " ";
 			strH += "TransverseSpherocity.h ";
 			strH += "MyAnalysis.h MyHandler.h MyEvent.h MyTrack.h MyParticle.h MyV0.h ";
 			strH += "MyAnalysisV0.h AliAnalysisTaskMyTask.h ";
@@ -280,27 +311,30 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			alienHandler->SetAPIVersion("V1.1x");
 
 			// SPECIFY THE INPUT DATA
-			if (inputFileStr.Contains(".list"))	{			
-				ifstream inputStream(inputFileStr.Data());
-				if (!inputStream)	{
-					cout << "ERROR: Cannot open list file " << inputFileStr.Data() << endl;
-					return;	}
+			if (!inputFileStr.Contains(".list"))	{
+				std::cout << "!!!A wrong runlist selected for run on the grid, aborting. \n";
+				return;	}
+			ifstream inputStream(inputFileStr.Data());
+			if (!inputStream)	{
+				cout << "!!!ERROR: Cannot open list file " << inputFileStr.Data() << endl;
+				return;	}
 			std::vector<int> runNumbers;
 			TString yearStr = inputFileStr(inputFileStr.First("20"),4);
 			TString periStr = inputFileStr(inputFileStr.First("LHC"),6);
-			TString passStr = inputFileStr(inputFileStr.First("pass"),5);
+			TString passStr = inputFileStr(inputFileStr.First("pa"),5);
 			std::string number_as_string;
     		while (std::getline(inputStream, number_as_string, ', '))	{
-				runNumbers.push_back(std::stoi(number_as_string));
+    			TString tstr(number_as_string);
+				runNumbers.push_back(tstr.Atoi());
     		}
     		std::cout << "---Specified " << runNumbers.size() << " runs in total belonging to period "
     			<<  periStr.Data() << " from " << yearStr.Data() << " with " << passStr.Data() << "\n";
 
 			if (!mcflag) {
-				TString gdd = "alice/data/"; gdd += yearStr; gdd += periStr;
+				TString gdd = "/alice/data/"; gdd += yearStr; gdd += "/"; gdd += periStr;
 				alienHandler->SetGridDataDir(gdd.Data());
-				TString dp = "*"; dp += passStr.Data(); dp += "/*ESDs.root"; 
-				alienHandler->SetDataPattern(dp.Data());
+				TString dpstr = "*"; dpstr += passStr.Data(); dpstr += "/*ESDs.root"; 
+				alienHandler->SetDataPattern(dpstr.Data());
 				alienHandler->SetRunPrefix("000");
 				for (int iR = 0; iR < runNumbers.size(); iR++) alienHandler->AddRunNumber(runNumbers[iR]);
 			} else {

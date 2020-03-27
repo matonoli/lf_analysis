@@ -1,10 +1,10 @@
 // AliAnalysisPIDEvent wrapper class
 // OliverM 2019 Lund
 
-#include "inputformat.h"
+#include "compInstructions.h"
 
-#ifndef __MyEvent__
-#define __MyEvent__
+#ifndef MYEVENT_H
+#define MYEVENT_H
 #include <AliAnalysisPIDEvent.h>
 #include <AliESDEvent.h>
 #include "TObject.h"

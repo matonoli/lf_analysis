@@ -1,10 +1,10 @@
 // AliAnalysisPIDParticle wrapper class
 // OliverM 2019 Lund
 
-#include "inputformat.h"
+#include "compInstructions.h"
 
-#ifndef __MyParticle__
-#define __MyParticle__
+#ifndef MYPARTICLE_H
+#define MYPARTICLE_H
 #include <AliAnalysisPIDParticle.h>
 
 #include <TParticle.h>
@@ -35,6 +35,7 @@ class MyParticle: public TObject {
 		Float_t GetEta() 						const { return mAliParticle->GetEta();};
 		Float_t GetY()	 						const { return mAliParticle->GetY();};
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};
+		void SetLabel(Int_t lab)				{ return;};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
 		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};
 #elif INPUTFORMAT == 2
@@ -52,8 +53,6 @@ class MyParticle: public TObject {
 
 #endif	
 
-		// add safety measure to getters for if mAliParticle is an invalid pointer
-		
 		ClassDef(MyParticle,1);
 
 	private:

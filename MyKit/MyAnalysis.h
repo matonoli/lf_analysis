@@ -1,8 +1,8 @@
 // MyKit analysis base abstract class
 // OliverM 2019 Lund
 
-#ifndef __MyAnalysis__
-#define __MyAnalysis__
+#ifndef MYANALYSIS_H
+#define MYANALYSIS_H
 #include "TObject.h"
 
 class MyHandler; // forward declaration

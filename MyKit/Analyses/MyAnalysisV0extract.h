@@ -1,12 +1,12 @@
 // Analysis class of V0s -- signal extraction sub-class
 // OliverM 2019 Lund
 
-#ifndef __MyAnalysisV0extract__
-#define __MyAnalysisV0extract__
+#ifndef MYANALYSISV0EXTRACT_H
+#define MYANALYSISV0EXTRACT_H
 
 #include "TObject.h"
 #include "TString.h"
-#include "../MyAnalysis.h"
+#include "MyAnalysis.h"
 #include "MyAnalysisV0.h"
 
 class TFile;	// forward declaration

@@ -1,12 +1,12 @@
 // Analysis class of V0s -- final results calculating and plotting sub-class
 // OliverM 2019 Lund
 
-#ifndef __MyAnalysisV0plot__
-#define __MyAnalysisV0plot__
+#ifndef MYANALYSISV0PLOT_H
+#define MYANALYSISV0PLOT_H
 
 #include "TObject.h"
 #include "TString.h"
-#include "../MyAnalysis.h"
+#include "MyAnalysis.h"
 #include "MyAnalysisV0.h"
 
 class TFile;	// forward declaration

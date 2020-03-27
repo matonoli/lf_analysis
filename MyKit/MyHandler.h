@@ -1,10 +1,10 @@
 // MyKit analysis handler class
 // OliverM 2019 Lund
 
-#include "inputformat.h"
+#include "compInstructions.h"
 
-#ifndef __MyHandler__
-#define __MyHandler__
+#ifndef MYHANDLER_H
+#define MYHANDLER_H
 #include "TObject.h"
 #include "TClonesArray.h"
 #include <AliESDEvent.h>
@@ -68,7 +68,7 @@ class MyHandler: public TObject {
 		Int_t getNAnalyses()				const {return nAnalyses;};
 		MyAnalysis* analysis(Int_t iAna)	const {return mAnalysis[iAna];};
 
-		void SetEvent(AliESDEvent* ev)		{mEvent = ev;};
+		void SetEvent(AnyEvent* ev)		{mEvent = ev;};
 		void SetMCStack(AliStack* mcst)		{mMCStack = mcst;};
 		void SetFlagMC(Bool_t mcflag)		{mFlagMC = mcflag;};	
 		
@@ -83,7 +83,8 @@ class MyHandler: public TObject {
 		Int_t getNtracks()							const {return bTracks->GetEntriesFast();};
 		Int_t getNv0s()								const {return bV0s->GetEntriesFast();};
 		Int_t getNparticles()						const {return bParticles->GetEntriesFast();};
-		
+		AliStack* mcstack()							const {return 0x0;};
+
 		#elif INPUTFORMAT == 2
 		AliESDtrack* track(Int_t i)				const {return (AliESDtrack*)mEvent->GetTrack(i);};
 		AliESDv0* v0(Int_t i)					const {return (AliESDv0*)mEvent->GetV0(i);};

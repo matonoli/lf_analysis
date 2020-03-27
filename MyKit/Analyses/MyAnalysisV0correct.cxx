@@ -14,11 +14,11 @@
 #include <TCutG.h>
 
 #include "MyAnalysisV0correct.h"
-#include "../MyEvent.h"
-#include "../MyTrack.h"
-#include "../MyParticle.h"
-#include "../MyV0.h"
-#include "../MyHandler.h"
+#include "MyEvent.h"
+#include "MyTrack.h"
+#include "MyParticle.h"
+#include "MyV0.h"
+#include "MyHandler.h"
 
 #include "RooFit.h"
 #include "RooRealVar.h"
@@ -290,7 +290,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[2][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
 		hXiPt[3][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
 
-		TFile* fileXIMB = new TFile("official/xi_MB_spectra_sep_9_2019_sum_rebin.root","READ");
+		TFile* fileXIMB = new TFile("../official/xi_MB_spectra_sep_9_2019_sum_rebin.root","READ");
 		hXiPt[2][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
 		hXiPt[3][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
 		mDirFile->cd();
@@ -876,21 +876,21 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	
 	//mHandler->root()->SetBatch(kTRUE);
 	
-	TFile* fileV0M = new TFile("official/SpectraVsMultiplicityLambdaSum.root","READ");
+	TFile* fileV0M = new TFile("../official/SpectraVsMultiplicityLambdaSum.root","READ");
 	TH1F* hOffiL01 = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00000to00100-epsPart-epsEv-Corrected");
 	TH1F* hOffiL15 = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00100to00500-epsPart-epsEv-Corrected"); 
 	TH1F* hOffiL = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00500to01000-epsPart-epsEv-Corrected"); 
 	TH1F* hOffiLMB = (TH1F*)fileV0M->Get("hPtLambdaSumStatOnly_V0M_00000to10000-epsPart-epsEv-Corrected"); 
 	
-	TFile* fileMB 	= new TFile("official/k0s_spectra.root","READ");
+	TFile* fileMB 	= new TFile("../official/k0s_spectra.root","READ");
 	TH1F* hOffiKMB 	= (TH1F*)fileMB->Get("fHistStatErrOnly"); 
 	cout << "blaaadawda " << hOffiKMB << endl;
 
-	TFile* fileMBeff 	= new TFile("official/k0s_effi.root","READ");
+	TFile* fileMBeff 	= new TFile("../official/k0s_effi.root","READ");
 	TH1F* hOffiKMBeff 	= (TH1F*)fileMBeff->Get("fHistPureEfficiency"); 
 	cout << "blaaadawdaaa " << hOffiKMBeff << endl;
 
-	TFile* fileMBraw 	= new TFile("official/k0s_raw.root","READ");
+	TFile* fileMBraw 	= new TFile("../official/k0s_raw.root","READ");
 	TH1F* hOffiKMBraw 	= (TH1F*)fileMBraw->Get("fHistPtK0ShortRaw"); 
 	
 

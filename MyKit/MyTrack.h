@@ -1,10 +1,10 @@
 // AliAnalysisPIDTrack wrapper class
 // OliverM 2019 Lund
 
-#include "inputformat.h"
+#include "compInstructions.h"
 
-#ifndef __MyTrack__
-#define __MyTrack__
+#ifndef MYTRACK_H
+#define MYTRACK_H
 #include <AliAnalysisPIDTrack.h>
 
 #include <AliESDtrack.h>

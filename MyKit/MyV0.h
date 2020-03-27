@@ -1,10 +1,10 @@
 // AliAnalysisPIDV0 wrapper class
 // OliverM 2019 Lund
 
-#include "inputformat.h"
+#include "compInstructions.h"
 
-#ifndef __MyV0__
-#define __MyV0__
+#ifndef MYV0_H
+#define MYV0_H
 #include <AliAnalysisPIDV0.h>
 #include "TObject.h"
 #include "TMath.h"
@@ -45,7 +45,7 @@ class MyV0: public TObject {
 		Double_t GetPhi();
 		Double_t CalculateY(Int_t Sp);
 		Bool_t HasFastSignal();
-		Bool_t IsOffline()				const { return 1};
+		Bool_t IsOffline()				const { return 1;};
 
 		Int_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
 		Int_t IsMCPrimary() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherPrimary();};

@@ -1,13 +1,13 @@
 // Analysis class of V0s -- efficiency correction sub-class
 // OliverM 2019 Lund
 
-#ifndef __MyAnalysisV0correct__
-#define __MyAnalysisV0correct__
+#ifndef MYANALYSISV0CORRECT_H
+#define MYANALYSISV0CORRECT_H
 
 #include "TObject.h"
 #include "TString.h"
 #include "TMath.h"
-#include "../MyAnalysis.h"
+#include "MyAnalysis.h"
 #include "MyAnalysisV0.h"
 #include "TF1.h"
 

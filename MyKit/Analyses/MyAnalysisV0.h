@@ -1,13 +1,15 @@
 // Analysis class of V0s
 // OliverM 2019 Lund
 
-#ifndef __MyAnalysisV0__
-#define __MyAnalysisV0__
+#include "compInstructions.h"	// !THIS INCLUDES THE CUTS NAMESPACE!
+
+#ifndef MYANALYSISV0_H
+#define MYANALYSISV0_H
 
 #include "TObject.h"
 #include "TString.h"
 #include "MyAnalysis.h"
-#include "cuts01.h"			// namespace cuts
+
 
 class TFile;	// forward declaration
 class TList;
