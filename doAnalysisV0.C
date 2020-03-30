@@ -28,11 +28,11 @@ using namespace RooFit;
 #include "TInterpreter.h"
 #include "TROOT.h"
 #include "TChain.h"
-#include "../MyKit/MyHandler.h"
-#include "../MyKit/Analyses/MyAnalysisV0.h"
-#include "../MyKit/Analyses/MyAnalysisV0extract.h"
-#include "../MyKit/Analyses/MyAnalysisV0correct.h"
-#include "../MyKit/Analyses/MyAnalysisV0plot.h"
+#include "MyKit/MyHandler.h"
+#include "MyKit/Analyses/MyAnalysisV0.h"
+#include "MyKit/Analyses/MyAnalysisV0extract.h"
+#include "MyKit/Analyses/MyAnalysisV0correct.h"
+#include "MyKit/Analyses/MyAnalysisV0plot.h"
 
 	//using rootcl = TInterpreter;
 
