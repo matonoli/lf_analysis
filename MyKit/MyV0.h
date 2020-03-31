@@ -69,9 +69,9 @@ class MyV0: public TObject {
 		Bool_t HasFastSignal();
 		Bool_t IsOffline()				const { return !mAliV0->GetOnFlyStatus();};
 
-		Int_t GetMCLabel();
+		Int_t GetMCLabel() const;
 		Int_t GetMCPdgCode(); //				const { return mAliV0->GetPdgCode();}; // AliESDv0::GetPdgCode() always returns 310
-		Int_t IsMCPrimary() 				const { return 1;};
+		Int_t IsMCPrimary() 				const { return mHandler->mcstack()->IsPhysicalPrimary(this->GetMCLabel());};
 
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
 		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};

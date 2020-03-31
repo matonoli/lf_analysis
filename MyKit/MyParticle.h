@@ -10,6 +10,8 @@
 #include <TParticle.h>
 #include "TObject.h"
 
+#include "MyHandler.h"
+
 #if INPUTFORMAT == 1
 	typedef AliAnalysisPIDParticle AnyParticle;
 #elif INPUTFORMAT == 2
@@ -23,8 +25,9 @@ class MyParticle: public TObject {
 		MyParticle() { }
 		MyParticle(AnyParticle* p) : mAliParticle(p) { }
 		~MyParticle() { }
+		void SetHandler(MyHandler* handler)		{ mHandler = handler;};
 		Int_t GetSign() const;// 						const { return mAliParticle->GetSign();};	// needs fix
-		Bool_t GetIsPrimary()					const { return mIsPrimary;};
+		Bool_t GetIsPrimary()					const { return mIsPrimary;};	// old method, dont use
 
 		Bool_t SetIsPrimary(Bool_t val)			{ mIsPrimary = val;};
 #if INPUTFORMAT == 1
@@ -38,6 +41,7 @@ class MyParticle: public TObject {
 		void SetLabel(Int_t lab)				{ return;};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
 		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};
+		Bool_t IsPrimary()						const { return 1;};
 #elif INPUTFORMAT == 2
 		Float_t GetPt() 						const { return mAliParticle->Pt();};
 		Float_t GetPx() 						const { return mAliParticle->Px();};
@@ -48,6 +52,8 @@ class MyParticle: public TObject {
 		Int_t GetLabel()						const { return mLabel;};// label is fMCEvent->Particle(label)
 		void SetLabel(Int_t lab)				{ mLabel = lab;};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
+		Int_t GetMotherPdgCode()				const { return mHandler->particle(mAliParticle->GetFirstMother())->GetPdgCode();};
+		Bool_t IsPrimary()						const { return mHandler->mcstack()->IsPhysicalPrimary(mLabel);};
 		//Int_t GetMotherPdgCode()				const { return 0;}; // needs to be accessed manually
 		
 
@@ -57,6 +63,7 @@ class MyParticle: public TObject {
 
 	private:
 		AnyParticle* mAliParticle;
+		MyHandler* mHandler = 0;
 		Bool_t mIsPrimary = 1;
 
 		Int_t mLabel = 0;

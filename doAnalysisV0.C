@@ -74,7 +74,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		return;	}
 
 	// SPECIFY WHAT CUTS TO USE
-	TString cutStr("cuts01.h");
+	TString cutStr("cuts02.h");
 	if (!gSystem->AccessPathName(Form("../%s",cutStr.Data())))
 		std::cout << "---Using cuts specified in file " << cutStr.Data() << "\n";
 	else {
@@ -320,7 +320,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 				return;	}
 			std::vector<int> runNumbers;
 			TString yearStr = inputFileStr(inputFileStr.First("20"),4);
-			TString periStr = inputFileStr(inputFileStr.First("LHC"),6);
+			TString periStr = inputFileStr(inputFileStr.First("LHC"), (mcflag ? 7 : 6) );
 			TString passStr = inputFileStr(inputFileStr.First("pa"),5);
 			std::string number_as_string;
     		while (std::getline(inputStream, number_as_string, ', '))	{
@@ -338,7 +338,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 				alienHandler->SetRunPrefix("000");
 				for (int iR = 0; iR < runNumbers.size(); iR++) alienHandler->AddRunNumber(runNumbers[iR]);
 			} else {
-				TString gdd = "alice/sim/"; gdd += yearStr; gdd += periStr;
+				TString gdd = "/alice/sim/"; gdd += yearStr; gdd += "/"; gdd += periStr;
 				alienHandler->SetGridDataDir(gdd.Data());
 				alienHandler->SetDataPattern("*ESDs.root");
 				alienHandler->SetRunPrefix("");
@@ -367,7 +367,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			mgr->SetGridHandler(alienHandler);
 			if (fl.Contains("G")) {
 				// HOW MANY FILES FOR TEST RUN
-				alienHandler->SetNtestFiles(2);
+				alienHandler->SetNtestFiles(3);
 				// LAUNCH ANALYSIS
 				alienHandler->SetRunMode("test");
 				mgr->StartAnalysis("grid");

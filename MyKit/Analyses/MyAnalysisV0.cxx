@@ -33,7 +33,6 @@
 
 #include "TransverseSpherocity.h"
 
-//#include <AliAnalysisPIDV0.h>
 
 using namespace std;
 using namespace V0consts;
@@ -57,8 +56,6 @@ Int_t MyAnalysisV0::Init() {
 
 	printf("Initialising analysis %s with flag MC %i and Hist %i \n", 
 		this->GetName(), mFlagMC, mFlagHist);
-
-	//if (mFlagHist) return 0;
 
 	TH1::SetDefaultSumw2(1);
 	TH1::AddDirectory(kTRUE);
@@ -88,7 +85,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// EVENT INFO HISTOGRAMS
 	hEventMonitor->Fill(0);
-	//cout << "mevent is " << mHandler->event() << endl;
 	if (!mHandler->event()) return 1;
 	MyEvent event(mHandler->event());
 	hEventMonitor->Fill(1);
@@ -97,40 +93,27 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	
 	// EVENT SELECTION
 	hEventType->Fill(EVENTTYPES[0],1);	//preES MB
-	/*Int_t evFlag = (511-4-8-32); // MB xcheck 511;
-	if (!SelectEvent(event,evFlag)) return 0;
-	hEventType->Fill(EVENTTYPES[1],1);	//postES MB
-	if (!event.HasVertex())	{
-		hEventType->Fill(EVENTTYPES[20],1);
-		return 0; }
 	hEventVz->Fill(event.GetZ());
-	hEventType->Fill(EVENTTYPES[21],1);
-	if (!event.AcceptVertex()) return 0;
-	hEventType->Fill(EVENTTYPES[22],1);
-	*/
+	
 
 	switch (ClassifyEvent(event,mHandler->getNtracks())) {
 		default : break;
-		case (-2) : hEventType->Fill(EVENTTYPES[20],1);
+		case (-2) : hEventType->Fill(EVENTTYPES[20],1);		// MB, rejected by Event Selection
 			return 0;
 			break;
-		case (-1) : hEventType->Fill(EVENTTYPES[21],1);
+		case (-1) : hEventType->Fill(EVENTTYPES[21],1);		// MB, passed ES, no vertex
 			return 0;
 			break;
-		case (0) : hEventType->Fill(EVENTTYPES[22],1);
+		case (0) : hEventType->Fill(EVENTTYPES[22],1);		// MB, passed ES, bad vertex
 			return 0;
 			break;
-		case (1) : hEventType->Fill(EVENTTYPES[23],1);
+		case (1) : hEventType->Fill(EVENTTYPES[23],1);		// MB, passed ES, good vertex
 			break;
 	}
 
 
 	hEventMonitor->Fill(2);
-	//cout << "------event " << iEv << " --------- \n";
 
-	/*cout << "ev accepted w flag " << event.GetEventFlags() << endl;
-	cout << "flag to be checked " << event.GetCheckFlag() << endl;
-	cout << "cf " << event.CheckFlag() << endl;*/
 
 	// BUG HOTFIX FOR AURORATREES
 	MyV0 bugfix;
@@ -149,13 +132,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventV0MCentrality->Fill(event.GetV0MCentrality());
 	hEventRefMult->Fill(event.GetRefMult());
 	hEventV0MCentvRefMult->Fill(event.GetRefMult(),event.GetV0MCentrality());
-	Bool_t isEventFHM = IsCentral(event,V0M);
-	Bool_t isEventMHM = IsCentral(event,NCharged);
+	Bool_t isEventFHM = IsCentral(event,V0M);			// forward-rapidity high-multiplicity
+	Bool_t isEventMHM = IsCentral(event,NCharged);		// mid-rapidity high-multiplicity
 	if (isEventFHM)	hEventType->Fill(EVENTTYPES[2],1);
 	if (isEventMHM)	hEventType->Fill(EVENTTYPES[3],1);
 	
 	isEventCentral = (isEventFHM || isEventMHM);
-	//isEventCentral += IsCentral(event,NCharged);
 
 	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
 	for (Int_t iMu = 0; iMu < NMULTI-1; ++iMu)	{
@@ -176,25 +158,20 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	ptLead = -99.; 
 	phiLead = -99.;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
-		if (!mHandler->track(iTr)) continue;
-		MyTrack t(mHandler->track(iTr));
-		t.SetHandler(mHandler);
-
-		//if (!SelectTrack(t)) continue;
-		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 		
+		if (!mHandler->track(iTr)) continue;
+		MyTrack t(mHandler->track(iTr)); t.SetHandler(mHandler);
 
-		if (SelectTrack(t)) {				// primary dca cut
-			if (t.GetPt() > ptLead) {
+		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
+		if (SelectTrack(t)) {				// strict cuts, has primary dca cut
+			if (t.GetPt() > ptLead) {		// search for leading track among primaries
 				ptLead = t.GetPt();
 				phiLead = t.GetPhi();	}
 		}
 
-		//+add tpc refit 
-		if (!t.IskITSrefit()) 		continue;
+		if (!t.IskITSrefit()) 		continue;	// cuts for tracks entering spherocity
 		if (!t.IsTPCOnlyRefit())	continue;
 		if (t.GetPt() < 0.15)		continue;
-		//0.15 cut ?
 
 		// for Data calc. s0 from tracks
 		if (isEventCentral) {
@@ -217,11 +194,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;
-			MyParticle p(mHandler->particle(iP));
-			if (mHandler->mcstack()) p.SetIsPrimary(mHandler->mcstack()->IsPhysicalPrimary(iP));
-
+			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
+			
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.GetIsPrimary())	{
+				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.IsPrimary())	{	// cuts for particles entering spherocity
 
 				mTS[2][0]->AddTrack(p.GetPx(), p.GetPy());
 				mTSNorm[2][0]->AddTrack(p.GetPx()/p.GetPt(), p.GetPy()/p.GetPt());
@@ -254,7 +230,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		//eventTS = (mFlagMC) ? eventTS2[tsMC] : eventTS2[tsD];
 		//eventTS = (mFlagMC) ? eventTS2[tsMCNorm] : eventTS2[tsDNorm];
 		//eventTS = (mFlagMC) ? eventTS2[tsMCNorm] : eventTS2[tsDNorm];		// in mc study default on particle level
-		eventTS = eventTS2[tsDNorm];
+		eventTS = eventTS2[tsDNorm];		// select a default spherocity
 
 		isEventIso[V0M]		= (eventTS > cuts::EV_SPH_ISO[V0M-1] && eventTS < 1.) ;
 		isEventJetty[V0M]	= (eventTS < cuts::EV_SPH_JETTY[V0M-1] && eventTS > 0.);
@@ -283,13 +259,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (isEventMHM && isEventIsoMC[NCharged])	hEventType->Fill(EVENTTYPES[18],1);
 	if (isEventMHM && isEventJettyMC[NCharged])	hEventType->Fill(EVENTTYPES[19],1);
 
-	// TRACK SPHEROCITY STUDY LOOP
+	// TRACK DEPENDENCE ON SPHEROCITY STUDY LOOP
 	nChTrans = 0;
 	Int_t nChTrans0 = 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
-		MyTrack t(mHandler->track(iTr));
-		t.SetHandler(mHandler);
+		MyTrack t(mHandler->track(iTr));	t.SetHandler(mHandler);
 
 		if (!SelectTrack(t)) continue;
 
@@ -312,22 +287,17 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			if (isEventJettyMC[NCharged])	ProcessTrack(t,RC,NCharged,Jetty);
 			if (isEventIsoMC[NCharged])		ProcessTrack(t,RC,NCharged,Iso);		}
 
-		/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
-		for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
-			ProcessTrack(t,D,iMu+iMu*(!isEventFHM),iSph+iSph*(!isEventJetty));
-		}	}	*/
 	}
 
 	// RT NCH CALCULATION
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
-		MyTrack t(mHandler->track(iTr));
-		t.SetHandler(mHandler);
+		MyTrack t(mHandler->track(iTr)); t.SetHandler(mHandler);
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 		
 		// RT DETERMINATION
 		if (!IsTrans(t.GetPhi(),phiLead))	continue;
-		if (!t.IskITSrefit()) continue;
+		if (!t.IskITSrefit()) continue;		// cuts for tracks entering Nch^trans calculations
 		if (!t.IsTPCOnlyRefit()) continue;
 		if (t.GetPt()<0.15) continue;
 		
@@ -335,7 +305,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		nChTrans0++;
 		if (ptLead < 5.) continue;
 		if (ptLead > 40.) continue;
-		nChTrans++;
+		nChTrans++;		// increment only if a leading particle was found
 	}
 
 	hNchvLeadPt2->Fill(ptLead,nChTrans0);
@@ -345,7 +315,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		eventRt = (double)nChTrans/RT_DEN;
 		hRt->Fill(eventRt);		}
 
-	Bool_t isEventRT = false;
+	// CLASSIFYING EVENT IN RT BINS DURING RUNTIME (optional)
+	Bool_t isEventRT = false;		
 	enum { rt01, rt12, rt23, rt34, rt45, rtsizeof };
 	Bool_t isRT[rtsizeof] = {false, false, false, false, false};
 	if (ptLead>5. && ptLead<40.) {
@@ -390,10 +361,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;
-			MyParticle p(mHandler->particle(iP));
+			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0)	{
+				&& p.GetSign() != 0 && p.IsPrimary())	{
 
 				if (p.GetPt() > ptLeadMC) {
 					ptLeadMC = p.GetPt();
@@ -408,11 +379,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;
-			MyParticle p(mHandler->particle(iP));
-			if (mHandler->mcstack()) p.SetIsPrimary(mHandler->mcstack()->IsPhysicalPrimary(iP));
+			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.GetIsPrimary())	{
+				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.IsPrimary())	{
 
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
 				if (ptLeadMC<5.0) continue;
@@ -432,11 +402,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (ptLeadMC > 5. && ptLeadMC < 40.) for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;
-			MyParticle p(mHandler->particle(iP));
-			if (mHandler->mcstack()) p.SetIsPrimary(mHandler->mcstack()->IsPhysicalPrimary(iP));
+			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetPt() > 0.15 && p.GetIsPrimary())	{
+				&& p.GetPt() > 0.15 && p.IsPrimary())	{
 
 				if (p.GetSign() != 0 && TMath::Abs(p.GetPt()-ptLeadMC)>1E-5) hParticleDPhivNchTrans->Fill(nChTransMC,mHandler->DeltaPhi(phiLeadMC,p.GetPhi()));
 				Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
@@ -457,16 +426,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	std::vector<Int_t> PartLabels;
 	std::vector<Int_t> PartIds; 
 	if (mFlagMC) {
-		//Int_t nParticles = mHandler->particles()->GetEntriesFast();
+
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;
-			MyParticle p(mHandler->particle(iP));
+			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
 
-			//if (p.GetPdgCode() == 3122) cout << "Found L with label " << iP << endl;
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0)	{
+				&& p.GetSign() != 0 && p.IsPrimary())	{
 
 				hTrackPt[MC][multMB][sphMB]->Fill(p.GetPt());
 
@@ -488,23 +456,20 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			}
 				
-				/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
-				for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
-					hTrackPt[MC][iMu+iMu*(!isEventFHM)][iSph+iSph*(!isEventJetty)]->Fill(p.GetPt());
-				}	}*/
+			if (!SelectParticle(p)) continue;		// also contains Xi's !
+			
+			PartLabels.push_back(p.GetLabel());		// filling particles in a vector to avoid unnecessary nesting loops
+			PartIds.push_back(iP);					// only particles in good |eta| with K0s,L,Lbar,Xi pdg's
 
-			if (!SelectParticle(p)) continue;		// also contains Xi's now
-			p.SetLabel(iP);
-			PartLabels.push_back(p.GetLabel());
-			PartIds.push_back(iP);
+			if (!p.IsPrimary()) continue;
 
-
-			if (p.GetPdgCode() == 3312) hV0FeeddownMotherPt[2]->Fill(p.GetPt());
+			if (p.GetPdgCode() == 3312) hV0FeeddownMotherPt[2]->Fill(p.GetPt());		// filling primary Xi
 			if (p.GetPdgCode() == -3312) hV0FeeddownMotherPt[3]->Fill(p.GetPt());
 
 			for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 				if (p.GetPdgCode() == PDG_IDS[iSp])		{
 
+					// FILLING MC INFORMATION FOR V0s particles
 					hV0Pt[iSp][MC][multMB][sphMB]->Fill(p.GetPt());
 					hV0Eta[iSp][MC][multMB][sphMB]->Fill(p.GetEta());
 					hV0Y[iSp][MC][multMB][sphMB]->Fill(p.GetY());
@@ -533,17 +498,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 							if (isRT[iRt])	hV0Pt[iSp][MC][RT][3+iRt]->Fill(p.GetPt());	}
 					}
 
-					/*for (int iMu = 0; iMu < isEventFHM+isEventMHM+1; ++iMu) {
-					for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
-						hV0Pt[iSp][MC][iMu+iMu*(!isEventFHM)][iSph+iSph*(!isEventJetty)]->Fill(p.GetPt());
-					}	}*/
 				}
 			}
 
-			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-				//if (p.GetPdgCode() == PDG_IDS[iSp]){
-					//hV0Pt[iSp][MC][0][0]->Fill(p.GetPt());	}
-			}
 		}
 
 	}
@@ -560,15 +517,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 
 		if (mFlagMC) {
-			MyParticle v0mc;
+			MyParticle v0mc; v0mc.SetHandler(mHandler);
 			Bool_t MCfound = false;
 
-			//if (v0.GetMCPdgCode() == 3122) cout << "found lambda in rc w label " << v0.GetMCLabel() << " \n";
 
+			// LOOKING IF V0 HAS A MC PARTNER
 			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 				if (PartLabels[iP] == v0.GetMCLabel()) {		// perhaps ask for pdgid as well?
 					
-					v0mc = MyParticle(mHandler->particle(PartIds[iP]));
+					v0mc = MyParticle(mHandler->particle(PartIds[iP])); v0mc.SetHandler(mHandler); v0mc.SetLabel(PartIds[iP]);
 
 					//if (v0mc.GetPdgCode() != v0.GetMCPdgCode()) {
 						//printf("Codes are %i and %i and pt %f \n",v0mc.GetPdgCode(),v0.GetMCPdgCode(), v0.GetPt());
@@ -576,71 +533,69 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						//return 1; }
 					//}
 
-					//if (v0mc.GetPdgCode() != v0mc.GetMotherPdgCode() 
-					//		&& TMath::Abs(v0mc.GetMotherPdgCode()) != 311
-					//		&& TMath::Abs(v0mc.GetMotherPdgCode()) > 10)	{
-					//	v0mc.SetIsPrimary(0);	}
 					if (MCfound) {
 						cout << "PARTICLE FOUND TWICE" << endl;
 						return 1; }
 
 					if (v0mc.GetPdgCode() == v0.GetMCPdgCode()) MCfound = true;
+					// found a MC particle with the same label and PDGCode
 				}
 			}
 
-			//if (MCfound) {		// check if this is OK (could be buggy?)
-				for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-					//cout << "Testing 1 iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
+			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+				//cout << "Testing 1 iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
 					
-					if (IsV0(v0,iSp,RC)) {
+				if (IsV0(v0,iSp,RC)) {
 
 
-						//if (iSp==1) cout << "detected k0s with label " << v0.GetMCLabel() << endl;
-						// (v0mc.GetIsPrimary()) hV0Feeddown[iSp]->Fill(v0.GetPt());
-						//else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
+					//if (iSp==1) cout << "detected k0s with label " << v0.GetMCLabel() << endl;
+					//else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
 						
 						
 
-						// ask for primary
-						// get the MC label of mother
-						// get the Xi
-						// fill histo  l.pt and xi.pt
-						//printf("primary %i and grandma pdg code %i \n", v0.IsMCPrimary(), v0.GetMCPrimaryPdgCode());
-						/*if (!v0.IsMCPrimary()) {			// ask for secondary
-							hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode());
-							
-							if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {	// consider Xi->L
-								MyParticle priMC;
-								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{	// find particle Xi
-									if (PartLxiabels[iP] == v0.GetMCPrimaryLabel()) {
-										priMC = MyParticle(mHandler->particle(PartIds[iP]));
-									}
+					// ask for primary
+					// get the MC label of mother
+					// get the Xi
+					// fill histo  l.pt and xi.pt
+					//printf("primary %i and grandma pdg code %i \n", v0.IsMCPrimary(), v0.GetMCPrimaryPdgCode());
+					/*if (!v0.IsMCPrimary()) {			// ask for secondary
+						hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode());
+						
+						if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {	// consider Xi->L
+							MyParticle priMC;
+							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{	// find particle Xi
+								if (PartLxiabels[iP] == v0.GetMCPrimaryLabel()) {
+									priMC = MyParticle(mHandler->particle(PartIds[iP]));
 								}
-
-								if (TMath::Abs(priMC.GetPdgCode()) != 3312) {
-									cout << "GRANDMOTHER NOT XI" << endl;
-									return 1;
-								}
-
-								hV0FeeddownMatrix[iSp]->Fill(priMC.GetPt(),v0.GetPt());
 							}
-							continue;
-						}*/
 
-						
+							if (TMath::Abs(priMC.GetPdgCode()) != 3312) {
+								cout << "GRANDMOTHER NOT XI" << endl;
+								return 1;
+							}
 
-						if (!v0.IsMCPrimary()) {
+							hV0FeeddownMatrix[iSp]->Fill(priMC.GetPt(),v0.GetPt());
+						}
+						continue;
+					}*/
+
+				
+					if (!v0.IsMCPrimary() && MCfound) {
+							// using secondary particles to build the feeddown matrix
+
+
 							//cout << "v0 not primary " << iSp << endl;
 							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
 							if (iSp>1) {
-								MyParticle xiMC;
+								MyParticle xiMC; xiMC.SetHandler(mHandler);
+
 								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
-									xiMC = MyParticle(mHandler->particle(PartIds[iP]));
+									xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
 									//cout << "found particle w id " << xiMC.GetPdgCode() << endl;
-									if (xiMC.GetPdgCode() == 3312 && iSp==2)	{
+									if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == 3312)	{
 										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 									}
-									if (xiMC.GetPdgCode() == -3312 && iSp==3)	{
+									if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == -3312)	{
 										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 									}
 								}
@@ -648,11 +603,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						}
 
 						
-
+						if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
 						if (!MCfound) continue;
 						
 
-						//if (iSp == 2) cout << "!!!!!!!!!!!FOUND iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
 						ProcessV0toHist(v0,iSp,RC,multMB,sphMB);		
 						ProcessV0toTree(v0,iSp,RC,0);		
 
@@ -678,16 +632,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 							for (int iRt = 0; iRt < rtsizeof; ++iRt) {
 								if (isRT[iRt])	ProcessV0toHist(v0,iSp,RC,RT,3+iRt);	}
 						}
+
 					}
 				}
-			//}
 		}
-
-		//for (int iMu = 0; iMu < isEventFHM+isEventMHM+isEventRT+1; ++iMu) {
-		//for (int iSph = 0; iSph < isEventJetty+isEventIso+1; ++iSph) {
 		
 		hV0Radius->Fill(v0.GetRadius());
 		hV0ProperT->Fill(v0.GetIML()*v0.GetRadius()/v0.GetPt());
+		
+		// STUDY OF V0s IN DATA
 		for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 			if (IsV0(v0,iSp,D)) {
 
@@ -713,7 +666,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						if (isRT[iRt])	ProcessV0toHist(v0,iSp,D,RT+region,3+iRt);	}
 				}
 
-				//	ProcessV0toHist(v0,iSp,D,iMu+iMu*(!isEventFHM)*(!isEventRT),iSph+iSph*(!isEventJetty));
 			}
 		}		
 
@@ -725,6 +677,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
 
+	// NOT USED (CLASSIFYEVENT USED INSTEAD)
 
 	ev.SetCheckFlag(flag);
 	if (!ev.IsGoodAliEvent()) return false;
@@ -746,33 +699,51 @@ Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
 
 Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, Int_t ntracks)
 {
-  event.SetCheckFlag(1);
-  if(!event.IsGoodAliEvent()) {
-    //    cout << "Pileup or similar" << endl;
-    return -2;
-  }
 
-  if(!event.HasVertex()) {
-    return -1;
-  }
+	// usage of flags also emulated for ESDs to ensure we're doing the same thing
+	/*
+	enum EventFlags_t {
+	    kNotPileupInSPD = 1,
+	    kNotPileupInMV = 2,
+	    kNotPileupInMB = 4,
+	    kINELgtZERO = 8,
+	    kNoInconsistentVtx = 16,
+	    kNoV0Asym = 32,
+	    kVertexSelected2015pp=64,
+	    kSPDandTrkVtxExists=128,
+	    kPassProximityCut=256,
+	    kAll = 511
+  	};
+  	*/
 
-  event.SetCheckFlag(448);
-  if(!event.IsGoodAliEvent()) {
-    return -1;
-  }
+	event.SetCheckFlag(1);
+	if(!event.IsGoodAliEvent()) {
+		//    cout << "Pileup or similar" << endl;
+		return -2;
+	}
+
+	if(!event.HasVertex()) {
+		return -1;
+	}
+
+	event.SetCheckFlag(448);		// = 256 + 128 + 64
+	if(!event.IsGoodAliEvent()) {
+		return -1;
+	}
   
-  if(TMath::Abs(event.GetZ())>10) {
-    return 0;
-  }
+	if(TMath::Abs(event.GetZ())>10) {
+		return 0;
+	}
 
-  if(ntracks<1) { 
-    return 1;
-  }
+	if(ntracks<1) { 
+		return 1;
+	}
 
-  // Update TOF response
-  //AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)trackArray->At(0);
-  //track->UpdateTOFResponse(event);
-  
+  	// Update TOF response
+  	//AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)trackArray->At(0);
+  	//track->UpdateTOFResponse(event);
+  	// ^^ IS THIS NECESSARY?
+
   return 1;
 }
 
@@ -803,7 +774,7 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	hV0Pt[Sp][Type][Mu][Sph]->Fill(v0.GetPt());
 	hV0Eta[Sp][Type][Mu][Sph]->Fill(v0.GetEta());
 	hV0Y[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp));
-	//printf("particle %i with y %f and eta %f   %i %i %i \n", Sp, v0.CalculateY(Sp), v0.GetEta(), Type, Mu, Sph);
+	
 	hV0EtavY[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp),v0.GetEta());
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
@@ -811,9 +782,6 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	if (Mu>2 && Type==0 && Sph == 0 && Sp==1) {
 		hV0DPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
 	}
-
-	//if (Sp>0 && Type==0 && Mu==3 && Sph==0) {
-	//	tV0massRt[Sp][0][0]->Fill(v0mass[Sp],v0.GetPt(),eventRt);	}
 
 	return true;	
 }
@@ -1117,28 +1085,27 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
 
-		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-		//	";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-		
 
 	} } } }
 
+	// FEED-DOWN STUDY HISTOGRAMS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
-
 		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS);
 		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
-		cout << "mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
+		
 	}
 
+	// V0 CUTS STUDY HISTOGRAMS
 	for (int iCut = 0; iCut < 25; ++iCut)	{
 		hV0PtCut[iCut]			= new TH1D(Form("hV0PtCut_%i",iCut),
 			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 	}
 
 
-	// V0 NTUPLES
+	// V0 NTUPLES TO ALSO ALLOW POST-PROCESSING REBINNING
 	Int_t nType = (mFlagMC) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < nType; ++iType)		{
@@ -1200,7 +1167,6 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	hNchvLeadPt2				= (TH2D*)mDirFile->Get("hNchvLeadPt2");
 	hNchTrans					= (TH1D*)mDirFile->Get("hNchTrans");
 	hRt							= (TH1D*)mDirFile->Get("hRt");
-	//hLeadPtvRt					= (TH2D*)mDirFile->Get("hLeadPtvRt");
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -1228,17 +1194,15 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 		hV0Eta[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2D*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		// actually perhaps only histos which need to be processed within this analysis need to get fetched
-
-
-		//hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-		//	";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		
 	} } } }	
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+
 		hV0Feeddown[iSp] 	= (TH1D*)mDirFile->Get(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] = (TH1D*)mDirFile->Get(Form("hV0FeeddownPDG_%s",SPECIES[iSp]));
-
+		hV0FeeddownMatrix[iSp]		= (TH2D*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
+		hV0FeeddownMotherPt[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]));
 
 	}
 
@@ -1275,7 +1239,7 @@ Int_t MyAnalysisV0::Finish() {
 	Double_t rt_den = hNchTrans->GetMean();
 	Int_t nbins = hNchTrans->GetXaxis()->GetNbins();
 	Double_t rtbins[nbins+1];
-	//cout << "nb " << nbins << " rt " << rtbins << endl;
+
 	for (int iBin = 0; iBin < nbins+1; ++iBin)	{
 		//cout << "a bin " << hNchTrans->GetBinLowEdge(iBin+1) << endl;
 		if (rt_den>0) rtbins[iBin] = (double)hNchTrans->GetBinLowEdge(iBin+1)/rt_den;
@@ -1286,7 +1250,8 @@ Int_t MyAnalysisV0::Finish() {
 
 	if (mFlagMC) DoEfficiency();
 	//if (mFlagMC) DoEfficiencyFromTrees();
-	if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
+	//if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
+	if (mFlagMC) DoLambdaFeeddown();
 
 	return 0;	
 }
@@ -1303,7 +1268,6 @@ void MyAnalysisV0::DoEfficiency() {
 
 		hV0Efficiency[iSp]->Divide(hV0Pt[iSp][2][0][0]);
 		hV0EfficiencyEta[iSp]->Divide(hV0Eta[iSp][2][0][0]);
-		//hV0Efficiency[iSp]->Write();
 	}
 
 }
@@ -1364,12 +1328,13 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 		//cout << "1mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 		//hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
 		//cout << "2mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
+		
 		hV0FeeddownMotherPt[iSp]->Scale(1,"width");
 
 		for (int iC = 1; iC < nCols+1; ++iC)	{
 			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);
 			for (int iR = 1; iR < nRows+1; ++iR) {
-				//cout << "wtf " << hV0FeeddownMatrix[iSp] << endl;
+				
 				Double_t binContent = hV0FeeddownMatrix[iSp]->GetBinContent(iC,iR);
 				if (binContent>0) hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
 			}

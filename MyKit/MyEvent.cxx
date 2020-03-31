@@ -66,7 +66,10 @@ Bool_t MyEvent::CheckFlag() {
 	
 	AliMultSelection *ams = (AliMultSelection*)mAliEvent->FindListObject("MultSelection");
 	if (mFlagToCheck & kNotPileupInSPD &&
-			!ams->GetThisEventIsNotPileup()) return 0;
+			//!ams->GetThisEventIsNotPileup()) return 0;
+			mAliEvent->IsPileupFromSPD()) return 0;
+	if (mFlagToCheck & kNotPileupInSPD &&
+			mAliEvent->IsPileupFromSPDInMultBins()) return 0;
 	if (mFlagToCheck & kVertexSelected2015pp ||
 		mFlagToCheck & kSPDandTrkVtxExists ||
 		mFlagToCheck & kPassProximityCut ) mVertexSelected2015pp = CalculateVertexSelection(1,0,1);

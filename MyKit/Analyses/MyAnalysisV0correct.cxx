@@ -102,7 +102,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		Int_t iType = 2; Int_t iMu = 0; Int_t iSph = 0;
 		hV0Pt[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-			//cout << " loaded " << hV0Pt[iSp][2][iMu][iSph] << endl;
+			
 	}
 
 
@@ -127,9 +127,9 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-		//hV0FeeddownMatrix[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		
 		hV0FeeddownMotherPt[iSp]	= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
-		//cout << "3mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
+		
 	}		// should be loaded from external files instead
 
 
@@ -196,7 +196,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	CloneHistograms();
 	
 	NormaliseSpectra();
-	//CorrectForFeeddown();
+	CorrectForFeeddown();
 
 	LoadEfficiency();
 	//DoEfficiencyFromFile();
@@ -229,7 +229,8 @@ void MyAnalysisV0correct::SetXiSpectraFile(const Char_t *name) {
 
 	TString fileName = TString(name);
 	if (fileName.Data() != "") {
-		mFileXi = new TFile(fileName,"READ");
+		//mFileXi = new TFile(fileName,"READ");
+		mFileXi = new TFile("../official/xi_HM_spectra_sep_9_2019.root","READ");
 		printf("Xi spectrum file %s loaded in. \n", fileName.Data()); }
 	else {
 		printf("No Xi file loaded.");
@@ -237,10 +238,6 @@ void MyAnalysisV0correct::SetXiSpectraFile(const Char_t *name) {
 }
 
 void MyAnalysisV0correct::CorrectForFeeddown() {
-
-	//cout << "joo " << hV0FeeddownMatrix[2] << endl;
-	//cout << "blaa " << hV0FeeddownMotherPt[2] << endl;
-
 
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
@@ -281,6 +278,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 				hFMatrix->SetBinContent(iMotherBin,iPtBin,hV0FeeddownMatrix[2]->GetBinContent(iMotherBin,iPtBin));
 	}	}
 
+	mFileXi = new TFile("../official/xi_HM_spectra_sep_9_2019.root","READ");
 	if (!mFileXi) {
 		printf("No Xi file loaded in, using MC Xi spectra instead. \n");
 		hXiPt[2][0] = hV0FeeddownMotherPt[2];
@@ -355,21 +353,6 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 	cout << "bc " << hV0PtFeeddown[2][1]->GetBinContent(6) << " / " << hV0PtFitCorr[2][0][1][0]->GetBinContent(6) << endl;
 
 
-
-	/*for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-
-		for (int iBin = 1; iBin < hV0PtFeeddown[iSp]->GetNbinsX()+1; ++iBin)	{
-			Double_t sum = 0;
-			for (int iMotherBin = 1; iMotherBin < hV0FeeddownMotherPt[iSp]->GetNbinsX()+1; ++iMotherBin)	{
-				sum += 
-					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) * hV0FeeddownMotherPt[iSp]->GetBinContent(iMotherBin);
-			}
-			hV0PtFeeddown[iSp]->SetBinContent(iBin,2*sum);
-		}
-
-		hV0PtFeeddown[iSp]->Scale(1,"width");
-		hV0PtFeeddown[iSp]->Divide(hV0PtFitCorr[iSp][0][0][0]);
-	}*/
 }
 
 void MyAnalysisV0correct::NormaliseSpectra() {

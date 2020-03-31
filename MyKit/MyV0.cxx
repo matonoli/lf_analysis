@@ -58,7 +58,7 @@ Bool_t MyV0::HasFastSignal() {
 }
 
 
-Int_t MyV0::GetMCLabel() {
+Int_t MyV0::GetMCLabel() const {
 
 	TParticle* pd = mHandler->mcstack()->Particle(TMath::Abs(this->GetPosTrack()->GetLabel()));
 	return pd->GetFirstMother();
