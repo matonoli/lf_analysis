@@ -520,7 +520,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle v0mc; v0mc.SetHandler(mHandler);
 			Bool_t MCfound = false;
 
-
 			// LOOKING IF V0 HAS A MC PARTNER
 			for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 				if (PartLabels[iP] == v0.GetMCLabel()) {		// perhaps ask for pdgid as well?
@@ -539,6 +538,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 					if (v0mc.GetPdgCode() == v0.GetMCPdgCode()) MCfound = true;
 					// found a MC particle with the same label and PDGCode
+					// MyV0::GetMCPdgCode() also requires both daughters to point to the same mother
 				}
 			}
 
@@ -579,62 +579,70 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						continue;
 					}*/
 
-				
+					// also require daughter pdg id for association
+					Bool_t properDaughters = ((v0.GetPosTrackPdg() == PDG_IDS_DPOS[iSp]) && (v0.GetNegTrackPdg() == PDG_IDS_DNEG[iSp]));
+
 					if (!v0.IsMCPrimary() && MCfound) {
 							// using secondary particles to build the feeddown matrix
 
 
 							//cout << "v0 not primary " << iSp << endl;
 							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
-							if (iSp>1) {
-								MyParticle xiMC; xiMC.SetHandler(mHandler);
-
-								for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
-									xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
+						if (iSp>1) {
+							MyParticle xiMC; xiMC.SetHandler(mHandler);
+						
+							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
+								xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
 									//cout << "found particle w id " << xiMC.GetPdgCode() << endl;
-									if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == 3312)	{
-										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
-									}
-									if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == -3312)	{
-										hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
-									}
+								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == 3312)	{
+									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+								}
+								if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == -3312)	{
+									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 								}
 							}
 						}
-
-						
-						if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
-						if (!MCfound) continue;
-						
-
-						ProcessV0toHist(v0,iSp,RC,multMB,sphMB);		
-						ProcessV0toTree(v0,iSp,RC,0);		
-
-						if (isEventFHM) {
-							ProcessV0toHist(v0,iSp,RC,V0M,sphMB);
-							if (isEventJettyMC[V0M])	ProcessV0toHist(v0,iSp,RC,V0M,Jetty);			// study RC spectra for true spher. ev classification
-							if (isEventIsoMC[V0M])		ProcessV0toHist(v0,iSp,RC,V0M,Iso);
-						}
-						
-						if (isEventMHM) {
-							ProcessV0toHist(v0,iSp,RC,NCharged,sphMB);
-							if (isEventJettyMC[NCharged])	ProcessV0toHist(v0,iSp,RC,NCharged,Jetty);
-							if (isEventIsoMC[NCharged])		ProcessV0toHist(v0,iSp,RC,NCharged,Iso);
-						}
-
-						if (isEventRT)	{
-							Int_t region = WhatRegion(v0.GetPhi(),phiLead);
-							if (iSp>0) ProcessV0toTree(v0,iSp,RC,RT+region);
-						}
-
-						if (isEventRT && IsTrans(v0.GetPhi(),phiLead)) {
-							ProcessV0toHist(v0,iSp,RC,RT,sphMB);
-							for (int iRt = 0; iRt < rtsizeof; ++iRt) {
-								if (isRT[iRt])	ProcessV0toHist(v0,iSp,RC,RT,3+iRt);	}
-						}
-
 					}
+
+						
+					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
+					if (!MCfound) continue;
+					if (!properDaughters) continue;
+
+					// MC v RC histograms
+					hV0PtRCvMC[iSp]->Fill(v0mc.GetPt(), v0.GetPt());
+					hV0EtaRCvMC[iSp]->Fill(v0mc.GetEta(), v0.GetEta());
+					hV0PhiRCvMC[iSp]->Fill(v0mc.GetPhi(), v0.GetPhi());
+						
+
+					ProcessV0toHist(v0,iSp,RC,multMB,sphMB);		
+					ProcessV0toTree(v0,iSp,RC,0);		
+
+					if (isEventFHM) {
+						ProcessV0toHist(v0,iSp,RC,V0M,sphMB);
+						if (isEventJettyMC[V0M])	ProcessV0toHist(v0,iSp,RC,V0M,Jetty);			// study RC spectra for true spher. ev classification
+						if (isEventIsoMC[V0M])		ProcessV0toHist(v0,iSp,RC,V0M,Iso);
+					}
+						
+					if (isEventMHM) {
+						ProcessV0toHist(v0,iSp,RC,NCharged,sphMB);
+						if (isEventJettyMC[NCharged])	ProcessV0toHist(v0,iSp,RC,NCharged,Jetty);
+						if (isEventIsoMC[NCharged])		ProcessV0toHist(v0,iSp,RC,NCharged,Iso);
+					}
+
+					if (isEventRT)	{
+						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
+						if (iSp>0) ProcessV0toTree(v0,iSp,RC,RT+region);
+					}
+
+					if (isEventRT && IsTrans(v0.GetPhi(),phiLead)) {
+						ProcessV0toHist(v0,iSp,RC,RT,sphMB);
+						for (int iRt = 0; iRt < rtsizeof; ++iRt) {
+							if (isRT[iRt])	ProcessV0toHist(v0,iSp,RC,RT,3+iRt);	}
+					}
+
 				}
+			}
 		}
 		
 		hV0Radius->Fill(v0.GetRadius());
@@ -783,6 +791,15 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 		hV0DPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
 	}
 
+	MyTrack trP(v0.GetPosTrack());	trP.SetHandler(mHandler);
+	MyTrack trN(v0.GetNegTrack());	trN.SetHandler(mHandler); 
+	if (Sph==0 && Mu == 0) {
+		if (Sp!=2) hV0DpiNsigTPCvpt[Sp][Type]->Fill(trP.GetPt(),trP.GetNSigmaPionTPC());
+		if (Sp!=3) hV0DpiNsigTPCvpt[Sp][Type]->Fill(trN.GetPt(),trN.GetNSigmaPionTPC());
+		if (Sp==2) hV0DprNsigTPCvpt[Sp][Type]->Fill(trP.GetPt(),trP.GetNSigmaProtonTPC());
+		if (Sp==3) hV0DprNsigTPCvpt[Sp][Type]->Fill(trN.GetPt(),trN.GetNSigmaProtonTPC());
+	}
+
 	return true;	
 }
 
@@ -883,13 +900,13 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//17
 			//cout << "tpc " << trP.GetNSigmaPionTPC() << " " << trN.GetNSigmaPionTPC() << endl;
-			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
+			if (!mFlagMC && trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
+			if (!mFlagMC && trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
+			if (!mFlagMC && trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//20
-			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
+			if (!mFlagMC && trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
 				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
 			
 			break;
@@ -901,10 +918,10 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
 			//if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
 			if (v0.GetCPA() < cuts::L_CPA)					 		return false;
-			if (trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
-			if (trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
-			if (trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
-			if (trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			if (!mFlagMC && trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			if (!mFlagMC && trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			if (!mFlagMC && trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			if (!mFlagMC && trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			
 			break;
 		case 3 	: // Lbar
@@ -915,10 +932,10 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
 			//if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
 			if (v0.GetCPA() < cuts::L_CPA)					 		return false;
-			if (trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
-			if (trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
-			if (trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
-			if (trN.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			if (!mFlagMC && trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			if (!mFlagMC && trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			if (!mFlagMC && trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			if (!mFlagMC && trN.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
 			
 			break;	}
 
@@ -1055,6 +1072,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	} } } 
 
 	// MC PARTICLE HISTOGRAMS
+	hParticlePrimaryvPDG				= new TH2D("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
 		hProtonNchTransvPt[iReg]		= new TH2D(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
 		hPionNchTransvPt[iReg]			= new TH2D(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
@@ -1087,6 +1105,24 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 
 	} } } }
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
+		hV0DpiNsigTPCvpt[iSp][iType]		= new TH2D(Form("hV0DpiNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
+			";V0 daughter p_{T} (GeV/#it{c}); V0 daughter n#sigma_{TPC}^{#pi}; Entries", 										300, 0., 15., 200, -10., 10.);
+		hV0DprNsigTPCvpt[iSp][iType]		= new TH2D(Form("hV0DprNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
+			";V0 daughter p_{T} (GeV/#it{c}); V0 daughter n#sigma_{TPC}^{p}; Entries", 										300, 0., 15., 200, -10., 10.);
+	}	}
+
+	// V0 RC v MC HISTOGRAMS
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+		hV0PtRCvMC[iSp]			= new TH2D(Form("hV0PtRCvMC_%s",SPECIES[iSp]),
+			";V0 MC p_{T} (GeV/#it{c}); V0 RC p_{T} (GeV/#it{c}); Entries",	NPTBINS,XBINS, NPTBINS,XBINS);
+		hV0EtaRCvMC[iSp]			= new TH2D(Form("hV0EtaRCvMC_%s",SPECIES[iSp]),
+			";V0 MC #eta; V0 RC #eta; Entries",	200, -1., 1., 200, -1., 1.);
+		hV0PhiRCvMC[iSp]			= new TH2D(Form("hV0PhiRCvMC_%s",SPECIES[iSp]),
+			";V0 MC #phi; V0 RC #phi; Entries",	400, -0.2, 6.4, 400, -0.2, 6.4);
+	}
+
 
 	// FEED-DOWN STUDY HISTOGRAMS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -1329,7 +1365,7 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 		//hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
 		//cout << "2mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
 		
-		hV0FeeddownMotherPt[iSp]->Scale(1,"width");
+		//hV0FeeddownMotherPt[iSp]->Scale(1,"width");
 
 		for (int iC = 1; iC < nCols+1; ++iC)	{
 			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);

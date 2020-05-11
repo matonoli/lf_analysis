@@ -74,7 +74,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		return;	}
 
 	// SPECIFY WHAT CUTS TO USE
-	TString cutStr("cuts02.h");
+	TString cutStr("cuts03.h");
 	if (!gSystem->AccessPathName(Form("../%s",cutStr.Data())))
 		std::cout << "---Using cuts specified in file " << cutStr.Data() << "\n";
 	else {
@@ -137,8 +137,8 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	root->LoadMacro("MyEvent.cxx+");
 	root->LoadMacro("MyTrack.cxx+");
 	root->LoadMacro("MyParticle.cxx+");
-	root->LoadMacro("MyV0.cxx+");
-	if (fl.Contains("0")) root->LoadMacro("MyAnalysisV0.cxx+");
+	root->LoadMacro("MyV0.cxx++");
+	if (fl.Contains("0")) root->LoadMacro("MyAnalysisV0.cxx++");
 	if (fl.Contains("x")) root->LoadMacro("MyAnalysisV0extract.cxx+");
 	if (fl.Contains("c")) root->LoadMacro("MyAnalysisV0correct.cxx+");
 	if (fl.Contains("p")) root->LoadMacro("MyAnalysisV0plot.cxx+");
@@ -346,7 +346,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			}
 
 			// SET NUMBER OF FILES PER SUBJOB
-			alienHandler->SetSplitMaxInputFileNumber(80);
+			alienHandler->SetSplitMaxInputFileNumber(120);
 			// SET EXECUTABLE AND JDL NAME
 			alienHandler->SetExecutable("myTask.sh");
 			alienHandler->SetJDLName("myTask.jdl");
@@ -367,7 +367,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			mgr->SetGridHandler(alienHandler);
 			if (fl.Contains("G")) {
 				// HOW MANY FILES FOR TEST RUN
-				alienHandler->SetNtestFiles(3);
+				alienHandler->SetNtestFiles(2);
 				// LAUNCH ANALYSIS
 				alienHandler->SetRunMode("test");
 				mgr->StartAnalysis("grid");

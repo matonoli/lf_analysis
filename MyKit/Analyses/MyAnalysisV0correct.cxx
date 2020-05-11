@@ -291,6 +291,28 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		TFile* fileXIMB = new TFile("../official/xi_MB_spectra_sep_9_2019_sum_rebin.root","READ");
 		hXiPt[2][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
 		hXiPt[3][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
+
+		if (0) {/////// change this back
+		hXiPt[2][0] = (TH1D*)hV0FeeddownMotherPt[2]->Clone("hXiPt_L_MB");
+		hXiPt[3][0] = (TH1D*)hV0FeeddownMotherPt[3]->Clone("hXiPt_Lbar_MB");
+		// these need to be normalised
+		NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+		Double_t NormEv = hEventType->GetBinContent(24);	// MB
+		if (NormEv>0) {
+			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+		}
+		if (NormEv == 0) NormEv = 1;
+
+		printf("Normalising histogram %s by event count %f \n", hXiPt[2][0]->GetName(), NormEv);
+		hXiPt[2][0]->Scale(2.,"width");	//in file xi is xi+xibar
+		hXiPt[2][0]->Scale(1./NormEv);
+		hXiPt[2][0]->Scale(1./NormEta);
+		printf("Normalising histogram %s by event count %f \n", hXiPt[3][0]->GetName(), NormEv);
+		hXiPt[3][0]->Scale(2.,"width");
+		hXiPt[3][0]->Scale(1./NormEv);
+		hXiPt[3][0]->Scale(1./NormEta);
+		}//////
+
 		mDirFile->cd();
 	}
 
@@ -327,7 +349,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
 				sum +=
 					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
-					funcLT->Integral(left,right) / (2.*(right-left));
+					funcLT->Integral(left,right) / (2.*(right-left)); //(2.*(right-left)); //2 because xi,xibar
 
 				sumErr +=
 					(hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin) *

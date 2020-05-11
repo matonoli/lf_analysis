@@ -173,6 +173,8 @@ namespace V0consts {
 
 
 	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
+	const Int_t PDG_IDS_DPOS[NSPECIES] = {-999, 211, 2212, 211};
+	const Int_t PDG_IDS_DNEG[NSPECIES] = {-999, -211, -211, -2212};
 	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
 	//const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
 	const Int_t COLOURS[7] = {kRed, kBlack, kGreen+2, kBlue, kViolet+10,kPink+10,kGreen+2};
@@ -292,6 +294,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0FeeddownMatrix[V0consts::NSPECIES];
 		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
 
+		TH2D* hParticlePrimaryvPDG;
 		TH2D* hProtonNchTransvPt[V0consts::NREGIONS];
 		TH2D* hPionNchTransvPt[V0consts::NREGIONS];
 		TH2D* hLambdaNchTransvPt[V0consts::NREGIONS];
@@ -306,6 +309,13 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtCut[25];
+		TH2D* hV0DpiNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2D* hV0DprNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
+
+		// V0 RC V MC HISTOGRAMS
+		TH2D* hV0PtRCvMC[V0consts::NSPECIES];
+		TH2D* hV0EtaRCvMC[V0consts::NSPECIES];
+		TH2D* hV0PhiRCvMC[V0consts::NSPECIES];
 
 		// V0 NTUPLES
 		TNtuple* tV0PtMCMB[V0consts::NSPECIES];

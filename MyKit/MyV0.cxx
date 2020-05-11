@@ -20,6 +20,7 @@ MyV0::MyV0(AnyV0* v0) : mAliV0(v0),
 #if INPUTFORMAT == 2
 Double_t MyV0::GetIMK0s() {
 	//mAliV0->ChangeMassHypothesis(310);			// THIS ALSO CHANGES PDG ID
+	
 	return (mAliV0->GetEffMass(2,2)-0.497614);		// Using AliEsdV0::GetEffMass(int, int) instead
 													// 0: e, 1: mu-, 2: pi+, 3: K+, 4: p
 }
@@ -61,13 +62,27 @@ Bool_t MyV0::HasFastSignal() {
 Int_t MyV0::GetMCLabel() const {
 
 	TParticle* pd = mHandler->mcstack()->Particle(TMath::Abs(this->GetPosTrack()->GetLabel()));
-	return pd->GetFirstMother();
+	TParticle* nd = mHandler->mcstack()->Particle(TMath::Abs(this->GetNegTrack()->GetLabel()));
+	if (pd->GetFirstMother() == nd->GetFirstMother() && pd->GetFirstMother() > 0)
+		return pd->GetFirstMother();
+	else
+		return 0;
 }
 
 Int_t MyV0::GetMCPdgCode() {
 
 	TParticle* pd = mHandler->mcstack()->Particle(this->GetMCLabel());
 	return pd->GetPdgCode();
+}
+
+Int_t MyV0::GetPosTrackPdg() {
+
+	return mHandler->mcstack()->Particle(TMath::Abs(this->GetPosTrack()->GetLabel()))->GetPdgCode();
+}
+
+Int_t MyV0::GetNegTrackPdg() {
+
+	return mHandler->mcstack()->Particle(TMath::Abs(this->GetNegTrack()->GetLabel()))->GetPdgCode();
 }
 
 #endif

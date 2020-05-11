@@ -45,6 +45,10 @@
 #include "MyHandler.h"
 #include "MyAnalysis.h"
 #include "MyAnalysisV0.h"
+#include "MyV0.h"
+#include "TLorentzVector.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 //#include "MyKit/Analyses/MyAnalysisV0test.h"
 
 class AliAnalysisTaskMyTask;    // your analysis class
@@ -202,8 +206,62 @@ void AliAnalysisTaskMyTask::UserExec(Option_t *)
 		AliESDv0* v0 = static_cast<AliESDv0*>(fESD->GetV0(iv));
 		if (!v0) continue;
 
-		cout << "Pdg code " << v0->GetPdgCode() << endl;
-		fHistPt->Fill(v0->GetPdgCode());
+		// pdg code
+		//pos track
+		//pos track label
+		int posLabel = TMath::Abs(handler->track(TMath::Abs(v0->GetPindex()))->GetLabel());
+		int negLabel = TMath::Abs(handler->track(TMath::Abs(v0->GetNindex()))->GetLabel());
+		int mLabel = handler->mcstack()->Particle(TMath::Abs(posLabel))->GetFirstMother();
+		int mLabelN = handler->mcstack()->Particle(TMath::Abs(negLabel))->GetFirstMother();
+
+		if ((handler->mcstack()->Particle(mLabel)->GetPdgCode()==310 || handler->mcstack()->Particle(mLabelN)->GetPdgCode()==310) && !v0->GetOnFlyStatus()) {
+			if (handler->track((TMath::Abs(v0->GetPindex())))->GetSign() < 0 ) printf(" SIGN IS WRONG \n");
+			
+			//hand calculate
+			TLorentzVector a;
+			a.SetPxPyPzE(handler->track((TMath::Abs(v0->GetPindex())))->Px(),
+				handler->track((TMath::Abs(v0->GetPindex())))->Py(),
+				handler->track((TMath::Abs(v0->GetPindex())))->Pz(),
+				handler->track((TMath::Abs(v0->GetPindex())))->E());
+
+			TLorentzVector b;
+			b.SetPxPyPzE(handler->track((TMath::Abs(v0->GetNindex())))->Px(),
+				handler->track((TMath::Abs(v0->GetNindex())))->Py(),
+				handler->track((TMath::Abs(v0->GetNindex())))->Pz(),
+				handler->track((TMath::Abs(v0->GetNindex())))->E());
+
+			TLorentzVector m;
+			m = a+b;
+
+			AliKFVertex PrimaryVtxKF(*fESD->GetPrimaryVertex());
+			AliKFParticle::SetField(fESD->GetMagneticField());
+
+
+			AliKFParticle* negKF;
+			AliKFParticle* posKF;
+			negKF = new AliKFParticle(*(v0->GetParamN()), -211);
+			posKF = new AliKFParticle(*(v0->GetParamP()), 211);		
+			AliKFParticle V0KF;
+			V0KF += (*posKF);
+			V0KF += (*negKF);
+			V0KF.SetProductionVertex(PrimaryVtxKF);
+
+			float massorig = v0->GetEffMass(2,2);
+			v0->ChangeMassHypothesis(310);
+			//printf("ev vz %4.2f v0 r %4.2f v0 pt %4.2f kf pt %4.2f real pt %4.2f masses 1: %4.4f 2: %4.4f 3: %4.4f 4: %4.4f -- DP %i %i %i %i  DN %i %i %i %i K0S %i \n", fESD->GetPrimaryVertexTracks()->GetZ(), 
+			//	TMath::Sqrt(v0->Xv()*v0->Xv()+v0->Yv()*v0->Yv()), v0->Pt(), V0KF.GetPt(), handler->mcstack()->Particle(mLabel)->Pt(),
+			//	massorig-0.497614, v0->GetEffMass()-0.497614, m.M()-0.497614, V0KF.GetMass()-0.497614,
+			//	handler->mcstack()->Particle(posLabel)->GetPdgCode(), handler->mcstack()->IsPhysicalPrimary(posLabel), handler->mcstack()->IsSecondaryFromWeakDecay(posLabel), handler->mcstack()->IsSecondaryFromMaterial(posLabel),
+			//	handler->mcstack()->Particle(negLabel)->GetPdgCode(), handler->mcstack()->IsPhysicalPrimary(negLabel), handler->mcstack()->IsSecondaryFromWeakDecay(negLabel), handler->mcstack()->IsSecondaryFromMaterial(negLabel),
+			//	handler->mcstack()->IsPhysicalPrimary(mLabel)	);
+			printf("ev vz %4.2f kf pt %4.2f real pt P %4.2f real pt N %4.2f posML %i %i  negML %i %i DP %i %i %i %i  DN %i %i %i %i \n",
+			 fESD->GetPrimaryVertexTracks()->GetZ(), V0KF.GetPt(), handler->mcstack()->Particle(mLabel)->Pt(),
+			 handler->mcstack()->Particle(mLabelN)->Pt(), mLabel, handler->mcstack()->Particle(mLabel)->GetPdgCode(),
+			 mLabelN, handler->mcstack()->Particle(mLabelN)->GetPdgCode(),
+			 handler->mcstack()->Particle(posLabel)->GetPdgCode(), handler->mcstack()->IsPhysicalPrimary(posLabel), handler->mcstack()->IsSecondaryFromWeakDecay(posLabel), handler->mcstack()->IsSecondaryFromMaterial(posLabel),
+				handler->mcstack()->Particle(negLabel)->GetPdgCode(), handler->mcstack()->IsPhysicalPrimary(negLabel), handler->mcstack()->IsSecondaryFromWeakDecay(negLabel), handler->mcstack()->IsSecondaryFromMaterial(negLabel) 
+			 );
+		}
 
 	}*/
 

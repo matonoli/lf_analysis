@@ -52,6 +52,9 @@ class MyV0: public TObject {
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
 		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
 		Int_t GetMCPdgCode()				const { return mAliV0->GetMCPdgCode();};
+		Int_t GetPosTrackPdg()				{ return -1;};
+		Int_t GetNegTrackPdg()				{ return -1;}; // not implemented yet
+
 #elif INPUTFORMAT == 2
 		Double_t GetPt() 					const { return mAliV0->Pt();};
 		Double_t GetEta() 					const { return mAliV0->Eta();};
@@ -71,6 +74,8 @@ class MyV0: public TObject {
 
 		Int_t GetMCLabel() const;
 		Int_t GetMCPdgCode(); //				const { return mAliV0->GetPdgCode();}; // AliESDv0::GetPdgCode() always returns 310
+		Int_t GetPosTrackPdg();
+		Int_t GetNegTrackPdg();
 		Int_t IsMCPrimary() 				const { return mHandler->mcstack()->IsPhysicalPrimary(this->GetMCLabel());};
 
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
