@@ -1,6 +1,10 @@
 #include <TVector3.h>
 #include <TParticle.h>
 
+#include "AliKFParticle.h"
+#include "AliExternalTrackParam.h"
+#include "AliKFVertex.h"
+
 #include "MyV0.h"
 #include "MyTrack.h"
 
@@ -34,6 +38,78 @@ Double_t MyV0::GetIML() {
 Double_t MyV0::GetIMLbar() {
 	//mAliV0->ChangeMassHypothesis(-3122);
 	return (mAliV0->GetEffMass(2,4)-1.11568);
+}
+
+Double_t MyV0::GetKFIMK0s() {
+	
+	AliKFParticle mother;
+	const AliExternalTrackParam* paramP = mAliV0->GetParamP();
+	const AliExternalTrackParam* paramN = mAliV0->GetParamN();
+
+	if (paramP->GetParameter()[4] < 0)	{
+		paramP = mAliV0->GetParamN();
+		paramN = mAliV0->GetParamP();	}
+
+	AliKFParticle daughterP( *(paramP), 211);
+	AliKFParticle daughterN( *(paramN), -211);
+
+	mother += daughterP;
+	mother += daughterN;
+
+	mother.SetField(mHandler->event()->GetMagneticField());
+	AliKFVertex PrimaryVtxKF(*(mHandler->event()->GetPrimaryVertex()));
+	mother.SetProductionVertex(PrimaryVtxKF);
+
+	return (mother.GetMass() - 0.497614);
+	
+}
+
+Double_t MyV0::GetKFIML() {
+	
+	AliKFParticle mother;
+	const AliExternalTrackParam* paramP = mAliV0->GetParamP();
+	const AliExternalTrackParam* paramN = mAliV0->GetParamN();
+
+	if (paramP->GetParameter()[4] < 0)	{
+		paramP = mAliV0->GetParamN();
+		paramN = mAliV0->GetParamP();	}
+
+	AliKFParticle daughterP( *(paramP), 2212);
+	AliKFParticle daughterN( *(paramN), -211);
+
+	mother += daughterP;
+	mother += daughterN;
+
+	mother.SetField(mHandler->event()->GetMagneticField());
+	AliKFVertex PrimaryVtxKF(*(mHandler->event()->GetPrimaryVertex()));
+	mother.SetProductionVertex(PrimaryVtxKF);
+
+	return (mother.GetMass() - 1.11568);
+	
+}
+
+Double_t MyV0::GetKFIMLbar() {
+	
+	AliKFParticle mother;
+	const AliExternalTrackParam* paramP = mAliV0->GetParamP();
+	const AliExternalTrackParam* paramN = mAliV0->GetParamN();
+
+	if (paramP->GetParameter()[4] < 0)	{
+		paramP = mAliV0->GetParamN();
+		paramN = mAliV0->GetParamP();	}
+
+	AliKFParticle daughterP( *(paramP), 211);
+	AliKFParticle daughterN( *(paramN), -2212);
+
+	mother += daughterP;
+	mother += daughterN;
+
+	mother.SetField(mHandler->event()->GetMagneticField());
+	AliKFVertex PrimaryVtxKF(*(mHandler->event()->GetPrimaryVertex()));
+	mother.SetProductionVertex(PrimaryVtxKF);
+
+	return (mother.GetMass() - 1.11568);
+	
 }
 
 Double_t* MyV0::CalculateAP() {
@@ -83,6 +159,14 @@ Int_t MyV0::GetPosTrackPdg() {
 Int_t MyV0::GetNegTrackPdg() {
 
 	return mHandler->mcstack()->Particle(TMath::Abs(this->GetNegTrack()->GetLabel()))->GetPdgCode();
+}
+
+Double_t MyV0::CalculateY(Int_t Sp) {
+
+	if (Sp==1) return mAliV0->RapK0Short();
+	if (Sp==2) return mAliV0->RapLambda();
+	if (Sp==3) return mAliV0->RapLambda();
+	return -99.;
 }
 
 #endif

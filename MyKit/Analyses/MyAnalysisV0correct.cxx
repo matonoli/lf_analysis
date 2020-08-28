@@ -211,6 +211,113 @@ Int_t MyAnalysisV0correct::Finish() {
 	printf("mb k0s spectrum final \n");
 	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << " at " << hV0PtFitCorr[1][0][0][0]->GetBinLowEdge(30) << endl;
 
+	//draw shit, move to func later
+	{
+	//fast det
+		TH2D* hV0BaselineIMvPt[NSPECIES][NTYPE];
+		TH2D* hV0FastSignalIMvPt[NSPECIES][NTYPE];
+		TH2D* hV0CutIMvPt[NSPECIES][NTYPE][25];
+		TDirectoryFile* dirFile1 = new TDirectoryFile("mcFile2","mcFile2","",mHandler->file());
+	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
+		cout << "Doing efficiency from a TDirectoryFile" << endl;
+		dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");}
+	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("THashList")) {
+		cout << "Doing efficiency from a THashList" << endl;
+		THashList* hashList = (THashList*)mFileMC->Get("MyAnalysisV0_0");
+		while (hashList->GetEntries()) {
+			dirFile1->Append(hashList->First());
+			hashList->RemoveFirst();
+		}
+	}
+		int iSp = 1; TH1D* hd; TH1D* hmc;
+		hV0FastSignalIMvPt[iSp][0]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0FastSignalIMvPt_K0s_D");
+		hV0BaselineIMvPt[iSp][0]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0BaselineIMvPt_K0s_D");
+		hV0FastSignalIMvPt[iSp][0]->Divide(hV0BaselineIMvPt[iSp][0]);
+		hV0FastSignalIMvPt[iSp][1]	= (TH2D*)dirFile1->Get("hV0FastSignalIMvPt_K0s_D");
+		hV0BaselineIMvPt[iSp][1]	= (TH2D*)dirFile1->Get("hV0BaselineIMvPt_K0s_D");
+		hV0FastSignalIMvPt[iSp][1]->Divide(hV0BaselineIMvPt[iSp][1]);
+		TCanvas* cn1 = new TCanvas("cn1","",1200,800); cn1->Divide(2,2,0.00005,0.00005);
+		cn1->cd(1); hV0FastSignalIMvPt[iSp][0]->SetStats(0); hV0FastSignalIMvPt[iSp][0]->Draw("colz");
+		cn1->cd(2); hV0FastSignalIMvPt[iSp][1]->SetStats(0); hV0FastSignalIMvPt[iSp][1]->Draw("colz");
+		hd 	= (TH1D*)hV0FastSignalIMvPt[iSp][0]->ProjectionX("hd",13,13);
+		hmc = (TH1D*)hV0FastSignalIMvPt[iSp][1]->ProjectionX("hmc",13,13);
+		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
+		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
+		cn1->cd(3); hd->Draw();
+		cn1->cd(4); hmc->Draw();
+		cn1->Draw(); cn1->SaveAs("plots/pileup.png");
+
+		hV0CutIMvPt[iSp][0][19]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_19");
+		hV0CutIMvPt[iSp][0][15]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][0][19]->Divide(hV0CutIMvPt[iSp][0][15]);
+		hV0CutIMvPt[iSp][1][19]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_19");
+		hV0CutIMvPt[iSp][1][15]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][1][19]->Divide(hV0CutIMvPt[iSp][1][15]);
+		TCanvas* cn2 = new TCanvas("cn2","",1200,800); cn2->Divide(2,2,0.00005,0.00005);
+		cn2->cd(1); hV0CutIMvPt[iSp][0][19]->SetStats(0); hV0CutIMvPt[iSp][0][19]->Draw("colz");
+		cn2->cd(2); hV0CutIMvPt[iSp][1][19]->SetStats(0); hV0CutIMvPt[iSp][1][19]->Draw("colz");
+		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][19]->ProjectionX("hd",13,13);
+		hmc = (TH1D*)hV0CutIMvPt[iSp][1][19]->ProjectionX("hmc",13,13);
+		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
+		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
+		cn2->cd(3); hd->Draw();
+		cn2->cd(4); hmc->Draw();
+		cn2->Draw(); cn2->SaveAs("plots/nsigma.png");
+
+		hV0CutIMvPt[iSp][0][15]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][0][13]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][0][15]->Divide(hV0CutIMvPt[iSp][0][13]);
+		hV0CutIMvPt[iSp][1][15]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][1][13]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][1][15]->Divide(hV0CutIMvPt[iSp][1][13]);
+		TCanvas* cn5 = new TCanvas("cn5","",1200,800); cn5->Divide(2,2,0.00005,0.00005);
+		cn5->cd(1); hV0CutIMvPt[iSp][0][15]->SetStats(0); hV0CutIMvPt[iSp][0][15]->Draw("colz");
+		cn5->cd(2); hV0CutIMvPt[iSp][1][15]->SetStats(0); hV0CutIMvPt[iSp][1][15]->Draw("colz");
+		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][15]->ProjectionX("hd",13,13);
+		hmc = (TH1D*)hV0CutIMvPt[iSp][1][15]->ProjectionX("hmc",13,13);
+		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
+		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
+		cn5->cd(3); hd->Draw();
+		cn5->cd(4); hmc->Draw();
+		cn5->Draw(); cn5->SaveAs("plots/compmass.png");
+
+		hV0CutIMvPt[iSp][0][13]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][0][12]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_12");
+		hV0CutIMvPt[iSp][0][13]->Divide(hV0CutIMvPt[iSp][0][12]);
+		hV0CutIMvPt[iSp][1][13]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][1][12]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_12");
+		hV0CutIMvPt[iSp][1][13]->Divide(hV0CutIMvPt[iSp][1][12]);
+		TCanvas* cn3 = new TCanvas("cn3","",1200,800); cn3->Divide(2,2,0.00005,0.00005);
+		cn3->cd(1); hV0CutIMvPt[iSp][0][13]->SetStats(0); hV0CutIMvPt[iSp][0][13]->Draw("colz");
+		cn3->cd(2); hV0CutIMvPt[iSp][1][13]->SetStats(0); hV0CutIMvPt[iSp][1][13]->Draw("colz");
+		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][13]->ProjectionX("hd",13,13);
+		hmc = (TH1D*)hV0CutIMvPt[iSp][1][13]->ProjectionX("hmc",13,13);
+		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
+		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
+		cn3->cd(3); hd->Draw();
+		cn3->cd(4); hmc->Draw();
+		cn3->Draw(); cn3->SaveAs("plots/lifetime.png");
+
+		hV0CutIMvPt[iSp][0][9]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_9");
+		hV0CutIMvPt[iSp][0][8]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_8");
+		hV0CutIMvPt[iSp][0][9]->Divide(hV0CutIMvPt[iSp][0][8]);
+		hV0CutIMvPt[iSp][1][9]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_9");
+		hV0CutIMvPt[iSp][1][8]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_8");
+		hV0CutIMvPt[iSp][1][9]->Divide(hV0CutIMvPt[iSp][1][8]);
+		TCanvas* cn4 = new TCanvas("cn4","",1200,800); cn4->Divide(2,2,0.00005,0.00005);
+		cn4->cd(1); hV0CutIMvPt[iSp][0][9]->SetStats(0); hV0CutIMvPt[iSp][0][9]->Draw("colz");
+		cn4->cd(2); hV0CutIMvPt[iSp][1][9]->SetStats(0); hV0CutIMvPt[iSp][1][9]->Draw("colz");
+		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][9]->ProjectionX("hd",13,13);
+		hmc = (TH1D*)hV0CutIMvPt[iSp][1][9]->ProjectionX("hmc",13,13);
+		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
+		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
+		cn4->cd(3); hd->Draw();
+		cn4->cd(4); hmc->Draw();
+		cn4->Draw(); cn4->SaveAs("plots/radiusUP.png");
+		
+	}
+
+
 	return 0;	
 }
 
@@ -296,7 +403,8 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[2][0] = (TH1D*)hV0FeeddownMotherPt[2]->Clone("hXiPt_L_MB");
 		hXiPt[3][0] = (TH1D*)hV0FeeddownMotherPt[3]->Clone("hXiPt_Lbar_MB");
 		// these need to be normalised
-		NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+		//NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+		NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
 		Double_t NormEv = hEventType->GetBinContent(24);	// MB
 		if (NormEv>0) {
 			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
@@ -384,8 +492,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		printf("Event type %i containing %f events\n", iBin, hEventType->GetBinContent(iBin));
 	}*/
 
-	NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
-	//Double_t NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
+	//NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+	NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
 	printf("Normalising all histograms by dY %f \n", NormEta);
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -737,7 +845,7 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		
 		//cout << "at 1.0 correcting by " << funcRapCorrection->Eval(1.0) << endl;
 
-		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
+		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(MBtrigEff);
 
@@ -857,7 +965,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 		hDen->Scale(MBtrigEff);
 		hDen->Scale(1.,"width");
 		funcRapCorrection->SetParameters(NormEta,MASSES[iSp]);
-		hDen->Divide(funcRapCorrection,1.);
+		//hDen->Divide(funcRapCorrection,1.);
 
 		mHandler->MakeNiceHistogram(hClosureTestCorr[iSp],kBlack);
 		hClosureTestCorr[iSp]->GetYaxis()->SetTitle("blind rec. / MC generated");
@@ -869,7 +977,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 		mHandler->MakeNiceLegend(leg1, 0.05, 1.);
 		leg1->AddEntry((TObject*)0,Form("%s",SPECNAMES[iSp])," ");
 		leg1->Draw();
-		cClosureCorr->SaveAs(Form("tmp/closureCorr_%s.png",SPECIES[iSp]));
+		cClosureCorr->SaveAs(Form("plots/closureCorr_%s.png",SPECIES[iSp]));
 		delete hDen;
 		
 	}
@@ -939,7 +1047,7 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	TH1D* hK0sMB = (TH1D*)hV0PtFitCorr[1][0][0][0]->Clone("hK0sMB");
 	TH1D* hK0sMBeff = (TH1D*)hV0Efficiency[1]->Clone("hK0sMBeff");
 	TH1D* hK0sMBraw = (TH1D*)hV0PtFit[1][0][0][0]->Clone("hK0sMBraw");
-	hK0sMBraw->Scale(1./1.6);
+	hK0sMBraw->Scale(1./NormEta);
 
 	Double_t NormEv = hEventType->GetBinContent(24);
 	NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
@@ -955,25 +1063,37 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 
 	TF1* funcRapCorrection3 = new TF1("funcRapCorrection3",rap_correction,XBINS[0],XBINS[NPTBINS],2);
 	funcRapCorrection3->SetParameters(1.6,MASSES[1]);
-	hOffiKMBeff->Divide(funcRapCorrection3,1);
+	//hOffiKMBeff->Divide(funcRapCorrection3,1);
 
 	hK0sMB->Divide(hOffiKMB);
 	hOffiKMBeff->Divide(hK0sMBeff);
 	hK0sMBraw->Divide(hOffiKMBraw);
 
+
 	TCanvas* cXcheck2 = new TCanvas("cXcheck2","",900,900);
+	cXcheck2->SetGridy();
 	//cXcheck2->SetLogy();
 	//hOffiLMB->SetMarkerStyle(21);
 	mHandler->MakeNiceHistogram(hK0sMB,kRed);
 	mHandler->MakeNiceHistogram(hK0sMBeff,kBlue);
 	mHandler->MakeNiceHistogram(hK0sMBraw,kBlue);
 	//hLLbarMB->SetMarkerStyle(21);
+	hK0sMB->GetYaxis()->SetRangeUser(0.,2.);
+	hK0sMB->GetYaxis()->SetTitle("this analysis / official MB analysis");
 	hK0sMB->Draw();
+
 	//hOffiKMB->Draw("same");
 	
 	//hK0sMBeff->Draw("same");
 	hOffiKMBeff->Draw("same");
 	hK0sMBraw->Draw("same");
-		
+	{TLegend *leg1 = new TLegend(0.45,0.72,0.85,0.85);
+		mHandler->MakeNiceLegend(leg1,0.037,1);
+		leg1->AddEntry(hK0sMB,"corrected MB","pl");
+		leg1->AddEntry(hOffiKMBeff,"1/efficiency","pl");
+		leg1->AddEntry(hK0sMBraw,"raw yields","pl");
+		leg1->Draw();
+	}
+	cXcheck2->SaveAs("plots/xcheckK0s.png");	
 	//mHandler->root()->SetBatch(kFALSE);
 }

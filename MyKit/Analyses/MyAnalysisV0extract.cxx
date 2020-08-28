@@ -36,7 +36,6 @@
 #include "RooPlot.h"
 #include "RooChi2Var.h"
 
-//#include <AliAnalysisPIDV0.h>
 using namespace V0consts;
 using namespace RooFit;
 
@@ -103,12 +102,8 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 	for (Int_t iType = 0; iType < nType; iType++)	{
 	for (Int_t iReg = 0; iReg < NREGIONS; iReg++)	{	
 		
-		//cout << iSp << " " << iType << " " << iReg << " " << Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]) << endl;
-		
 		tV0massRt[iSp][iType][iReg] = (TNtuple*)mHandler->analysis(0)->dirFile()->Get(Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
-		//cout << "tV0massRt[iSp][iType][iReg] " << tV0massRt[iSp][iType][iReg] << endl;
-		//tV0massRt[iSp][iType][iReg] = (TNtuple*)mHandler->analysis(0)->dirFile()->Get(Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
-
+		
 	}	}	}
 
 
@@ -202,6 +197,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
+	DrawPad(0,0);
 
 	//DrawConstraints();
 	
@@ -237,25 +233,25 @@ void MyAnalysisV0extract::DefineSidebands() {
 				iBin,iBin);
 
 			Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
-			if (empty<2) continue;
+			if (empty<3) continue;
 			Double_t hmax = hist->GetMaximum();
 
 			RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",fitMin,fitMax);
 			hist->Rebin(8);
 			RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
 
-			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.005,0.005);
-			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.0001,0.01);
+			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.008,0.008);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.00005,0.015);
 			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e08);
 		
 			//RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
-			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.001,0.03);
+			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.0005,0.05);
 			RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
 			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e08);
 		
-			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-2,2);
-			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-2,2);
+			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-3,3);
+			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-3,3);
 			RooChebychev fPolBg = RooChebychev("fPolBg","fPolBg",MassDT,RooArgSet(pPolBgA));
 			RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e08);
 
@@ -266,7 +262,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 			RooFitResult* fR = 0; 
 			printf("Trying to fit iSp %i bin %i \n", iSp, iBin);
-			if (empty>2) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+			if (empty>3) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
 			//if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 
 			// GENERATE RMS
@@ -1906,6 +1902,15 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 		delete hDen;
 		
 	}
+	mHandler->root()->SetBatch(kFALSE);
+}
+
+void MyAnalysisV0extract::DrawPad(Int_t Sp, Int_t Type) {
+
+	mHandler->root()->SetBatch(kTRUE);
+	TCanvas* can = (TCanvas*)cFits[0];
+	can->Draw();
+	can->SaveAs("plots/fit2.png");
 	mHandler->root()->SetBatch(kFALSE);
 }
 

@@ -39,6 +39,9 @@ class MyV0: public TObject {
 		Double_t GetIMK0s() 				const { return mAliV0->GetIMK0s();};
 		Double_t GetIML()					const { return mAliV0->GetIML();};
 		Double_t GetIMLbar() 				const { return mAliV0->GetIMAL();};
+		Double_t GetKFIMK0s() 				const { return -1;};	//not implemented yet
+		Double_t GetKFIML()					const { return -1;};	//not implemented yet
+		Double_t GetKFIMLbar() 				const { return -1;};	//not implemented yet
 		AnyTrack* GetPosTrack() 	const { return mAliV0->GetPosAnalysisTrack();};
 		AnyTrack* GetNegTrack() 	const { return mAliV0->GetNegAnalysisTrack();};
 		Double_t* CalculateAP();
@@ -64,6 +67,9 @@ class MyV0: public TObject {
 		Double_t GetIMK0s();
 		Double_t GetIML();
 		Double_t GetIMLbar();
+		Double_t GetKFIMK0s();
+		Double_t GetKFIML();
+		Double_t GetKFIMLbar();
 		AnyTrack* GetPosTrack() 		const { return mHandler->track(TMath::Abs(mAliV0->GetPindex()));};
 		AnyTrack* GetNegTrack() 		const { return mHandler->track(TMath::Abs(mAliV0->GetNindex()));};
 		Double_t* CalculateAP();
@@ -71,6 +77,8 @@ class MyV0: public TObject {
 		Double_t CalculateY(Int_t Sp)	const { return ((Sp==1) ? mAliV0->RapK0Short() : ((Sp==2 || Sp==3) ? mAliV0->RapLambda() : -999));};
 		Bool_t HasFastSignal();
 		Bool_t IsOffline()				const { return !mAliV0->GetOnFlyStatus();};
+
+		Double_t CalculateY(Int_t Sp);
 
 		Int_t GetMCLabel() const;
 		Int_t GetMCPdgCode(); //				const { return mAliV0->GetPdgCode();}; // AliESDv0::GetPdgCode() always returns 310

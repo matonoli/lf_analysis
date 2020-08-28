@@ -43,6 +43,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		void GetTemplates();
 		void StudyIMShapeRC();
 		void DoClosureTest(Int_t opt = 0);
+		void DrawPad(Int_t Sp, Int_t Type);
 
 		void SetMCInputFile(const Char_t *name);
 		void ProducePtSpectraFromHists();

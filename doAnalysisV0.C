@@ -74,7 +74,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		return;	}
 
 	// SPECIFY WHAT CUTS TO USE
-	TString cutStr("cuts03.h");
+	TString cutStr("cuts07.h");
 	if (!gSystem->AccessPathName(Form("../%s",cutStr.Data())))
 		std::cout << "---Using cuts specified in file " << cutStr.Data() << "\n";
 	else {
@@ -306,6 +306,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			alienHandler->SetAnalysisSource(strS.Data());
 
 			// SELECT ALIPHYSICS VERSION, OTHER PACKAGES ARE LOADED AUTOMATICALLY
+			//alienHandler->SetAliPhysicsVersion("vAN-20151202-1");	//for LHC15f
 			alienHandler->SetAliPhysicsVersion("vAN-20200304-1");
 			// SET THE ALIEN API VERSION
 			alienHandler->SetAPIVersion("V1.1x");
@@ -320,7 +321,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 				return;	}
 			std::vector<int> runNumbers;
 			TString yearStr = inputFileStr(inputFileStr.First("20"),4);
-			TString periStr = inputFileStr(inputFileStr.First("LHC"), (mcflag ? 7 : 6) );
+			TString periStr = inputFileStr(inputFileStr.First("LHC"), (mcflag ? 7 : 6) );		//9x6 for 15, 7x6 for 16
 			TString passStr = inputFileStr(inputFileStr.First("pa"),5);
 			std::string number_as_string;
     		while (std::getline(inputStream, number_as_string, ', '))	{
@@ -333,7 +334,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			if (!mcflag) {
 				TString gdd = "/alice/data/"; gdd += yearStr; gdd += "/"; gdd += periStr;
 				alienHandler->SetGridDataDir(gdd.Data());
-				TString dpstr = "*"; dpstr += passStr.Data(); dpstr += "/*ESDs.root"; 
+				TString dpstr = "*/"; dpstr += passStr.Data(); dpstr += "/*ESDs.root"; 
 				alienHandler->SetDataPattern(dpstr.Data());
 				alienHandler->SetRunPrefix("000");
 				for (int iR = 0; iR < runNumbers.size(); iR++) alienHandler->AddRunNumber(runNumbers[iR]);
@@ -346,7 +347,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			}
 
 			// SET NUMBER OF FILES PER SUBJOB
-			alienHandler->SetSplitMaxInputFileNumber(120);
+			alienHandler->SetSplitMaxInputFileNumber(150);
 			// SET EXECUTABLE AND JDL NAME
 			alienHandler->SetExecutable("myTask.sh");
 			alienHandler->SetJDLName("myTask.jdl");
@@ -361,7 +362,8 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			if (fl.Contains("D")) alienHandler->SetMergeViaJDL(kFALSE);
 			else alienHandler->SetMergeViaJDL(kTRUE);
 			// SPECIFY WORKING AND OUTPUT DIRECTORIES
-			alienHandler->SetGridWorkingDir("myWorkingDir");
+			if (!mcflag) alienHandler->SetGridWorkingDir("myWorkingDir");
+			else alienHandler->SetGridWorkingDir("myWorkingDirMC");
 			alienHandler->SetGridOutputDir("myOutputDir");
 			// CONNECT THE ALIEN PLUGIN TO THE ANALYSIS MANAGER
 			mgr->SetGridHandler(alienHandler);

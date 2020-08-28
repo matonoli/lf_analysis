@@ -784,8 +784,9 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	hV0Y[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp));
 	
 	hV0EtavY[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp),v0.GetEta());
-	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
-	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
+	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
+	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0massKF[Sp]);
 
 	if (Mu>2 && Type==0 && Sph == 0 && Sp==1) {
 		hV0DPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
@@ -798,6 +799,13 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 		if (Sp!=3) hV0DpiNsigTPCvpt[Sp][Type]->Fill(trN.GetPt(),trN.GetNSigmaPionTPC());
 		if (Sp==2) hV0DprNsigTPCvpt[Sp][Type]->Fill(trP.GetPt(),trP.GetNSigmaProtonTPC());
 		if (Sp==3) hV0DprNsigTPCvpt[Sp][Type]->Fill(trN.GetPt(),trN.GetNSigmaProtonTPC());
+
+		hV0KFIMvIM[Sp][Type]->Fill(v0mass[Sp],v0massKF[Sp]);
+		hV0DeltaIMvPt[Sp][Type]->Fill(v0.GetPt(),v0mass[Sp]-v0massKF[Sp]);
+
+		// CUT STUDIES
+		hV0BaselineIMvPt[Sp][Type]->Fill(v0.GetPt(),v0massKF[Sp]);
+		if (v0.HasFastSignal()) hV0FastSignalIMvPt[Sp][Type]->Fill(v0.GetPt(),v0massKF[Sp]);
 	}
 
 	return true;	
@@ -806,14 +814,15 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 Bool_t MyAnalysisV0::ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 	
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
 	
 	if (Mu > 2) {
 		Int_t Reg = Mu-3;
-		tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
+		tV0massRt[Sp][Type][Reg]->Fill(v0massKF[Sp],v0.GetPt(),nChTrans);
 	}
 
 	if (Mu == 0 && Type==1) {
-		tV0massRCMB[Sp]->Fill(v0mass[Sp],v0.GetPt());	
+		tV0massRCMB[Sp]->Fill(v0massKF[Sp],v0.GetPt());	
 	}
 
 
@@ -831,7 +840,9 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	
 	//printf("is primary %i \n", v0.IsMCPrimary());
 
-	Bool_t isPromising = (TMath::Abs(v0.GetIMK0s())<0.002) && (1) && (Type==mFlagMC) && (Sp == 1);
+	//Bool_t isPromising = (TMath::Abs(v0.GetIMK0s())<0.002) && (1) && (Type==mFlagMC) && (Sp == 1);
+	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
 	Int_t cutN = 1;
 
 	if (Type>0) {
@@ -845,28 +856,27 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	//if (Type==0 && Sp==2) if (TMath::Abs(v0.GetIML()) > 0.01) return false;
 
 	if (!v0.IsOffline())	return false;
-	
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//1
-	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	//if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
-	//if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //1
+	//if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
+	if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //2
+	//if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+	if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //3
 	if (v0.GetPt() < cuts::V0_PT[0]) 		return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//4
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //4
 	if (v0.GetPt() > cuts::V0_PT[1]) 		return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //5
 	if (v0.GetDCAdd() > cuts::V0_DCADD) 	return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //6
 	if (v0.GetCPA() < cuts::V0_CPA) 		return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//7
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //7
 	if (v0.GetRadius() < cuts::V0_R[0]) 	return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //8
 	if (v0.GetRadius() > cuts::V0_R[1]) 	return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
-	if (!v0.HasFastSignal())				return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //9
+	if (!v0.HasFastSignal() && cuts::V0_FASTSIGNAL)		return false;
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //10
 	
 	
 	//if (!Sp) return true;
@@ -876,12 +886,11 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 	trN.SetHandler(mHandler);
 	
 	if (!SelectV0Daughter(trP)) return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//11
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //11
 	if (!SelectV0Daughter(trN)) return false;
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //12
 
 	
-	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	
 	switch (Sp) {
 		default :
@@ -890,57 +899,70 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 		case 1 	: 
 			
 			// K0s
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//13
 			//if (*(v0.CalculateAP()+1) < cuts::K0S_AP*TMath::Abs(*(v0.CalculateAP()+0))) return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//14
-			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+			//if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::K0S_TAU)	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //13
 			if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //14
 			if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//17
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //15
 			//cout << "tpc " << trP.GetNSigmaPionTPC() << " " << trN.GetNSigmaPionTPC() << endl;
 			if (!mFlagMC && trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //16
 			if (!mFlagMC && trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //17
 			if (!mFlagMC && trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0]) 	return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());	//20
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //18
 			if (!mFlagMC && trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1]) 	return false;
-				if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //19
 			
 			break;
 		case 2 	: // L
 		
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //13
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //14
 			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
-			//if (TMath::Abs(v0mass[3]) < cuts::K0S_COMP_M) 			return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //15
 			if (v0.GetCPA() < cuts::L_CPA)					 		return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //16
 			if (!mFlagMC && trP.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //17
 			if (!mFlagMC && trP.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //18
 			if (!mFlagMC && trN.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //19
 			if (!mFlagMC && trN.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //20
 			
 			break;
 		case 3 	: // Lbar
 		
 			if (v0.GetPt() < cuts::L_PT[0]) 	return false;
 			if (v0.GetPt() > cuts::L_PT[1]) 	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //13
 			if (v0mass[Sp]*v0.GetRadius()/v0.GetPt() > cuts::L_TAU)	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //14
 			if (TMath::Abs(v0mass[1]) < cuts::L_COMP_M) 			return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //15
 			//if (TMath::Abs(v0mass[2]) < cuts::K0S_COMP_M) 			return false;
 			if (v0.GetCPA() < cuts::L_CPA)					 		return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //16
 			if (!mFlagMC && trP.GetNSigmaPionTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //17
 			if (!mFlagMC && trP.GetNSigmaPionTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //18
 			if (!mFlagMC && trN.GetNSigmaProtonTPC() < cuts::K0S_D_NSIGTPC[0])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //19
 			if (!mFlagMC && trN.GetNSigmaProtonTPC() > cuts::K0S_D_NSIGTPC[1])	return false;
+			hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //20
 			
 			break;	}
 
 			
-		if (isPromising) hV0PtCut[cutN++]->Fill(v0.GetPt());
+		hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //21
 
 	
 	return true;	
@@ -983,10 +1005,10 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 
-	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
-	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
-	//if (p.GetY() < cuts::V0_Y[0]) 		return false;
-	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
+	//if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+	//if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	if (p.GetY() < cuts::V0_Y[0]) 		return false;
+	if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3]
@@ -1105,12 +1127,31 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 
 	} } } }
+
+	Int_t nType = (mFlagMC) ? 2 : 1;
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
-	for (int iType = 0; iType < NTYPE; ++iType)		{
+	for (int iType = 0; iType < nType; ++iType)		{
 		hV0DpiNsigTPCvpt[iSp][iType]		= new TH2D(Form("hV0DpiNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 daughter p_{T} (GeV/#it{c}); V0 daughter n#sigma_{TPC}^{#pi}; Entries", 										300, 0., 15., 200, -10., 10.);
 		hV0DprNsigTPCvpt[iSp][iType]		= new TH2D(Form("hV0DprNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 daughter p_{T} (GeV/#it{c}); V0 daughter n#sigma_{TPC}^{p}; Entries", 										300, 0., 15., 200, -10., 10.);
+
+		hV0KFIMvIM[iSp][iType]		= new TH2D(Form("hV0KFIMvIM_%s_%s",SPECIES[iSp],TYPE[iType]),
+			";V0 m (GeV/#it{c}^{2}); V0 KF m (GeV/#it{c}^{2}); Entries",		400, -0.1, 0.1, 400, -0.1, 0.1);
+		hV0DeltaIMvPt[iSp][iType]	= new TH2D(Form("hV0DeltaIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
+			";V0 p_{T} (GeV/#it{c}); V0 m-m_{KF} (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 400, -0.2, 0.2);
+
+		hV0BaselineIMvPt[iSp][iType]	= new TH2D(Form("hV0BaselineIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Fraction removed",		NPTBINS, XBINS, 25, -0.05, 0.05);
+		hV0FastSignalIMvPt[iSp][iType]	= new TH2D(Form("hV0FastSignalIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Fraction removed",		NPTBINS, XBINS, 25, -0.05, 0.05);
+
+	for (int iCut = 0; iCut < 25; ++iCut)	{
+		
+		hV0CutIMvPt[iSp][iType][iCut]			= new TH2D(Form("hV0CutIMvPt_%s_%s_%i",SPECIES[iSp],TYPE[iType],iCut),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Fraction removed",		NPTBINS, XBINS, 25, -0.05, 0.05);
+	}
+	
 	}	}
 
 	// V0 RC v MC HISTOGRAMS
@@ -1135,14 +1176,10 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	}
 
 	// V0 CUTS STUDY HISTOGRAMS
-	for (int iCut = 0; iCut < 25; ++iCut)	{
-		hV0PtCut[iCut]			= new TH1D(Form("hV0PtCut_%i",iCut),
-			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-	}
+	
 
 
 	// V0 NTUPLES TO ALSO ALLOW POST-PROCESSING REBINNING
-	Int_t nType = (mFlagMC) ? 2 : 1;
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		

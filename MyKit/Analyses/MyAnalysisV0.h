@@ -308,9 +308,13 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0PtCut[25];
 		TH2D* hV0DpiNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
 		TH2D* hV0DprNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2D* hV0KFIMvIM[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2D* hV0DeltaIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2D* hV0BaselineIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2D* hV0FastSignalIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2D* hV0CutIMvPt[V0consts::NSPECIES][V0consts::NTYPE][25];
 
 		// V0 RC V MC HISTOGRAMS
 		TH2D* hV0PtRCvMC[V0consts::NSPECIES];
