@@ -87,8 +87,8 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	// LOADING ALICE LIBRARIES
 	#if defined (__CINT__) || !defined (__CLING__)
 	gROOT->LoadMacro("../load_libraries.C");
-	#endif
 	load_libraries();
+	#endif
 	gSystem->Load("libCore.so");
 	gSystem->Load("libTree.so");
 	gSystem->Load("libGeom.so");
