@@ -28,11 +28,11 @@ using namespace RooFit;
 #include "TInterpreter.h"
 #include "TROOT.h"
 #include "TChain.h"
-#include "MyKit/MyHandler.h"
-#include "MyKit/Analyses/MyAnalysisV0.h"
-#include "MyKit/Analyses/MyAnalysisV0extract.h"
-#include "MyKit/Analyses/MyAnalysisV0correct.h"
-#include "MyKit/Analyses/MyAnalysisV0plot.h"
+#include "../MyKit/MyHandler.h"
+#include "../MyKit/Analyses/MyAnalysisV0.h"
+#include "../MyKit/Analyses/MyAnalysisV0extract.h"
+#include "../MyKit/Analyses/MyAnalysisV0correct.h"
+#include "../MyKit/Analyses/MyAnalysisV0plot.h"
 
 	//using rootcl = TInterpreter;
 
@@ -42,6 +42,9 @@ using namespace RooFit;
 #endif
 
 // THIS MACRO SHOULD BE RUN FROM A WORKING DIRECTORY INSIDE AN ANALYSIS FOLDER
+// example: 
+// aliroot '../doAnalysisV0.C(15000,"0EG","../lists/runlist_2015_LHC15f_pass2.list","test.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root")'
+// workflow on the grid: 0EL -> 0EG -> 0E -> 0EM -> 0ED
 
 void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *inputFile="test.list", 
 	const Char_t *outputFile="test.root", const Char_t *MCinputFile="") {

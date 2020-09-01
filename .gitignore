@@ -1,0 +1,14 @@
+
+*.root
+
+workdir/
+
+workdirBU/
+
+workdirmc/
+
+workdirmcold/plots/
+
+workdirmcold/tmp/
+
+workdirtmp/
