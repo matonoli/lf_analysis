@@ -1,11 +1,11 @@
-// AliAnalysisPIDV0 wrapper class
+// AliAnalysisPIDCascadeV0 wrapper class
 // OliverM 2019 Lund
 
 #include "compInstructions.h"
 
 #ifndef MYV0_H
 #define MYV0_H
-#include <AliAnalysisPIDV0.h>
+#include <AliAnalysisPIDCascadeV0.h>
 #include "TObject.h"
 #include "TMath.h"
 
@@ -16,8 +16,8 @@
 
 
 #if INPUTFORMAT == 1
-	typedef AliAnalysisPIDV0 AnyV0;
-	typedef AliAnalysisPIDTrack AnyTrack;
+	typedef AliAnalysisPIDCascadeV0 AnyV0;
+	typedef AliAnalysisPIDCascadeTrack AnyTrack;
 #elif INPUTFORMAT == 2
 	typedef AliESDv0 AnyV0;
 	typedef AliESDtrack AnyTrack;

@@ -1,11 +1,11 @@
-// AliAnalysisPIDTrack wrapper class
+// AliAnalysisPIDCascadeTrack wrapper class
 // OliverM 2019 Lund
 
 #include "compInstructions.h"
 
 #ifndef MYTRACK_H
 #define MYTRACK_H
-#include <AliAnalysisPIDTrack.h>
+#include <AliAnalysisPIDCascadeTrack.h>
 
 #include <AliESDtrack.h>
 #include "AliAnalysisManager.h"
@@ -16,7 +16,7 @@
 #include "TMath.h"
 
 #if INPUTFORMAT == 1
-	typedef AliAnalysisPIDTrack AnyTrack;
+	typedef AliAnalysisPIDCascadeTrack AnyTrack;
 #elif INPUTFORMAT == 2
 	typedef AliESDtrack AnyTrack;
 #endif

@@ -1,11 +1,11 @@
-// AliAnalysisPIDParticle wrapper class
+// AliAnalysisPIDCascadeParticle wrapper class
 // OliverM 2019 Lund
 
 #include "compInstructions.h"
 
 #ifndef MYPARTICLE_H
 #define MYPARTICLE_H
-#include <AliAnalysisPIDParticle.h>
+#include <AliAnalysisPIDCascadeParticle.h>
 
 #include <TParticle.h>
 #include "TObject.h"
@@ -13,7 +13,7 @@
 #include "MyHandler.h"
 
 #if INPUTFORMAT == 1
-	typedef AliAnalysisPIDParticle AnyParticle;
+	typedef AliAnalysisPIDCascadeParticle AnyParticle;
 #elif INPUTFORMAT == 2
 	typedef TParticle AnyParticle;
 #endif

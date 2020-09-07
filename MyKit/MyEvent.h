@@ -1,16 +1,16 @@
-// AliAnalysisPIDEvent wrapper class
+// AliAnalysisPIDCascadeEvent wrapper class
 // OliverM 2019 Lund
 
 #include "compInstructions.h"
 
 #ifndef MYEVENT_H
 #define MYEVENT_H
-#include <AliAnalysisPIDEvent.h>
+#include <AliAnalysisPIDCascadeEvent.h>
 #include <AliESDEvent.h>
 #include "TObject.h"
 
 #if INPUTFORMAT == 1
-	typedef AliAnalysisPIDEvent AnyEvent;
+	typedef AliAnalysisPIDCascadeEvent AnyEvent;
 #elif INPUTFORMAT == 2
 	typedef AliESDEvent AnyEvent;
 	enum EventFlags_t {

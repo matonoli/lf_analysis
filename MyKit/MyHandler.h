@@ -21,10 +21,10 @@ class TLegend;
 class TDirectory;
 class TString;
 class TROOT;
-class AliAnalysisPIDEvent;
-class AliAnalysisPIDTrack;
-class AliAnalysisPIDV0;
-class AliAnalysisPIDParticle;
+class AliAnalysisPIDCascadeEvent;
+class AliAnalysisPIDCascadeTrack;
+class AliAnalysisPIDCascadeV0;
+class AliAnalysisPIDCascadeParticle;
 
 class AliESDEvent;
 class AliESDtrack;
@@ -33,7 +33,7 @@ class AliESDtrackCuts;
 class AliStack;
 
 #if INPUTFORMAT == 1
-	typedef AliAnalysisPIDEvent AnyEvent;
+	typedef AliAnalysisPIDCascadeEvent AnyEvent;
 #elif INPUTFORMAT == 2
 	typedef AliESDEvent AnyEvent;
 #endif
@@ -77,9 +77,9 @@ class MyHandler: public TObject {
 		TClonesArray* tracks()						const {return bTracks;};
 		TClonesArray* v0s()							const {return bV0s;};
 		TClonesArray* particles()					const {return bParticles;};
-		AliAnalysisPIDTrack* track(Int_t i)			const {return (AliAnalysisPIDTrack*)bTracks->At(i);};
-		AliAnalysisPIDV0* v0(Int_t i)				const {return (AliAnalysisPIDV0*)bV0s->At(i);};
-		AliAnalysisPIDParticle* particle(Int_t i)	const {return (AliAnalysisPIDParticle*)bParticles->At(i);};
+		AliAnalysisPIDCascadeTrack* track(Int_t i)			const {return (AliAnalysisPIDCascadeTrack*)bTracks->At(i);};
+		AliAnalysisPIDCascadeV0* v0(Int_t i)				const {return (AliAnalysisPIDCascadeV0*)bV0s->At(i);};
+		AliAnalysisPIDCascadeParticle* particle(Int_t i)	const {return (AliAnalysisPIDCascadeParticle*)bParticles->At(i);};
 		Int_t getNtracks()							const {return bTracks->GetEntriesFast();};
 		Int_t getNv0s()								const {return bV0s->GetEntriesFast();};
 		Int_t getNparticles()						const {return bParticles->GetEntriesFast();};
