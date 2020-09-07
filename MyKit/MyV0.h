@@ -55,8 +55,8 @@ class MyV0: public TObject {
 		//Int_t GetMCPrimaryPdgCode()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryPdgCode();};
 		//Int_t GetMCPrimaryLabel()			const { return mAliV0->GetPosAnalysisTrack()->GetMCPrimaryLabel();};
 		Int_t GetMCPdgCode()				const { return mAliV0->GetMCPdgCode();};
-		Int_t GetPosTrackPdg()				{ return -1;};
-		Int_t GetNegTrackPdg()				{ return -1;}; // not implemented yet
+		Int_t GetPosTrackPdg()				{ return mAliV0->GetPosAnalysisTrack()->GetMCPdgCode();};
+		Int_t GetNegTrackPdg()				{ return mAliV0->GetNegAnalysisTrack()->GetMCPdgCode();}; // not implemented yet
 
 #elif INPUTFORMAT == 2
 		Double_t GetPt() 					const { return mAliV0->Pt();};
