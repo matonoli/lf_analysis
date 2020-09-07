@@ -116,6 +116,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	root->ProcessLine(".include $ROOTSYS/include");
 	root->ProcessLine(".include $ALICE_ROOT/include");
 
+	#if defined (__CINT__) || !defined (__CLING__)
 	// COPY FILES
 	gSystem->Exec("cp ../TransverseSpherocity/TransverseSpherocity.cxx .; cp ../TransverseSpherocity/TransverseSpherocity.h .");	// extra classes
 	gSystem->Exec("cp ../MyKit/MyAnalysis.cxx .; cp ../MyKit/MyAnalysis.h ."); 		// MyKit
@@ -159,6 +160,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		root->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
 		root->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
 		root->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); }
+	#endif
 
 	// SILENCE ROOFIT SPAM
 	RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
