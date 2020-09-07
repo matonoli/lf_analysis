@@ -748,7 +748,7 @@ Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, Int_t ntracks)
 	}
 
   	// Update TOF response
-  	//AliAnalysisPIDTrack* track = (AliAnalysisPIDTrack*)trackArray->At(0);
+  	//AliAnalysisPIDCascadeTrack* track = (AliAnalysisPIDCascadeTrack*)trackArray->At(0);
   	//track->UpdateTOFResponse(event);
   	// ^^ IS THIS NECESSARY?
 

@@ -48,8 +48,8 @@ class MyHandler: public TObject {
 		Int_t Init();
 		Int_t LoadInputTree(const Char_t *inputFile, const Char_t *chainName);
 		Int_t LoadInputHist(const Char_t *inputFile);
-		Int_t SetDirectory(TDirectory* d) { mDir = d;};
-		Int_t SetROOT(TROOT* r) { mROOT = r;};
+		void SetDirectory(TDirectory* d) { mDir = d;};
+		void SetROOT(TROOT* r) { mROOT = r;};
 		Int_t Make(Int_t iEv);
 		Int_t Finish();
 		void SetOutputName(const Char_t *name) { mOutName = TString(name);};

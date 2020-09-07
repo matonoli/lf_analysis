@@ -14,7 +14,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <AliAnalysisPIDEvent.h>
+#include <AliAnalysisPIDCascadeEvent.h>
 #include <AliESDEvent.h>
 #include <AliESDtrackCuts.h>
 
