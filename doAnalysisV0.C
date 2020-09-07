@@ -152,6 +152,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	if (fl.Contains("x")) root->LoadMacro("MyAnalysisV0extract.cxx+");
 	if (fl.Contains("c")) root->LoadMacro("MyAnalysisV0correct.cxx+");
 	if (fl.Contains("p")) root->LoadMacro("MyAnalysisV0plot.cxx+");
+	std::cout << "Analyses compiled now \n";
 	if (mode == esds) {
 		root->LoadMacro("AliAnalysisTaskMyTask.cxx+");
 		root->LoadMacro("AddMyTask.C");
