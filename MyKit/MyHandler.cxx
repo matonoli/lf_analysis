@@ -68,7 +68,7 @@ Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName)
 	mChain = new TChain(chainName);
 	std::string const dirFile = inputFileStr.Data();
 	if (dirFile.find(".lis") != std::string::npos)	{			
-		ifstream inputStream(dirFile.c_str());
+		std::ifstream inputStream(dirFile.c_str());
 		if (!inputStream)	{
 			std::cout << "ERROR: Cannot open list file " << dirFile << std::endl;
 			return 0;	}
