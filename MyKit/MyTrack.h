@@ -44,8 +44,8 @@ class MyTrack: public TObject {
 		Bool_t IsTPCOnlyRefit()					const { return (mAliTrack->GetTrackCutFlag()&4);};
 		Bool_t IsGoodV0daughter()				const { return (mAliTrack->GetTrackCutFlag()&16);};
 		Bool_t HasTOFPID()						const { return mAliTrack->HasTOFPID();};
-		Float_t GetTPCnc()						const { return mAliTrack->GetTPCnc();};
-		UShort_t GetTPCNclsF()					const { return mAliTrack->GetTPCNclsF();};
+		Float_t GetTPCnc()						const { return 1000;};//mAliTrack->GetTPCnc();};
+		UShort_t GetTPCNclsF()					const { return 1;};//mAliTrack->GetTPCNclsF();};
 #elif INPUTFORMAT == 2		
 		Float_t GetPt() 						const { return mAliTrack->Pt();};
 		Float_t GetPx() 						const { return mAliTrack->Px();};

@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include <AliAnalysisPIDCascadeEvent.h>
 #include <AliESDEvent.h>
@@ -65,32 +66,32 @@ Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName)
 	mFlagMC = inputFileStr.Contains("MC");
 
 	mChain = new TChain(chainName);
-	string const dirFile = inputFileStr.Data();
-	if (dirFile.find(".lis") != string::npos)	{			
+	std::string const dirFile = inputFileStr.Data();
+	if (dirFile.find(".lis") != std::string::npos)	{			
 		ifstream inputStream(dirFile.c_str());
 		if (!inputStream)	{
-			cout << "ERROR: Cannot open list file " << dirFile << endl;
+			std::cout << "ERROR: Cannot open list file " << dirFile << std::endl;
 			return 0;	}
 		int nFile = 0;
-		string file;
+		std::string file;
 
 		while (getline(inputStream, file))	{
-			if (file.find(".root") != string::npos)	{
+			if (file.find(".root") != std::string::npos)	{
 				TFile* ftmp = TFile::Open(file.c_str());
 				if (ftmp && !ftmp->IsZombie() && ftmp->GetNkeys())	{
-					cout << " Read in file " << file << endl;
+					std::cout << " Read in file " << file << std::endl;
 					mChain->Add(file.c_str());
 					++nFile;	}
 				if (ftmp) ftmp->Close();
 			}
 		}
 
-		cout << " Total " << nFile << " files have been read in. " << endl;
+		std::cout << " Total " << nFile << " files have been read in. " << std::endl;
 	}
-	else if (dirFile.find(".root") != string::npos)	{
+	else if (dirFile.find(".root") != std::string::npos)	{
 		mChain->Add(dirFile.c_str());	}
 	else	{
-		cout << " No good input file to read ... " << endl;
+		std::cout << " No good input file to read ... " << std::endl;
 		return 1;	}
 
 	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
