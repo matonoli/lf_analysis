@@ -36,7 +36,8 @@ cp ../AddMyTask.C .
 cp ../$CUT .											# cut file
 
 # DEFINE INSTRUCTIONS FOR COMPILING
-echo '#ifndef COMPINSTRUCTIONS_H\n#define COMPINSTRUCTIONS_H' > compInstructions.h
+echo "#ifndef COMPINSTRUCTIONS_H" > compInstructions.h
+echo "#define COMPINSTRUCTIONS_H" >> compInstructions.h
 echo "#define INPUTFORMAT $MODE" >> compInstructions.h
 echo "// $TREES : local aurora trees" >> compInstructions.h
 echo "// $ESDS : esd files \n" >> compInstructions.h

@@ -7,7 +7,7 @@
 using namespace RooFit;
 
 #if !defined (__CINT__) || defined (__CLING__)
-#include "../load_libraries.C"
+#include "load_libraries.C"
 
 #include "AliAnalysisAlien.h"
 #include "AliAnalysisGrid.h"
@@ -29,12 +29,12 @@ using namespace RooFit;
 #include "TROOT.h"
 #include "TChain.h"
 
-#include "AliAnalysisTaskMyTask.h"
-#include "MyHandler.h"
-#include "MyAnalysisV0.h"
-#include "MyAnalysisV0extract.h"
-#include "MyAnalysisV0correct.h"
-#include "MyAnalysisV0plot.h"
+#include "workdir/AliAnalysisTaskMyTask.h"
+#include "workdir/MyHandler.h"
+#include "workdir/MyAnalysisV0.h"
+#include "workdir/MyAnalysisV0extract.h"
+#include "workdir/MyAnalysisV0correct.h"
+#include "workdir/MyAnalysisV0plot.h"
 /*#include "../MyKit/MyHandler.h"
 #include "../MyKit/Analyses/MyAnalysisV0.h"
 #include "../MyKit/Analyses/MyAnalysisV0extract.h"
