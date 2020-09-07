@@ -34,6 +34,7 @@
 //#include <AliAnalysisPIDV0.h>
 using namespace V0consts;
 using namespace RooFit;
+using namespace std;
 
 ClassImp(MyAnalysisV0correct)
 

@@ -455,7 +455,7 @@ void MyAnalysisV0extract::GetTemplates() {
 		cPars[iSp]->cd(2);
 		fres = hFitParam1[iSp]->Fit(fPol1_1[iSp],"S");
 		fres->GetConfidenceIntervals(NPTBINS,1,1,XBINS,boundsPar1,0.95, true);
-		//cout << "b " << boundsPar1[5] << " " << boundsPar1[20] << " " << boundsPar1[35] << endl;
+		//std::cout << "b " << boundsPar1[5] << " " << boundsPar1[20] << " " << boundsPar1[35] << std::endl;
 		//for (int i=0; i<NPTBINS; i++) boundsPar1[i] += fPol1_1->Eval(XBINS[i]);
 		TGraph* tg = new TGraph(NPTBINS,XBINS,boundsPar1);
 		tg->Write();
@@ -544,7 +544,7 @@ void MyAnalysisV0extract::GetTemplates() {
 			
 			//fixv = fPol1_1->Eval(hist->GetBinCenter(iBin));
 			//fixe = 1*(boundsPar1[iBin-1]);//+boundsPar1[iBin]);
-			//cout << "fixe " << fixe << endl;
+			//std::cout << "fixe " << fixe << std::endl;
 			//pGaus1B.setVal(fixv);
 			//pGaus1B.setRange(fixv-fixe,fixv+fixe);
 			//pGaus1A.setRange(fPol1_0->Eval(hist->GetBinCenter(iBin)) - (boundsPar0[30]),
@@ -647,7 +647,7 @@ void MyAnalysisV0extract::GetTemplates() {
 			
 			//fixv = fPol1_1->Eval(hist->GetBinCenter(iBin));
 			//fixe = 1*(boundsPar1[iBin-1]);//+boundsPar1[iBin]);
-			//cout << "fixe " << fixe << endl;
+			//std::cout << "fixe " << fixe << std::endl;
 			//pGaus1B.setVal(fixv);
 			//pGaus1B.setRange(fixv-fixe,fixv+fixe);
 			//pGaus1A.setRange(fPol1_0->Eval(hist->GetBinCenter(iBin)) - (boundsPar0[30]),
@@ -696,7 +696,7 @@ void MyAnalysisV0extract::GetTemplates() {
 		cPars[iSp]->cd(2);
 		fres = hFitParam1[iSp]->Fit(fPol1_1,"S W");
 		fres->GetConfidenceIntervals(NPTBINS,1,1,XBINS,boundsPar1,0.95, true);
-		//cout << "b " << boundsPar1[5] << " " << boundsPar1[20] << " " << boundsPar1[35] << endl;
+		//std::cout << "b " << boundsPar1[5] << " " << boundsPar1[20] << " " << boundsPar1[35] << std::endl;
 		//for (int i=0; i<NPTBINS; i++) boundsPar1[i] += fPol1_1->Eval(XBINS[i]);
 		
 
@@ -762,7 +762,7 @@ void MyAnalysisV0extract::GetTemplates() {
 			pGaus1A.setRange(fixv-fixe,fixv+fixe);
 			fixv = fPol1_1->Eval(hist->GetBinCenter(iBin));
 			fixe = 1*(boundsPar1[iBin-1]);//+boundsPar1[iBin]);
-			//cout << "fixe " << fixe << endl;
+			//std::cout << "fixe " << fixe << std::endl;
 			pGaus1B.setVal(fixv);
 			pGaus1B.setRange(fixv-fixe,fixv+fixe);
 			//pGaus1A.setRange(fPol1_0->Eval(hist->GetBinCenter(iBin)) - (boundsPar0[30]),
@@ -896,7 +896,7 @@ void MyAnalysisV0extract::StudyIMShapeRC() {
 	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 	//RooFormulaVar nGaus("nGaus","nGaus1+nGaus2+nGaus3",RooArgList(nGaus1,nGaus2,nGaus3));
 
-	//cout << "canCounter/(NPTBINS2) " << canCounter/(NPTBINS2) << " can " << cFitsPtTree[canCounter/(NPTBINS2)] << endl;
+	//std::cout << "canCounter/(NPTBINS2) " << canCounter/(NPTBINS2) << " can " << cFitsPtTree[canCounter/(NPTBINS2)] << std::endl;
 	
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	DT_set.plotOn(plot1,MarkerSize(0.4));
@@ -1160,7 +1160,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 		Double_t* yield = 0;
 		Float_t leftrtb =	RTBINS0[iRtBin]*rt_den;
 		Float_t rightrtb =	RTBINS0[iRtBin+1]*rt_den;
-		//		cout << "left " << leftrtb << " right " << rightrtb << endl;
+		//		std::cout << "left " << leftrtb << " right " << rightrtb << std::endl;
 		printf("Extracting yield for pt spectrum from trees iSp%i_iType%i_iReg%i_iRtBin%i \n",iSp,iType,iReg,iRtBin);
 		TString treeName = tV0massRt[iSp][iType][iReg]->GetName();
 		Int_t binCounter = 1;
@@ -1180,7 +1180,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 
 			tV0massRt[iSp][iType][iReg]->SetName(treeName);
 
-			//cout << "yield " << *(yield+0) << endl;
+			//std::cout << "yield " << *(yield+0) << std::endl;
 			hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetBinContent(iBin+1,*(yield+0));	//+1 for underflow bin
 			hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetBinError(iBin+1,*(yield+1));
 			//hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(binCounter,*(yield+1));
@@ -1222,7 +1222,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 	iCan = 0;
 
 	nchmax = hNchTrans->FindLastBinAbove();
-	cout << "nchmax " << nchmax << endl;
+	std::cout << "nchmax " << nchmax << std::endl;
 	increm = 2;
 	nPads = TMath::Nint(TMath::Sqrt((nchmax/increm)));
 
@@ -1238,7 +1238,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 		cFitsRt[iCan]->Divide(nPads+1,nPads,0.00005,0.00005);
 
 
-		//cout << " tV0massRt[iSp][0][0] " << tV0massRt[iSp][0][0] << endl;
+		//std::cout << " tV0massRt[iSp][0][0] " << tV0massRt[iSp][0][0] << std::endl;
 		TString treeName = tV0massRt[iSp][iType][iReg]->GetName();
 
 		Double_t* yield = 0;
@@ -1259,7 +1259,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 		for (int iBin = 0; iBin < nchmax; iBin+=increm)	{
 			
 			tV0massRt[iSp][iType][iReg]->SetName(Form("tree_iSp%i_iType%i_iReg%i_iPtBin%i_iBin%i",iSp,iType,iReg,iPtBin,iBin));
-			//cout << "ibin " << iBin << " jo " << (iBin < nchmax) << endl;
+			//std::cout << "ibin " << iBin << " jo " << (iBin < nchmax) << std::endl;
 			yield = ExtractYieldFitRt((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
 				Form("lPt>%f && lPt<%f && lNchTrans>%f && lNchTrans<%f",RT_PTRANGE[iPtBin][0],RT_PTRANGE[iPtBin][1],
 					iBin-1E-4, iBin-1E-4+increm)),			iType);
@@ -1336,9 +1336,9 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	val[0] = N - Bg;
 	val[1] = TMath::Sqrt(N + Bg);
 
-	/*cout << " ib " << binNumber << endl;
-	cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
-	" p " << canCounter%nBins << endl;*/
+	/*std::cout << " ib " << binNumber << std::endl;
+	std::cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
+	" p " << canCounter%nBins << std::endl;*/
 
 	if (!isTree) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 		else cFitsPtTree[canCounter/nBins]->cd(1+canCounter%nBins);
@@ -1470,7 +1470,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	// GENERATE RMS
 	RooDataSet* histSigma = fGaus.generate(MassDT,100000);
 	Double_t Sigma = histSigma->mean(MassDT);
-	cout << "" << Sigma << endl;
+	std::cout << "" << Sigma << std::endl;
 		
 	//	RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 	//RooFormulaVar nGaus("nGaus","nGaus1",RooArgList(nGaus1));
@@ -1608,7 +1608,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFit(TH1D* hist, Int_t Type, Int_t MB)
 
 	if (MB==1 && !empty && 0) {
 		Double_t fitparam1 = (pGaus1B.getVal() <= pGaus2B.getVal()) ? pGaus1B.getVal() : pGaus2B.getVal();
-		//cout << "a: " << pGaus1B.getVal() << " b " << pGaus2B.getVal() << " ergo " << (pGaus1B.getVal() <= pGaus2B.getVal()) << " f " << fitparam1 << endl;
+		//std::cout << "a: " << pGaus1B.getVal() << " b " << pGaus2B.getVal() << " ergo " << (pGaus1B.getVal() <= pGaus2B.getVal()) << " f " << fitparam1 << std::endl;
 		Double_t fitparerr1 = (pGaus1B.getVal() <= pGaus2B.getVal()) ? pGaus1B.getError() : pGaus2B.getError(); 
 		Double_t fitparam2= (pGaus1B.getVal() <= pGaus2B.getVal()) ? pGaus2B.getVal() : pGaus1B.getVal();
 		Double_t fitparerr2 = (pGaus1B.getVal() <= pGaus2B.getVal()) ? pGaus2B.getError() : pGaus1B.getError(); 
@@ -1652,7 +1652,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitRt(TTree* tree, Int_t Type) {
 	RooDataSet DT_set("DT_set","DT_set",MassDT,Import(*tree)); 
 
 	TString histName(tree->GetName());
-	cout << histName.Data() << endl;
+	std::cout << histName.Data() << std::endl;
 	TString binName(histName(histName.Index("iBin")+4,2));
 	Int_t binNumber = binName.Atoi();
 	TString spName(histName(histName.Index("iSp")+3,1));
@@ -1690,7 +1690,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitRt(TTree* tree, Int_t Type) {
 		pGaus2B.setConstant(kTRUE);
 		nGaus1.setVal(parRt3[spNumber][Type][Reg][PtBin]);
 		nGaus1.setConstant(kTRUE);
-		cout << " " << parRt3[spNumber][Type][Reg][PtBin] << " " << 1.-parRt3[spNumber][Type][Reg][PtBin] << endl;
+		std::cout << " " << parRt3[spNumber][Type][Reg][PtBin] << " " << 1.-parRt3[spNumber][Type][Reg][PtBin] << std::endl;
 		nGaus2.setVal(1.-parRt3[spNumber][Type][Reg][PtBin]);
 		nGaus2.setConstant(kTRUE);
 	}
@@ -1713,7 +1713,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitRt(TTree* tree, Int_t Type) {
 	}
 	//RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 
-	cout << "cc " << canCounterRt << " den " << (nchmax-1)/increm+2 << " can " << cFitsRt[canCounterRt/((nchmax-1)/increm+2)] << endl; 
+	std::cout << "cc " << canCounterRt << " den " << (nchmax-1)/increm+2 << " can " << cFitsRt[canCounterRt/((nchmax-1)/increm+2)] << std::endl; 
 	cFitsRt[canCounterRt/((nchmax-1)/increm+2)]->cd(1+canCounterRt%((nchmax-1)/increm+2));
 	
 	RooPlot* plot1 = MassDT.frame(Title(" "));
@@ -1829,7 +1829,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 		
 	//RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 
-	//cout << "canCounter/(NPTBINS2) " << canCounter/(NPTBINS2) << " can " << cFitsPtTree[canCounter/(NPTBINS2)] << endl;
+	//std::cout << "canCounter/(NPTBINS2) " << canCounter/(NPTBINS2) << " can " << cFitsPtTree[canCounter/(NPTBINS2)] << std::endl;
 	cFitsPtTree[canCounter/(NPTBINS2)]->cd(1+canCounter%(NPTBINS2));
 	
 	RooPlot* plot1 = MassDT.frame(Title(" "));
@@ -1846,7 +1846,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 	plot1->Draw();
 
 	/*TString histName(tree->GetName());
-	//cout << histName.Data() << endl;
+	//std::cout << histName.Data() << std::endl;
 	TString binName(histName(histName.Index("iBin")+4,2));
 	Int_t binNumber = binName.Atoi();
 	TString spName(histName(histName.Index("iSp")+3,1));
