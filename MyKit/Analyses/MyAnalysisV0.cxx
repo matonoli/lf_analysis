@@ -787,7 +787,7 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	hV0EtavY[Sp][Type][Mu][Sph]->Fill(v0.CalculateY(Sp),v0.GetEta());
 	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
-	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0massKF[Sp]);
+	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
 
 	if (Mu>2 && Type==0 && Sph == 0 && Sp==1) {
 		hV0DPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
@@ -805,8 +805,8 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 		hV0DeltaIMvPt[Sp][Type]->Fill(v0.GetPt(),v0mass[Sp]-v0massKF[Sp]);
 
 		// CUT STUDIES
-		hV0BaselineIMvPt[Sp][Type]->Fill(v0.GetPt(),v0massKF[Sp]);
-		if (v0.HasFastSignal()) hV0FastSignalIMvPt[Sp][Type]->Fill(v0.GetPt(),v0massKF[Sp]);
+		hV0BaselineIMvPt[Sp][Type]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (v0.HasFastSignal()) hV0FastSignalIMvPt[Sp][Type]->Fill(v0.GetPt(),v0mass[Sp]);
 	}
 
 	return true;	
@@ -819,11 +819,11 @@ Bool_t MyAnalysisV0::ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 	
 	if (Mu > 2) {
 		Int_t Reg = Mu-3;
-		tV0massRt[Sp][Type][Reg]->Fill(v0massKF[Sp],v0.GetPt(),nChTrans);
+		tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
 	}
 
 	if (Mu == 0 && Type==1) {
-		tV0massRCMB[Sp]->Fill(v0massKF[Sp],v0.GetPt());	
+		tV0massRCMB[Sp]->Fill(v0mass[Sp],v0.GetPt());	
 	}
 
 
