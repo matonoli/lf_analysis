@@ -334,7 +334,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			TString periStr = inputFileStr(inputFileStr.First("LHC"), (mcflag ? 7 : 6) );		//9x6 for 15, 7x6 for 16
 			TString passStr = inputFileStr(inputFileStr.First("pa"),5);
 			std::string number_as_string;
-    		while (std::istream::getline(inputStream, number_as_string, ', '))	{
+    		while (std::getline(inputStream, number_as_string, ','))	{
     			TString tstr(number_as_string);
 				runNumbers.push_back(tstr.Atoi());
     		}
