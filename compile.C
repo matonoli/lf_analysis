@@ -10,8 +10,8 @@
 	root->LoadMacro("MyParticle.cxx+");
 	root->LoadMacro("MyV0.cxx++");
 	root->LoadMacro("MyAnalysisV0.cxx++");
-	root->LoadMacro("MyAnalysisV0extract.cxx+")
-	root->LoadMacro("MyAnalysisV0correct.cxx+")
-	root->LoadMacro("MyAnalysisV0plot.cxx+")
+	root->LoadMacro("MyAnalysisV0extract.cxx+");
+	root->LoadMacro("MyAnalysisV0correct.cxx+");
+	root->LoadMacro("MyAnalysisV0plot.cxx+");
 
 }
