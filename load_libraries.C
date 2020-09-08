@@ -1,5 +1,5 @@
 void load_libraries() {
-  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TPCTOFfits/ -I$PWD/Scripts/");
+  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TPCTOFfits/ -I$ALICE_PHYSICS/PWGLF/SPECTRA/PiKaPr/TPCTOFCascades/ -I$PWD/Scripts/");
   
   TString libraries = "OADB;PWGPP;PWGLFspectra";
   TObjArray *libTokens = libraries.Tokenize(";");
