@@ -41,7 +41,7 @@ class MyParticle: public TObject {
 		void SetLabel(Int_t lab)				{ return;};
 		Int_t GetPdgCode()						const { return mAliParticle->GetPdgCode();};
 		Int_t GetMotherPdgCode()				const { return mAliParticle->GetMotherPdgCode();};
-		Bool_t IsPrimary()						const { return 1;};
+		Bool_t IsPrimary()						const { return mAliParticle->GetPrimaryStatus();};
 #elif INPUTFORMAT == 2
 		Float_t GetPt() 						const { return mAliParticle->Pt();};
 		Float_t GetPx() 						const { return mAliParticle->Px();};
