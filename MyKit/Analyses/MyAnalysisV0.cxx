@@ -858,11 +858,11 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 
 	if (!v0.IsOffline())	return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //1
-	//if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
-	if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
+	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
+	//if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //2
-	//if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
-	if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
+	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+	//if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //3
 	if (v0.GetPt() < cuts::V0_PT[0]) 		return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //4
@@ -1006,10 +1006,10 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 
-	//if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
-	//if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
-	if (p.GetY() < cuts::V0_Y[0]) 		return false;
-	if (p.GetY() > cuts::V0_Y[1]) 		return false;
+	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	//if (p.GetY() < cuts::V0_Y[0]) 		return false;
+	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3]
