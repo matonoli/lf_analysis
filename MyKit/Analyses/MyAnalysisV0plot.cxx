@@ -235,7 +235,7 @@ Int_t MyAnalysisV0plot::Finish() {
 	CloneHistograms();
 	MakeFinalFiguresSpherocity();
 	MakeFinalFiguresEvent();
-	//MakeFinalFiguresRt();
+	MakeFinalFiguresRt();
 
 	return 0;	
 }

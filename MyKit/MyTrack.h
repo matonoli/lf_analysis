@@ -61,8 +61,8 @@ class MyTrack: public TObject {
 		Bool_t IsGoodV0daughter()				{ return (!mFlagCal) ? CalculateFlag() &16 : mFlag&16;};
 		Int_t CalculateFlag();
 		Bool_t HasTOFPID();
-		Float_t GetTPCnc()						const { return mAliTrack->GetTPCClusterInfo(2,1);};
-		UShort_t GetTPCNclsF()					const { return mAliTrack->GetTPCNclsF();};
+		Float_t GetTPCnc()						const { return 1000;};//const { return mAliTrack->GetTPCClusterInfo(2,1);};
+		UShort_t GetTPCNclsF()					const { return 1;};//const { return mAliTrack->GetTPCNclsF();};
 #endif
 #if INPUTFORMAT == 1		
 

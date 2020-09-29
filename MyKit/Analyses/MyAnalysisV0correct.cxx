@@ -404,8 +404,8 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[2][0] = (TH1D*)hV0FeeddownMotherPt[2]->Clone("hXiPt_L_MB");
 		hXiPt[3][0] = (TH1D*)hV0FeeddownMotherPt[3]->Clone("hXiPt_Lbar_MB");
 		// these need to be normalised
-		//NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
-		NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
+		NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+		//NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
 		Double_t NormEv = hEventType->GetBinContent(24);	// MB
 		if (NormEv>0) {
 			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
@@ -493,8 +493,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		printf("Event type %i containing %f events\n", iBin, hEventType->GetBinContent(iBin));
 	}*/
 
-	//NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
-	NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
+	NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+	//NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
 	printf("Normalising all histograms by dY %f \n", NormEta);
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -842,11 +842,11 @@ void MyAnalysisV0correct::CorrectSpectra() {
 		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1,"width");
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 
-		funcRapCorrection->SetParameters(NormEta,MASSES[iSp]);
+		funcRapCorrection->SetParameters(0.5*NormEta,MASSES[iSp]);
 		
 		//cout << "at 1.0 correcting by " << funcRapCorrection->Eval(1.0) << endl;
 
-		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
+		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(MBtrigEff);
 
