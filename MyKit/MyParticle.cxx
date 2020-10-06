@@ -19,8 +19,8 @@ Int_t MyParticle::GetSign() const
 Int_t MyParticle::GetY(Int_t Sp) const
 {
 	TLorentzVector pVec;
-	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
-	pVec.SetPtEtaPhiM(this->GetPt(),this->GetEta(),this->GetPhi(),MASSES[Sp]);
+	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
+	if (Sp < 4 && Sp > -1) pVec.SetPtEtaPhiM(this->GetPt(),this->GetEta(),this->GetPhi(),MASSES[Sp]);
 	return pVec.Rapidity();	  
 }
 #endif

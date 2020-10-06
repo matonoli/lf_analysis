@@ -36,7 +36,7 @@ class MyParticle: public TObject {
 		Float_t GetPy() 						const { return mAliParticle->GetPt()*TMath::Sin(mAliParticle->GetPhi());};
 		Float_t GetPhi() 						const { return mAliParticle->GetPhi();};
 		Float_t GetEta() 						const { return mAliParticle->GetEta();};
-		Float_t GetY(Int_t Sp = 0);//	 						const { return mAliParticle->GetY();};
+		Float_t GetY(Int_t Sp = 0) const;//	 						const { return mAliParticle->GetY();};
 		// overwrites the original GetY because that one doesn't work
 		Int_t GetLabel()						const { return mAliParticle->GetLabel();};
 		void SetLabel(Int_t lab)				{ return;};
