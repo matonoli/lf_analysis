@@ -16,7 +16,7 @@ Int_t MyParticle::GetSign() const
 }
 
 #if INPUTFORMAT == 1
-Int_t MyParticle::GetY(Int_t Sp) const
+Float_t MyParticle::GetY(Int_t Sp) const
 {
 	TLorentzVector pVec;
 	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
