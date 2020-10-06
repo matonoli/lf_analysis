@@ -24,7 +24,7 @@ Float_t MyParticle::GetY() const
 	if (!ppdg)
 		return 0;
 	Float_t mass = ppdg->Mass(); 
-	if (Sp < 4 && Sp > -1) pVec.SetPtEtaPhiM(this->GetPt(),this->GetEta(),this->GetPhi(),mass);
+	pVec.SetPtEtaPhiM(this->GetPt(),this->GetEta(),this->GetPhi(),mass);
 	return pVec.Rapidity();	  
 }
 #endif
