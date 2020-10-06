@@ -456,7 +456,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			}
 
-			if (p.GetPdgCode() == 310) cout << "eta " << p.GetEta() << " y " << p.GetY() << endl;
+			//if (p.GetPdgCode() == 310) cout << "eta " << p.GetEta() << " y " << p.GetY() << endl;
 				
 			if (!SelectParticle(p)) continue;		// also contains Xi's !
 			
