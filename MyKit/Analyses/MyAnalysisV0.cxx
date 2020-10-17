@@ -595,7 +595,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						
 							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 								xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
-									//cout << "found particle w id " << xiMC.GetPdgCode() << endl;
+								//cout << "found particle w id " << xiMC.GetPdgCode() << endl;
 								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == 3312)	{
 									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 								}
@@ -860,11 +860,11 @@ Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
 
 	if (!v0.IsOffline())	return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //1
-	//if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
-	if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
+	if (v0.GetEta() < cuts::V0_ETA[0]) 	return false;
+	//if (v0.CalculateY(Sp) < cuts::V0_Y[0]) 	return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //2
-	//if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
-	if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
+	if (v0.GetEta() > cuts::V0_ETA[1]) 	return false;
+	//if (v0.CalculateY(Sp) > cuts::V0_Y[1]) 	return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //3
 	if (v0.GetPt() < cuts::V0_PT[0]) 		return false;
 	hV0CutIMvPt[Sp][Type][cutN++]->Fill(v0.GetPt(),v0mass[Sp]); //4
@@ -1305,6 +1305,7 @@ Int_t MyAnalysisV0::Finish() {
 	
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
+	mDirFile->Write();
 
 	TH1D* hLeadPt = hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);
