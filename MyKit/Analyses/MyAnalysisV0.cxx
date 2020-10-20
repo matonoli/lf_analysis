@@ -1008,10 +1008,10 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 
-	//if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
-	//if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
-	if (p.GetY() < cuts::V0_Y[0]) 		return false;
-	if (p.GetY() > cuts::V0_Y[1]) 		return false;
+	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	//if (p.GetY() < cuts::V0_Y[0]) 		return false;
+	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3]

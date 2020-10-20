@@ -965,8 +965,8 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 		hDen->Scale(1./NormEta);
 		hDen->Scale(MBtrigEff);
 		hDen->Scale(1.,"width");
-		funcRapCorrection->SetParameters(NormEta,MASSES[iSp]);
-		//hDen->Divide(funcRapCorrection,1.);
+		funcRapCorrection->SetParameters(0.5*NormEta,MASSES[iSp]);
+		hDen->Divide(funcRapCorrection,1.);
 
 		mHandler->MakeNiceHistogram(hClosureTestCorr[iSp],kBlack);
 		hClosureTestCorr[iSp]->GetYaxis()->SetTitle("blind rec. / MC generated");

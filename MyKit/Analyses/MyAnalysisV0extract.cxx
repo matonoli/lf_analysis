@@ -192,7 +192,7 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	DefineSidebands();
 	ProducePtSpectraFromHists();
-	ProducePtSpectraFromTrees();
+	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
 
 
@@ -240,23 +240,23 @@ void MyAnalysisV0extract::DefineSidebands() {
 			hist->Rebin(16);
 			RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
 
-			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.008,0.008);
-			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.00003,0.018);
+			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.009,0.009);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.00002,0.019);
 			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
 			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,1e08);
 		
 			//RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
-			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.0002,0.07);
+			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.0001,0.09);
 			RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
 			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,1e08);
 		
-			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-4,4);
-			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-4,4);
+			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-5,5);
+			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-5,5);
 			RooChebychev fPolBg = RooChebychev("fPolBg","fPolBg",MassDT,RooArgSet(pPolBgA));
-			RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,1e08);
+			RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,5e08);
 
 			RooAddPdf fGaus("fGaus","fGaus",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
-			RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,1e08);
+			RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,5e08);
 
 			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus1,fPolBg),RooArgList(nGaus1,nPolBg));
 
