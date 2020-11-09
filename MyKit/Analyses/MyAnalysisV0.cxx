@@ -1202,8 +1202,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph]			= new TH1D(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";track p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		hTrackEtavPhi[iType][iMu][iSph]		= new TH2D(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
@@ -1228,8 +1228,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0Pt[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 			//";V0 p_{T} (GeV/#it{c}); Entries",								400, 0, 20);
