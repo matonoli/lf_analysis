@@ -11,9 +11,10 @@ namespace cuts {
 
 	//const Float_t EV_SPH_JETTY[2] 	= {0.462, 0.484};	//data, [0] is v0m. [1] is ncharged 
 	//const Float_t EV_SPH_ISO[2] 	= {0.755, 0.765};
-	const Float_t EV_SPH_JETTY[2] 	= {0.603, 0.629};	//pt=1
-	const Float_t EV_SPH_ISO[2] 	= {0.827, 0.836};
-	const Float_t EV_MHM[2]		= {26., 200.};
+	const Float_t EV_SPH_JETTY[4] 	= {0.603, 0.629, 0.651, 0.680};	//pt=1
+	const Float_t EV_SPH_ISO[4] 	= {0.827, 0.836, 0.846, 0.859};
+	const Float_t EV_MHM[2]			= {26., 300.};
+	const Float_t EV_MHM01[2]		= {47., 300.};
 
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};

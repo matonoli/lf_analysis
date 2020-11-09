@@ -26,16 +26,16 @@ class TransverseSpherocity;
 namespace V0consts {
 	const Int_t NSPECIES = 4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 6;
-	const Int_t NSPHERO = 8;
+	const Int_t NMULTI = 8;
+	const Int_t NSPHERO = 4;
 	const Int_t NREGIONS = 3;
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
 	const Float_t XIMASS = 1.32171;
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
-	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","RTTrans","RTNear","RTAway"};
+	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","V0M01","NCharged01","RTTrans","RTNear","RTAway"};
 	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
-	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso","0-1","1-2","2-3","3-4","4-5"};
+	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso", "int."};//,"0-1","1-2","2-3","3-4","4-5"};
 	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
 	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away"};
 	//const Int_t NPTBINS = 35;
@@ -179,12 +179,15 @@ namespace V0consts {
 	//const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
 	const Int_t COLOURS[7] = {kRed, kBlack, kGreen+2, kBlue, kViolet+10,kPink+10,kGreen+2};
 
-	const Int_t NEVENTTYPES = 24; //1+2+2+4+6+4+4
+	const Int_t NEVENTTYPES = 34; //1+2+2+4+6+4+4 +2+4+4
 	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
 			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY",
-			"RT", "RT 0-1", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
+			"RT", "RT int.", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
 			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" ,
-			"MB ES rejected", "MB post-ES no V", "MB post-ES bad V", "MB post-ES good V"};
+			"MB ES rejected", "MB post-ES no V", "MB post-ES bad V", "MB post-ES good V" ,
+			"FHM 0-1%", "MHM 0-1%",
+			"FHM 0-1% ISO", "FHM 0-1% JETTY", "MHM 0-1% ISO", "MHM 0-1% JETTY",
+			"FHM 0-1% ISO MC", "FHM 0-1% JETTY MC", "MHM 0-1% ISO MC", "MHM 0-1% JETTY MC"};
 
 	const Float_t RT_DEN		= 7.449;
 	const Float_t RT_DEN_MC		= 7.525; 
@@ -256,6 +259,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hEventType;
 		TH1D* hEventSpherocityV0M;
 		TH1D* hEventSpherocityNCharged;
+		TH1D* hEventSpherocityV0M01;
+		TH1D* hEventSpherocityNCharged01;
 		TH2D* hEventTSMCvRC;
 		TH2D* hEventTSNormMCvRC;
 		TH2D* hEventTSMCvNorm;

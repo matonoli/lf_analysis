@@ -113,8 +113,9 @@ void compare18v16() {
 	TH1D* hV0M[12];
 
 	for (int i = 0; i < 11; ++i)	{
-		fD[i] 		= new TFile(Form("../rootOutputs/201017_2018x/beast_201017_2018_LHC18%s_hist.root",name[i].Data()),"READ");
-		fMC[i] 		= new TFile(Form("../rootOutputs/201017_2018x/beastMC_201017_2018_LHC18%s_hist.root",name[i].Data()),"READ");
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
+		fD[i] 		= new TFile(Form("../rootOutputs/201020_2018x/beast_201020_2018_LHC18%s_hist.root",name[i].Data()),"READ");
+		fMC[i] 		= new TFile(Form("../rootOutputs/201020_2018x/beastMC_201020_2018_LHC18%s_hist.root",name[i].Data()),"READ");
 		fO[i] 		= new TFile(Form("18%s.root",name[i].Data()),"READ");
 		dfD[i] 		= (TDirectoryFile*)fD[i]->Get("MyAnalysisV0_0");
 		dfMC[i] 	= (TDirectoryFile*)fMC[i]->Get("MyAnalysisV0_0");
@@ -134,7 +135,7 @@ void compare18v16() {
 		//fD[11] 		= new TFile("../rootOutputs/beast_200911_hist.root","READ");
 		//fMC[11] 	= new TFile("../rootOutputs/beastMC_200911_hist.root","READ");
 		fD[11] 		= new TFile("../rootOutputs/beast_201017_2016_LHC16k_hist.root","READ");
-		fMC[11] 	= new TFile("../rootOutputs/beastMC_201017_2016_LHC16k_hist.root","READ");
+		fMC[11] 	= new TFile("../rootOutputs/201020_2018x/beastMC_201020_2016_LHC16k_hist.root","READ");
 		fO[11] 		= new TFile("16k.root","READ");
 		dfD[11] 		= (TDirectoryFile*)fD[11]->Get("MyAnalysisV0_0");
 		dfMC[11] 	= (TDirectoryFile*)fMC[11]->Get("MyAnalysisV0_0");
@@ -155,10 +156,12 @@ void compare18v16() {
 
 	cout << "NUMBER OF EVENTS (data):" << endl;
 	for (int i = 0; i < 12; ++i)	{
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		printf("18%s    : %3.1f\n",name[i].Data(),nEvD[i]);
 	}
 	cout << "NUMBER OF EVENTS (MC):" << endl;
 	for (int i = 0; i < 12; ++i)	{
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		printf("18%s    : %3.1f\n",name[i].Data(),nEvMC[i]);
 	}
 
@@ -172,6 +175,7 @@ void compare18v16() {
 	hRaw[10]->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeNiceHistogram(hRaw[i],col[i]); hRaw[i]->Scale(1./nEvD[i]);
 		legRaw->AddEntry(hRaw[i],Form("LHC18%s",name[i].Data()),"pl");
 		hRaw[i]->Draw("same");
@@ -179,6 +183,7 @@ void compare18v16() {
 	legRaw->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeRatioPlot(hRaw[i],hRaw[10],cRaw,0.9,1.1,0.,14.);
 	}
 	cRaw->Draw();
@@ -190,12 +195,13 @@ void compare18v16() {
 	TCanvas* cEffi = new TCanvas("cEffi","cEffi",1200,1200);
 	TLegend* legEffi = new TLegend(0.48,0.64,0.81,0.85);
 	MakeNiceLegend(legEffi,0.035,2);
-	MakeNiceHistogram(hEffi[10],col[10]); hEffi[10]->Scale(1./10);
+	MakeNiceHistogram(hEffi[10],col[10]); hEffi[10]->Scale(1./4);
 	legEffi->AddEntry(hEffi[10],Form("LHC18%s",name[10].Data()),"pl");
 	hEffi[10]->GetYaxis()->SetRangeUser(0.0,1.0);
 	hEffi[10]->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeNiceHistogram(hEffi[i],col[i]); 
 		legEffi->AddEntry(hEffi[i],Form("LHC18%s",name[i].Data()),"pl");
 		hEffi[i]->Draw("same");
@@ -203,6 +209,7 @@ void compare18v16() {
 	legEffi->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeRatioPlot(hEffi[i],hEffi[10],cEffi,0.9,1.1,0.,14.);
 	}
 	cEffi->Draw();
@@ -215,11 +222,12 @@ void compare18v16() {
 	TLegend* legMB = new TLegend(0.48,0.64,0.81,0.85);
 	MakeNiceLegend(legMB,0.035,2);
 	cMB->SetLogy();
-	MakeNiceHistogram(hMB[10],col[10]); hMB[10]->Scale(10.);
+	MakeNiceHistogram(hMB[10],col[10]); hMB[10]->Scale(4.);
 	legMB->AddEntry(hMB[10],Form("LHC18%s",name[10].Data()),"pl");
 	hMB[10]->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeNiceHistogram(hMB[i],col[i]); 
 		legMB->AddEntry(hMB[i],Form("LHC18%s",name[i].Data()),"pl");
 		hMB[i]->Draw("same");
@@ -227,6 +235,7 @@ void compare18v16() {
 	legMB->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeRatioPlot(hMB[i],hMB[10],cMB,0.9,1.1,0.,14.);
 	}
 	cMB->Draw();
@@ -239,11 +248,12 @@ void compare18v16() {
 	TLegend* legV0M = new TLegend(0.48,0.64,0.81,0.85);
 	MakeNiceLegend(legV0M,0.035,2);
 	cV0M->SetLogy();
-	MakeNiceHistogram(hV0M[10],col[10]); hV0M[10]->Scale(10.);
+	MakeNiceHistogram(hV0M[10],col[10]); hV0M[10]->Scale(4.);
 	legV0M->AddEntry(hV0M[10],Form("LHC18%s",name[10].Data()),"pl");
 	hV0M[10]->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeNiceHistogram(hV0M[i],col[i]); 
 		legV0M->AddEntry(hV0M[i],Form("LHC18%s",name[i].Data()),"pl");
 		hV0M[i]->Draw("same");
@@ -251,6 +261,7 @@ void compare18v16() {
 	legV0M->Draw();
 	for (int i = 0; i < 12; ++i)	{
 		if (i==10) continue;
+		if (i==4||i==5||i==6||i==7||i==8||i==9) continue;
 		MakeRatioPlot(hV0M[i],hV0M[10],cV0M,0.9,1.1,0.,14.);
 	}
 	cV0M->Draw();

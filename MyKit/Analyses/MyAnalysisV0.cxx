@@ -125,17 +125,21 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventMonitor->Fill(3);
 
 	// EVENT CLASSIFICATION
-	enum { multMB, V0M, NCharged, RT };
+	enum { multMB, V0M, NCharged, V0M01, NCharged01, RT };
 	enum { sphMB, Jetty, Iso };
 	enum { D, RC, MC };
 	Int_t isEventCentral = 0;
 	hEventV0MCentrality->Fill(event.GetV0MCentrality());
 	hEventRefMult->Fill(event.GetRefMult());
 	hEventV0MCentvRefMult->Fill(event.GetRefMult(),event.GetV0MCentrality());
-	Bool_t isEventFHM = IsCentral(event,V0M);			// forward-rapidity high-multiplicity
-	Bool_t isEventMHM = IsCentral(event,NCharged);		// mid-rapidity high-multiplicity
-	if (isEventFHM)	hEventType->Fill(EVENTTYPES[2],1);
-	if (isEventMHM)	hEventType->Fill(EVENTTYPES[3],1);
+	Bool_t isEventFHM 	= IsCentral(event,V0M);				// forward-rapidity high-multiplicity 0-10
+	Bool_t isEventMHM 	= IsCentral(event,NCharged);		// mid-rapidity high-multiplicity 0-10
+	Bool_t isEventFHM01 = IsCentral(event,V0M01);			// forward-rapidity high-multiplicity 0-1
+	Bool_t isEventMHM01 = IsCentral(event,NCharged01);		// mid-rapidity high-multiplicity 0-1
+	if (isEventFHM)		hEventType->Fill(EVENTTYPES[2],1);
+	if (isEventMHM)		hEventType->Fill(EVENTTYPES[3],1);
+	if (isEventFHM01)	hEventType->Fill(EVENTTYPES[24],1);
+	if (isEventMHM01)	hEventType->Fill(EVENTTYPES[25],1);
 	
 	isEventCentral = (isEventFHM || isEventMHM);
 
@@ -186,6 +190,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			mTS[0][NCharged]->AddTrack(t.GetPx(), t.GetPy());
 			mTSNorm[0][NCharged]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt()); 
 		}
+		if (isEventFHM01) {
+			mTS[0][V0M01]->AddTrack(t.GetPx(), t.GetPy());
+			mTSNorm[0][V0M01]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt()); 
+		}
+		if (isEventMHM01) {
+			mTS[0][NCharged01]->AddTrack(t.GetPx(), t.GetPy());
+			mTSNorm[0][NCharged01]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt()); 
+		}
 	}
 	hLeadPhivPt->Fill(ptLead,phiLead);
 
@@ -208,15 +220,21 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				if (isEventMHM) mTS[2][NCharged]->AddTrack(p.GetPx(), p.GetPy());
 				if (isEventMHM) mTSNorm[2][NCharged]->AddTrack(p.GetPx()/p.GetPt(), p.GetPy()/p.GetPt());
 
+				if (isEventFHM01) mTS[2][V0M01]->AddTrack(p.GetPx(), p.GetPy());
+				if (isEventFHM01) mTSNorm[2][V0M01]->AddTrack(p.GetPx()/p.GetPt(), p.GetPy()/p.GetPt());
+
+				if (isEventMHM01) mTS[2][NCharged01]->AddTrack(p.GetPx(), p.GetPy());
+				if (isEventMHM01) mTSNorm[2][NCharged01]->AddTrack(p.GetPx()/p.GetPt(), p.GetPy()/p.GetPt());
+
 			}	
 		}
 	}
 
 	// EVENT SPHEROCITY CLASSIFICATION
-	Bool_t isEventIso[NMULTI-1] 	= { 0, 0, 0 };
-	Bool_t isEventJetty[NMULTI-1] 	= { 0, 0, 0 };
-	Bool_t isEventIsoMC[NMULTI-1] 	= { 0, 0, 0 };
-	Bool_t isEventJettyMC[NMULTI-1] = { 0, 0, 0 };
+	Bool_t isEventIso[NMULTI-1] 	= { 0, 0, 0, 0, 0 };
+	Bool_t isEventJetty[NMULTI-1] 	= { 0, 0, 0, 0, 0 };
+	Bool_t isEventIsoMC[NMULTI-1] 	= { 0, 0, 0, 0, 0 };
+	Bool_t isEventJettyMC[NMULTI-1] = { 0, 0, 0, 0, 0 };
 
 	if (isEventCentral) {
 
@@ -241,9 +259,22 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		isEventJetty[NCharged]		= (eventTS < cuts::EV_SPH_JETTY[NCharged-1] && eventTS > 0.);
 		isEventIsoMC[NCharged]		= mFlagMC && (eventTS2[tsMCNorm] > cuts::EV_SPH_ISO[NCharged-1] && eventTS2[tsMCNorm] < 1.) ;		// in mc study also particle level 
 		isEventJettyMC[NCharged]	= mFlagMC && (eventTS2[tsMCNorm] < cuts::EV_SPH_JETTY[NCharged-1] && eventTS2[tsMCNorm] > 0.) ;
+
+		isEventIso[V0M01]		= (eventTS > cuts::EV_SPH_ISO[V0M01-1] && eventTS < 1.) ;
+		isEventJetty[V0M01]		= (eventTS < cuts::EV_SPH_JETTY[V0M01-1] && eventTS > 0.);
+		isEventIsoMC[V0M01]		= mFlagMC && (eventTS2[tsMCNorm] > cuts::EV_SPH_ISO[V0M01-1] && eventTS2[tsMCNorm] < 1.) ;		// in mc study also particle level 
+		isEventJettyMC[V0M01]	= mFlagMC && (eventTS2[tsMCNorm] < cuts::EV_SPH_JETTY[V0M01-1] && eventTS2[tsMCNorm] > 0.) ;
+
+		isEventIso[NCharged01]		= (eventTS > cuts::EV_SPH_ISO[NCharged01-1] && eventTS < 1.) ;
+		isEventJetty[NCharged01]	= (eventTS < cuts::EV_SPH_JETTY[NCharged01-1] && eventTS > 0.);
+		isEventIsoMC[NCharged01]	= mFlagMC && (eventTS2[tsMCNorm] > cuts::EV_SPH_ISO[NCharged01-1] && eventTS2[tsMCNorm] < 1.) ;		// in mc study also particle level 
+		isEventJettyMC[NCharged01]	= mFlagMC && (eventTS2[tsMCNorm] < cuts::EV_SPH_JETTY[NCharged01-1] && eventTS2[tsMCNorm] > 0.) ;
 		
 		if (isEventFHM) hEventSpherocityV0M->Fill(eventTS);
 		if (isEventMHM) hEventSpherocityNCharged->Fill(eventTS);
+		if (isEventFHM01) hEventSpherocityV0M01->Fill(eventTS);
+		if (isEventMHM01) hEventSpherocityNCharged01->Fill(eventTS);
+
 		hEventTSMCvRC->Fill(eventTS2[tsMC],eventTS2[tsRC]);
 		hEventTSNormMCvRC->Fill(eventTS2[tsMCNorm],eventTS2[tsRCNorm]);
 		hEventTSMCvNorm->Fill(eventTS2[tsMC],eventTS2[tsMCNorm]);
@@ -258,6 +289,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (isEventFHM && isEventJettyMC[V0M])		hEventType->Fill(EVENTTYPES[17],1);
 	if (isEventMHM && isEventIsoMC[NCharged])	hEventType->Fill(EVENTTYPES[18],1);
 	if (isEventMHM && isEventJettyMC[NCharged])	hEventType->Fill(EVENTTYPES[19],1);
+
+	if (isEventFHM01 && isEventIso[V0M01])			hEventType->Fill(EVENTTYPES[26],1);
+	if (isEventFHM01 && isEventJetty[V0M01])		hEventType->Fill(EVENTTYPES[27],1);
+	if (isEventMHM01 && isEventIso[NCharged01])		hEventType->Fill(EVENTTYPES[28],1);
+	if (isEventMHM01 && isEventJetty[NCharged01])	hEventType->Fill(EVENTTYPES[29],1);
+	if (isEventFHM01 && isEventIsoMC[V0M01])		hEventType->Fill(EVENTTYPES[30],1);
+	if (isEventFHM01 && isEventJettyMC[V0M01])		hEventType->Fill(EVENTTYPES[31],1);
+	if (isEventMHM01 && isEventIsoMC[NCharged01])	hEventType->Fill(EVENTTYPES[32],1);
+	if (isEventMHM01 && isEventJettyMC[NCharged01])	hEventType->Fill(EVENTTYPES[33],1);
 
 	// TRACK DEPENDENCE ON SPHEROCITY STUDY LOOP
 	nChTrans = 0;
@@ -286,6 +326,22 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			if (isEventIso[NCharged])		ProcessTrack(t,D,NCharged,Iso);
 			if (isEventJettyMC[NCharged])	ProcessTrack(t,RC,NCharged,Jetty);
 			if (isEventIsoMC[NCharged])		ProcessTrack(t,RC,NCharged,Iso);		}
+
+		if (isEventFHM01) {
+			ProcessTrack(t,D,V0M01,sphMB);
+			if (mFlagMC)				ProcessTrack(t,RC,V0M01,sphMB);
+			if (isEventJetty[V0M01])	ProcessTrack(t,D,V0M01,Jetty);
+			if (isEventIso[V0M01])		ProcessTrack(t,D,V0M01,Iso);			//
+			if (isEventJettyMC[V0M01])	ProcessTrack(t,RC,V0M01,Jetty);		// study tracks also for true sphero, stored under RC
+			if (isEventIsoMC[V0M01])	ProcessTrack(t,RC,V0M01,Iso);		} 
+
+		if (isEventMHM01) {
+			ProcessTrack(t,D,NCharged01,sphMB);
+			ProcessTrack(t,RC,NCharged01,sphMB);
+			if (isEventJetty[NCharged01])		ProcessTrack(t,D,NCharged01,Jetty);
+			if (isEventIso[NCharged01])			ProcessTrack(t,D,NCharged01,Iso);
+			if (isEventJettyMC[NCharged01])		ProcessTrack(t,RC,NCharged01,Jetty);
+			if (isEventIsoMC[NCharged01])		ProcessTrack(t,RC,NCharged01,Iso);		}
 
 	}
 
@@ -317,13 +373,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// CLASSIFYING EVENT IN RT BINS DURING RUNTIME (optional)
 	Bool_t isEventRT = false;		
-	enum { rt01, rt12, rt23, rt34, rt45, rtsizeof };
-	Bool_t isRT[rtsizeof] = {false, false, false, false, false};
+	enum { rt, rtsizeof }; //rt01, rt12, rt23, rt34, rt45, rtsizeof };
+	Bool_t isRT[rtsizeof] = {false}; //, false, false, false, false};
 	if (ptLead>5. && ptLead<40.) {
 		isEventRT = true;
-		for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
-			isRT[iRt] = (eventRt > (Double_t)iRt 
-				&& eventRt < (Double_t)(iRt+1));	}
+		//for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
+		//	isRT[iRt] = (eventRt > (Double_t)iRt 
+		//		&& eventRt < (Double_t)(iRt+1));	}
+		isRT[0] = isEventRT;
 	}
 
 	if (isEventRT) hEventType->Fill(EVENTTYPES[10],1);
@@ -448,6 +505,17 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (isEventJettyMC[NCharged])	hTrackPt[MC][NCharged][Jetty]->Fill(p.GetPt());
 					if (isEventIsoMC[NCharged])		hTrackPt[MC][NCharged][Iso]->Fill(p.GetPt()); }
 
+				if (isEventFHM01) {
+					hTrackPt[MC][V0M01][sphMB]->Fill(p.GetPt());
+					if (isEventJettyMC[V0M01])		hTrackPt[MC][V0M01][Jetty]->Fill(p.GetPt());
+					if (isEventIsoMC[V0M01])		hTrackPt[MC][V0M01][Iso]->Fill(p.GetPt()); }
+
+				if (isEventMHM01) {
+					hTrackPt[MC][NCharged01][sphMB]->Fill(p.GetPt());
+					if (isEventJettyMC[NCharged01])		hTrackPt[MC][NCharged01][Jetty]->Fill(p.GetPt());
+					if (isEventIsoMC[NCharged01])		hTrackPt[MC][NCharged01][Iso]->Fill(p.GetPt()); }
+
+
 				if (isEventRT && IsTrans(p.GetPhi(),phiLead)) {
 					hTrackPt[MC][RT][sphMB]->Fill(p.GetPt());
 					for (int iRt = 0; iRt < rtsizeof; ++iRt) {
@@ -487,6 +555,17 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						hV0Pt[iSp][MC][NCharged][sphMB]->Fill(p.GetPt());
 						if (isEventJettyMC[NCharged])	hV0Pt[iSp][MC][NCharged][Jetty]->Fill(p.GetPt());
 						if (isEventIsoMC[NCharged])		hV0Pt[iSp][MC][NCharged][Iso]->Fill(p.GetPt());		}
+
+					if (isEventFHM01) {
+						hV0Pt[iSp][MC][V0M01][sphMB]->Fill(p.GetPt());
+						if (isEventJettyMC[V0M01])		hV0Pt[iSp][MC][V0M01][Jetty]->Fill(p.GetPt());
+						if (isEventIsoMC[V0M01])		hV0Pt[iSp][MC][V0M01][Iso]->Fill(p.GetPt());		}
+
+					if (isEventMHM01) {
+						hV0Pt[iSp][MC][NCharged01][sphMB]->Fill(p.GetPt());
+						if (isEventJettyMC[NCharged01])		hV0Pt[iSp][MC][NCharged01][Jetty]->Fill(p.GetPt());
+						if (isEventIsoMC[NCharged01])		hV0Pt[iSp][MC][NCharged01][Iso]->Fill(p.GetPt());		}
+
 
 					if (isEventRT)	{
 							Int_t region = WhatRegion(p.GetPhi(),phiLead);
@@ -633,6 +712,18 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						if (isEventIsoMC[NCharged])		ProcessV0toHist(v0,iSp,RC,NCharged,Iso);
 					}
 
+					if (isEventFHM01) {
+						ProcessV0toHist(v0,iSp,RC,V0M01,sphMB);
+						if (isEventJettyMC[V0M01])		ProcessV0toHist(v0,iSp,RC,V0M01,Jetty);			// study RC spectra for true spher. ev classification
+						if (isEventIsoMC[V0M01])		ProcessV0toHist(v0,iSp,RC,V0M01,Iso);
+					}
+						
+					if (isEventMHM01) {
+						ProcessV0toHist(v0,iSp,RC,NCharged01,sphMB);
+						if (isEventJettyMC[NCharged01])		ProcessV0toHist(v0,iSp,RC,NCharged01,Jetty);
+						if (isEventIsoMC[NCharged01])		ProcessV0toHist(v0,iSp,RC,NCharged01,Iso);
+					}
+
 					if (isEventRT)	{
 						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
 						if (iSp>0) ProcessV0toTree(v0,iSp,RC,RT+region);
@@ -666,7 +757,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					ProcessV0toHist(v0,iSp,D,NCharged,sphMB);
 					if (isEventJetty[NCharged])	ProcessV0toHist(v0,iSp,D,NCharged,Jetty);
 					if (isEventIso[NCharged])	ProcessV0toHist(v0,iSp,D,NCharged,Iso); }
+
+
+				if (isEventFHM01) {
+					ProcessV0toHist(v0,iSp,D,V0M01,sphMB);
+					if (isEventJetty[V0M01])	ProcessV0toHist(v0,iSp,D,V0M01,Jetty);
+					if (isEventIso[V0M01])		ProcessV0toHist(v0,iSp,D,V0M01,Iso); }
+
+				if (isEventMHM01) {
+					ProcessV0toHist(v0,iSp,D,NCharged01,sphMB);
+					if (isEventJetty[NCharged01])	ProcessV0toHist(v0,iSp,D,NCharged01,Jetty);
+					if (isEventIso[NCharged01])		ProcessV0toHist(v0,iSp,D,NCharged01,Iso); }
 				
+
 				if (isEventRT) {
 					
 					Int_t region = WhatRegion(v0.GetPhi(),phiLead);
@@ -772,6 +875,16 @@ Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
 		case 2: 
 			if (ev.GetRefMult() < cuts::EV_MHM[1] 
 				&& ev.GetRefMult() > cuts::EV_MHM[0])		return true;
+			break;
+
+		case 3: 
+			if (ev.GetV0MCentrality() < 1. 
+				&& ev.GetRefMult() > 9.9)		return true;
+			break;
+
+		case 4: 
+			if (ev.GetRefMult() < cuts::EV_MHM01[1] 
+				&& ev.GetRefMult() > cuts::EV_MHM01[0])		return true;
 			break;
 	}
 
@@ -1055,6 +1168,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	hEventSpherocityV0M			= new TH1D("hEventSpherocityV0M","; S_{O}; Entries",400,-0.1,1.1);
 	hEventSpherocityNCharged	= new TH1D("hEventSpherocityNCharged","; S_{O}; Entries",400,-0.1,1.1);
+	hEventSpherocityV0M01		= new TH1D("hEventSpherocityV0M01","; S_{O}; Entries",400,-0.1,1.1);
+	hEventSpherocityNCharged01	= new TH1D("hEventSpherocityNCharged01","; S_{O}; Entries",400,-0.1,1.1);
 	hEventType					= new TH1D("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
 	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
 		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
