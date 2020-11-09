@@ -933,7 +933,7 @@ Bool_t MyAnalysisV0::ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
 	
 	if (Mu > 4) {
-		Int_t Reg = Mu-3;
+		Int_t Reg = Mu-5;
 		tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
 	}
 
