@@ -904,7 +904,7 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
 	hV0IMvPt[Sp][Type][Mu][Sph]->Fill(v0.GetPt(),v0mass[Sp]);
 
-	if (Mu>2 && Type==0 && Sph == 0 && Sp==1) {
+	if (Mu>4 && Type==0 && Sph == 0 && Sp==1) {
 		hV0DPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
 	}
 
@@ -932,7 +932,7 @@ Bool_t MyAnalysisV0::ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
 	
-	if (Mu > 2) {
+	if (Mu > 4) {
 		Int_t Reg = Mu-3;
 		tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
 	}
@@ -1364,8 +1364,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph]	= (TH1D*)mDirFile->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hTrackEtavPhi[iType][iMu][iSph]	= (TH2D*)mDirFile->Get(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
@@ -1379,8 +1379,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)		{
 				
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0Pt[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0Eta[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2D*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
