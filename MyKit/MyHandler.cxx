@@ -7,6 +7,7 @@
 #include <TVirtualPad.h>
 #include <TH1D.h>
 #include <TLegend.h>
+#include <TSpline.h>
 
 #include "MyHandler.h"
 #include "MyAnalysis.h"
@@ -231,6 +232,88 @@ void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Doub
 	hr->SetMinimum(low);
 	hr->SetMaximum(high);
 	hr->GetXaxis()->SetRangeUser(lowx,highx);
+	hr->Divide(hd);
+
+	hr->GetYaxis()->SetTitle("ratio");
+	hr->GetYaxis()->CenterTitle();
+	hr->GetYaxis()->SetNdivisions(505);
+	hr->GetYaxis()->SetTitleSize(25);
+	//hr->GetYaxis()->SetTitleFont(43);
+	hr->GetYaxis()->SetTitleOffset(1.55);
+	hr->GetYaxis()->SetLabelFont(43); 
+	hr->GetYaxis()->SetLabelSize(20);
+
+	hr->GetXaxis()->SetTitleSize(25);
+	hr->GetXaxis()->SetTitleFont(43);
+	hr->GetXaxis()->SetTitleOffset(4.);
+	hr->GetXaxis()->SetLabelFont(43); 
+	hr->GetXaxis()->SetLabelSize(25);
+	hr->GetXaxis()->SetTickLength(0.09);
+
+	if (!hasRatio)	hr->Draw();
+	else			hr->Draw("same");
+
+	//c->SetCanvasSize()
+	c->cd();
+
+}
+
+
+void MyHandler::MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
+	
+	c->cd();
+
+	// check for an already existent ratio plot
+	Bool_t hasRatio = false;
+	TObject* obj;
+	TIter next(c->GetListOfPrimitives());
+	while ( (obj = next()) ) {
+		TString objName = obj->GetName();
+		if (objName == Form("p2_%s",c->GetName())) {
+			TVirtualPad* prat = (TVirtualPad*)obj;
+			prat->cd();
+			hasRatio = true;
+		}
+	}
+
+	if (!hasRatio) {
+
+		TCanvas* ctop = (TCanvas*)c->Clone("ctop");
+		c->Clear();
+		ctop->SetBottomMargin(0.005);
+		c->cd();
+
+		TPad* p1 = new TPad(Form("p1_%s",c->GetName()),"",0.,0.3,1.,1.);
+		p1->SetBottomMargin(0.);
+		p1->Draw();
+		p1->cd();
+		ctop->DrawClonePad();
+
+		c->cd();
+		TPad* p2 = new TPad(Form("p2_%s",c->GetName()),"",0.,0.00,1.,0.28);
+		p2->SetTopMargin(0);
+		p2->SetBottomMargin(0.32);
+		p2->Draw();
+		p2->cd();
+	}
+
+	
+  	Int_t hn_nbins = hn->GetNbinsX();
+  	Double_t hn_x[hn_nbins], hn_err[hn_nbins]; 
+    for (int iB = 0; iB < hn_nbins; ++iB)		{
+    	hn_x[iB] 	= hn->GetBinCenter(iB+1);
+    	hn_err[iB] 	= hn->GetBinError(iB+1);		}
+
+    TSpline3* hn_spl 	= new TSpline3(hn, 0, 1, 0);
+    TSpline3* hn_splerr = new TSpline3(Form("splerr_%s",hn->GetName()), hn_x, hn_err, hn_nbins, 0, 1, 0);
+    
+	TH1D* hr = (TH1D*)hd->Clone(Form("hr_%s",hn->GetName()));
+	hr->SetMinimum(low);
+	hr->SetMaximum(high);
+	hr->GetXaxis()->SetRangeUser(lowx,highx);
+    for (int iB = 1; iB <= hr->GetNbinsX(); ++iB)					{
+      hr->SetBinContent(iB, hn_spl->Eval(hr->GetBinCenter(iB)));
+      hr->SetBinError(iB, hn_splerr->Eval(hr->GetBinCenter(iB)));	}
 	hr->Divide(hd);
 
 	hr->GetYaxis()->SetTitle("ratio");

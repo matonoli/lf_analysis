@@ -869,7 +869,8 @@ Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
 			break;
 		case 1: 
 			if (ev.GetV0MCentrality() < 10. 
-				&& ev.GetRefMult() > 9.9)		return true;
+				&& ev.GetRefMult() > 0.)		return true;
+				//&& ev.GetRefMult() > 9.9)		return true;
 			break;
 
 		case 2: 
@@ -879,7 +880,8 @@ Bool_t MyAnalysisV0::IsCentral(MyEvent &ev, Int_t Mu) {
 
 		case 3: 
 			if (ev.GetV0MCentrality() < 1. 
-				&& ev.GetRefMult() > 9.9)		return true;
+				&& ev.GetRefMult() > 0.)		return true;
+				//&& ev.GetRefMult() > 9.9)		return true;
 			break;
 
 		case 4: 

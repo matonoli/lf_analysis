@@ -70,6 +70,8 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 
 	hEventSpherocityV0M			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityV0M");
 	hEventSpherocityNCharged	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityNCharged");
+	hEventSpherocityV0M01		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityV0M01");
+	hEventSpherocityNCharged01	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventSpherocityNCharged01");
 
 	hTrackDPhivNchTrans			= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hTrackDPhivNchTrans");
 	hV0DPhivNchTrans			= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0DPhivNchTrans");
@@ -103,8 +105,8 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFitCorr[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0PtFit[iSp][iType][iMu][iSph] 
@@ -137,8 +139,8 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
@@ -184,8 +186,8 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 		
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hBtoM[iMu][iSph] =			(TH1D*)hV0PtFitCorr[2][0][iMu][iSph]->Clone(Form("hBtoM_%s_%s",MULTI[iMu],SPHERO[iSph]));
 		//hV0toNchDR[0][iMu][iSph] =	(TH1D*)hV0PtFit[1][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[1],MULTI[iMu],SPHERO[iSph]));
 		//hV0toNchDR[1][iMu][iSph] =	(TH1D*)hV0PtFit[2][0][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s",SPECIES[2],MULTI[iMu],SPHERO[iSph]));
@@ -201,8 +203,8 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iType = 0; iType < nType; ++iType) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 
 		hV0toNchDR[0][iType][iMu][iSph] =	(TH1D*)hV0PtFit[1][iType][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[1],TYPE[iType],MULTI[iMu],SPHERO[iSph]));	//k0s
 		hV0toNchDR[1][iType][iMu][iSph] =	(TH1D*)hV0PtFit[2][iType][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[2],TYPE[iType],MULTI[iMu],SPHERO[iSph]));	//l+lbar
@@ -213,8 +215,8 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 
 		for (int iMu = 0; iMu < NMULTI; ++iMu) {
 		for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-			if (iMu > 2 && (iSph < 3 && iSph)) continue;
-			if (iMu < 3 && iSph > 2) continue; 
+			if (iMu > 4 && (iSph < 3 && iSph)) continue;
+			if (iMu < 5 && iSph > 2) continue; 
 
 			hV0toNchDR[0][2][iMu][iSph] =	(TH1D*)hV0Pt[1][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[1],TYPE[2],MULTI[iMu],SPHERO[iSph]));
 			hV0toNchDR[1][2][iMu][iSph] =	(TH1D*)hV0Pt[2][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[2],TYPE[2],MULTI[iMu],SPHERO[iSph]));
@@ -235,7 +237,7 @@ Int_t MyAnalysisV0plot::Finish() {
 	CloneHistograms();
 	MakeFinalFiguresSpherocity();
 	MakeFinalFiguresEvent();
-	MakeFinalFiguresRt();
+	//MakeFinalFiguresRt();
 
 	return 0;	
 }
@@ -914,7 +916,8 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	// SPHEROCITY
 	Double_t quantileValues[4] = {0.0, 0.2, 0.8, 1.0};
 	Double_t quantileCuts[4];
-	hEventSpherocityV0M->GetXaxis()->SetRangeUser(0.0,1.0);
+	
+	{hEventSpherocityV0M->GetXaxis()->SetRangeUser(0.0,1.0);
 	//hEventSpherocity->ClearUnderflowAndOverflow();
 	hEventSpherocityV0M->GetQuantiles(4,quantileCuts,quantileValues);
 
@@ -932,9 +935,9 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	leg1->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
 	leg1->Draw();
 	cSpherocityV0M->Write();
-	cSpherocityV0M->SaveAs("plots/spherocity_v0m.png");
+	cSpherocityV0M->SaveAs("plots/spherocity_v0m.png");}
 
-	hEventSpherocityNCharged->GetXaxis()->SetRangeUser(0.0,1.0);
+	{hEventSpherocityNCharged->GetXaxis()->SetRangeUser(0.0,1.0);
 	//hEventSpherocity->ClearUnderflowAndOverflow();
 	hEventSpherocityNCharged->GetQuantiles(4,quantileCuts,quantileValues);
 
@@ -947,23 +950,66 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocityNCharged);
 	TLegend *leg2 = new TLegend(0.075,0.7,0.5,0.88);
 	mHandler->MakeNiceLegend(leg2,0.050,1);
-	leg2->AddEntry((TObject*)0,"NCharged 0-10%","");
+	leg2->AddEntry((TObject*)0,"CL1 0-10%","");
 	leg2->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
 	leg2->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
 	leg2->Draw();
 	cSpherocityNCharged->Write();
-	cSpherocityNCharged->SaveAs("plots/spherocity_NCharged.png");
+	cSpherocityNCharged->SaveAs("plots/spherocity_NCharged.png");}
+
+	{hEventSpherocityV0M01->GetXaxis()->SetRangeUser(0.0,1.0);
+	//hEventSpherocity->ClearUnderflowAndOverflow();
+	hEventSpherocityV0M01->GetQuantiles(4,quantileCuts,quantileValues);
+
+	TCanvas* cSpherocityV0M01 = new TCanvas("cSpherocityV0M01","",1000,800);
+	mHandler->MakeNiceHistogram(hEventSpherocityV0M01,kBlack);
+	hEventSpherocityV0M01->GetXaxis()->SetTitle("S_{O}^{pT=1}");
+	hEventSpherocityV0M01->Draw();
+	cSpherocityV0M01->Update();
+	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocityV0M01);
+	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocityV0M01);
+	TLegend *leg1 = new TLegend(0.075,0.7,0.5,0.88);
+	mHandler->MakeNiceLegend(leg1,0.050,1);
+	leg1->AddEntry((TObject*)0,"V0M 0-1%","");
+	leg1->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
+	leg1->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
+	leg1->Draw();
+	cSpherocityV0M01->Write();
+	cSpherocityV0M01->SaveAs("plots/spherocity_V0M01.png");}
+
+	{hEventSpherocityNCharged01->GetXaxis()->SetRangeUser(0.0,1.0);
+	//hEventSpherocity->ClearUnderflowAndOverflow();
+	hEventSpherocityNCharged01->GetQuantiles(4,quantileCuts,quantileValues);
+
+	TCanvas* cSpherocityNCharged01 = new TCanvas("cSpherocityNCharged01","",1000,800);
+	mHandler->MakeNiceHistogram(hEventSpherocityNCharged01,kBlack);
+	hEventSpherocityNCharged01->GetXaxis()->SetTitle("S_{O}^{pT=1}");
+	hEventSpherocityNCharged01->Draw();
+	cSpherocityNCharged01->Update();
+	mHandler->DrawCut(quantileCuts[1],LEFT,cSpherocityNCharged01);
+	mHandler->DrawCut(quantileCuts[2],RIGHT,cSpherocityNCharged01);
+	TLegend *leg2 = new TLegend(0.075,0.7,0.5,0.88);
+	mHandler->MakeNiceLegend(leg2,0.050,1);
+	leg2->AddEntry((TObject*)0,"CL1 0-1%","");
+	leg2->AddEntry((TObject*)0,Form("Jetty: <%4.3f", quantileCuts[1]),"");
+	leg2->AddEntry((TObject*)0,Form("Iso: >%4.3f", quantileCuts[2]),"");
+	leg2->Draw();
+	cSpherocityNCharged01->Write();
+	cSpherocityNCharged01->SaveAs("plots/spherocity_NCharged01.png");}
+
+
 
 	// PT SPECTRA
 	TCanvas* cPt[4][2];
 	Double_t rangePtL = 0.;
 	Double_t rangePtH = 15.;
-	for (Int_t iSp = 1; iSp < NSPECIES; ++iSp)	{				
+	for (Int_t iSp = 1; iSp < 2; ++iSp)	{				
+	//for (Int_t iSp = 1; iSp < NSPECIES; ++iSp)	{				
 	
 		mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][0][0],COLOURS[2]);
 		hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetTitle("1/N_{ev} N/(#Deltay #Deltap_{T})  ((GeV/#it{c})^{-1})");
 
-		for (Int_t iMu = 1; iMu < 3; ++iMu)	{
+		for (Int_t iMu = 1; iMu < 5; ++iMu)	{
 			
 			for (Int_t iSph = 0; iSph < 3; ++iSph)	{
 
@@ -1062,12 +1108,14 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 
 	}*/
 
+	return;
+
 	// B/M RATIO
 	//TH1D* hBtoM[NMULTI][NSPHERO];
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		
 		hBtoM[iMu][iSph]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
 		hBtoM[iMu][iSph]->Add(hV0PtFitCorr[3][0][iMu][iSph]);
@@ -1140,28 +1188,29 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	cBtoM[2]->Write();
 	cBtoM[2]->SaveAs("plots/btom_nch_sph.png");
 
-	cBtoM[3] = new TCanvas("cBtoM_Rt","",1000,800);
-	legBtoM[3] = new TLegend(0.55,0.55,0.85,0.85);
-	mHandler->MakeNiceLegend(legBtoM[3],0.04,1);
-	mHandler->MakeNiceHistogram(hBtoM[3][3],COLOURS[3]);
-	mHandler->MakeNiceHistogram(hBtoM[3][4],COLOURS[4]);
-	mHandler->MakeNiceHistogram(hBtoM[3][5],COLOURS[5]);
-	hBtoM[3][3]->GetYaxis()->SetRangeUser(0.,1.0);
-	hBtoM[3][3]->Draw();
-	cBtoM[3]->Update();
-	hBtoM[3][4]->Draw("same");
-	hBtoM[3][5]->Draw("same");
+	/*{	cBtoM[3] = new TCanvas("cBtoM_Rt","",1000,800);
+		legBtoM[3] = new TLegend(0.55,0.55,0.85,0.85);
+		mHandler->MakeNiceLegend(legBtoM[3],0.04,1);
+		mHandler->MakeNiceHistogram(hBtoM[3][3],COLOURS[3]);
+		mHandler->MakeNiceHistogram(hBtoM[3][4],COLOURS[4]);
+		mHandler->MakeNiceHistogram(hBtoM[3][5],COLOURS[5]);
+		hBtoM[3][3]->GetYaxis()->SetRangeUser(0.,1.0);
+		hBtoM[3][3]->Draw();
+		cBtoM[3]->Update();
+		hBtoM[3][4]->Draw("same");
+		hBtoM[3][5]->Draw("same");
 
-	legBtoM[3]->AddEntry((TObject*)0,Form("pp #sqrt{s} = 13 TeV"),"");
-	legBtoM[3]->AddEntry((TObject*)0,isMC,"");
-	legBtoM[3]->AddEntry((TObject*)0,"","");
-	legBtoM[3]->AddEntry(hBtoM[3][3],Form("%s %s",PLOTS_MULTI[3],SPHERO[3]),"pl");
-	legBtoM[3]->AddEntry(hBtoM[3][4],Form("%s %s",PLOTS_MULTI[3],SPHERO[4]),"pl");
-	legBtoM[3]->AddEntry(hBtoM[3][5],Form("%s %s",PLOTS_MULTI[3],SPHERO[5]),"pl");
-	legBtoM[3]->Draw();
+		legBtoM[3]->AddEntry((TObject*)0,Form("pp #sqrt{s} = 13 TeV"),"");
+		legBtoM[3]->AddEntry((TObject*)0,isMC,"");
+		legBtoM[3]->AddEntry((TObject*)0,"","");
+		legBtoM[3]->AddEntry(hBtoM[3][3],Form("%s %s",PLOTS_MULTI[3],SPHERO[3]),"pl");
+		legBtoM[3]->AddEntry(hBtoM[3][4],Form("%s %s",PLOTS_MULTI[3],SPHERO[4]),"pl");
+		legBtoM[3]->AddEntry(hBtoM[3][5],Form("%s %s",PLOTS_MULTI[3],SPHERO[5]),"pl");
+		legBtoM[3]->Draw();
 
-	cBtoM[3]->Write();
-	cBtoM[3]->SaveAs("plots/btom_rt.png");
+		cBtoM[3]->Write();
+		cBtoM[3]->SaveAs("plots/btom_rt.png");
+	}*/
 
 
 	// DOUBLE RATIO CALC

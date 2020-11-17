@@ -49,6 +49,8 @@ class MyAnalysisV0plot: public MyAnalysis {
 		//borrowed
 		TH1D* hEventSpherocityV0M;
 		TH1D* hEventSpherocityNCharged;
+		TH1D* hEventSpherocityV0M01;
+		TH1D* hEventSpherocityNCharged01;
 		TH1D* hNchTrans;
 		TH1D* hRt2;
 		TH2D* hNchvLeadPt2;

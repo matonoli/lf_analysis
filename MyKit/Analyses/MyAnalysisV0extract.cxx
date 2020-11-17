@@ -80,8 +80,8 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0IMvPt[iSp][iType][iMu][iSph] 
 			= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
@@ -128,8 +128,8 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 
@@ -240,18 +240,18 @@ void MyAnalysisV0extract::DefineSidebands() {
 			hist->Rebin(16);
 			RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
 
-			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.0011,0.0011);
-			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.00001,0.029);
+			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.0019,0.0019);
+			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.002,0.00001,0.039);
 			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
-			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,6e08);
+			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,8e08);
 		
 			//RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
-			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.0001,0.011);
+			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.015,0.00005,0.019);
 			RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
-			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,6e08);
+			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,8e08);
 		
-			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-6,6);
-			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-6,6);
+			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-7,7);
+			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-7,7);
 			RooChebychev fPolBg = RooChebychev("fPolBg","fPolBg",MassDT,RooArgSet(pPolBgA));
 			RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,9e08);
 
@@ -1080,11 +1080,11 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iMu = 0; iMu < 3; ++iMu)		{
+	for (int iMu = 0; iMu < 5; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 
 		printf("Extracting yield for pt spectrum iSp%i_iType%i_iMu%i_iSph%i \n",iSp,iType,iMu,iSph);
 

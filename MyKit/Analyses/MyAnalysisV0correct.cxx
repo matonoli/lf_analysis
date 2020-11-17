@@ -92,8 +92,8 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
@@ -150,8 +150,8 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]	= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Clone(
 			Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]) );
 
@@ -205,13 +205,14 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
 
-	DoXCheckV0M();
+	//DoXCheckV0M();
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 
 	printf("mb k0s spectrum final \n");
 	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << " at " << hV0PtFitCorr[1][0][0][0]->GetBinLowEdge(30) << endl;
 
+	return 0;
 	//draw shit, move to func later
 	{
 	//fast det
@@ -503,8 +504,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		Double_t NormEv = hEventType->GetBinContent(24);	// MB
 		if (iMu == 1)	{	NormEv = hEventType->GetBinContent(3);		// FHM
 			if (iSph == 1)	NormEv = hEventType->GetBinContent(8);		// FHM JET
@@ -512,7 +513,15 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		if (iMu == 2)	{	NormEv = hEventType->GetBinContent(4);		// MHM
 			if (iSph == 1)	NormEv = hEventType->GetBinContent(10);		// MHM JET
 			if (iSph == 2)	NormEv = hEventType->GetBinContent(9);	}	// MHM ISO
-		if (iMu == 3 || iMu == 4 || iMu == 5)	{	NormEv = hEventType->GetBinContent(11);		// RT
+
+		if (iMu == 3)	{	NormEv = hEventType->GetBinContent(25);		// FHM 0-1%
+			if (iSph == 1)	NormEv = hEventType->GetBinContent(28);		// FHM 0-1% JET
+			if (iSph == 2)	NormEv = hEventType->GetBinContent(27);	}	// FHM 0-1% ISO
+		if (iMu == 4)	{	NormEv = hEventType->GetBinContent(26);		// MHM 0-1%
+			if (iSph == 1)	NormEv = hEventType->GetBinContent(30);		// MHM 0-1% JET
+			if (iSph == 2)	NormEv = hEventType->GetBinContent(29);	}	// MHM 0-1% ISO
+
+		if (iMu == 5 || iMu == 6 || iMu == 7)	{	NormEv = hEventType->GetBinContent(11);		// RT
 			if (iSph == 3)	NormEv = hEventType->GetBinContent(12);		// RT 0-1
 			if (iSph == 4)	NormEv = hEventType->GetBinContent(13);		// RT 1-2
 			if (iSph == 5)	NormEv = hEventType->GetBinContent(14);		// RT 2-3
@@ -837,8 +846,8 @@ void MyAnalysisV0correct::CorrectSpectra() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
-		if (iMu > 2 && (iSph < 3 && iSph)) continue;
-		if (iMu < 3 && iSph > 2) continue; 
+		if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		if (iMu < 5 && iSph > 2) continue; 
 		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1,"width");
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 
