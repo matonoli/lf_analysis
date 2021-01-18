@@ -93,12 +93,13 @@ Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName)
 		mChain->Add(dirFile.c_str());	}
 	else	{
 		std::cout << " No good input file to read ... " << std::endl;
-		return 1;	}
+		return 0;	}
 
 	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
 	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
 	if (mFlagMC) mChain->SetBranchAddress("AnalysisParticle",&bParticles);
+	return 1;
 }
 
 Int_t MyHandler::LoadInputHist(const Char_t *inputFile) {
@@ -139,7 +140,7 @@ Int_t MyHandler::Finish() {
 
 	if (mFile) {
 		mFile->cd();
-		mFile->Write();
+		//mFile->Write();
 		printf("File written \n");
 	}
 

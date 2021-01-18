@@ -80,8 +80,8 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
 		hV0IMvPt[iSp][iType][iMu][iSph] 
 			= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
@@ -128,8 +128,8 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 
@@ -1080,11 +1080,12 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iMu = 0; iMu < 5; ++iMu)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue;
+		if (iMu==0 && iSph) continue;
 
 		printf("Extracting yield for pt spectrum iSp%i_iType%i_iMu%i_iSph%i \n",iSp,iType,iMu,iSph);
 

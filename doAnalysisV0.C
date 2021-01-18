@@ -84,7 +84,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		return;	}
 
 	// SPECIFY WHAT CUTS TO USE
-	TString cutStr("cuts07.h");
+	TString cutStr("cuts08.h");
 	if (!gSystem->AccessPathName(Form("../%s",cutStr.Data())))
 		std::cout << "---Using cuts specified in file " << cutStr.Data() << "\n";
 	else {

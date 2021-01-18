@@ -26,16 +26,16 @@ class TransverseSpherocity;
 namespace V0consts {
 	const Int_t NSPECIES = 4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 8;
-	const Int_t NSPHERO = 4;
+	const Int_t NMULTI = 5;
+	const Int_t NSPHERO = 9;
 	const Int_t NREGIONS = 3;
 	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
 	const Float_t XIMASS = 1.32171;
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
-	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","V0M01","NCharged01","RTTrans","RTNear","RTAway"};
-	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%", "R_{T} Trans.","R_{T} Near","R_{T} Away"};
-	const char* SPHERO[NSPHERO] = {"MB","Jetty","Iso", "int."};//,"0-1","1-2","2-3","3-4","4-5"};
+	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","V0M01","NCharged01"};//,"RTTrans","RTNear","RTAway"};
+	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
+	const char* SPHERO[NSPHERO] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1",};//,"0-1","1-2","2-3","3-4","4-5"};
 	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
 	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away"};
 	//const Int_t NPTBINS = 35;
@@ -197,15 +197,21 @@ namespace V0consts {
 	//const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
 	const Int_t COLOURS[7] = {kRed, kBlack, kGreen+2, kBlue, kViolet+10,kPink+10,kGreen+2};
 
-	const Int_t NEVENTTYPES = 34; //1+2+2+4+6+4+4 +2+4+4
-	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
+	//const Int_t NEVENTTYPES = 34; //1+2+2+4+6+4+4 +2+4+4
+	/*const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", "FHM", "MHM",
 			"ISO", "JETTY", "FHM ISO", "FHM JETTY", "MHM ISO", "MHM JETTY",
 			"RT", "RT int.", "RT 1-2", "RT 2-3", "RT 3-4", "RT 4-5",
 			"FHM ISO MC", "FHM JETTY MC", "MHM ISO MC", "MHM JETTY MC" ,
 			"MB ES rejected", "MB post-ES no V", "MB post-ES bad V", "MB post-ES good V" ,
 			"FHM 0-1%", "MHM 0-1%",
 			"FHM 0-1% ISO", "FHM 0-1% JETTY", "MHM 0-1% ISO", "MHM 0-1% JETTY",
-			"FHM 0-1% ISO MC", "FHM 0-1% JETTY MC", "MHM 0-1% ISO MC", "MHM 0-1% JETTY MC"};
+			"FHM 0-1% ISO MC", "FHM 0-1% JETTY MC", "MHM 0-1% ISO MC", "MHM 0-1% JETTY MC"};*/
+
+	const Int_t NEVENTTYPES = 10; //1+2+2+4+6+4+4 +2+4+4
+	const char* EVENTTYPES[NEVENTTYPES] = {"MB pre-ES", "MB post-ES", 
+	"MB ES rejected", "MB post-ES no V", "MB post-ES bad V", "MB post-ES good V" ,
+	"FHM", "MHM", "FHM 0-1%", "MHM 0-1%"
+	};
 
 	const Float_t RT_DEN		= 7.449;
 	const Float_t RT_DEN_MC		= 7.525; 
@@ -253,8 +259,8 @@ class MyAnalysisV0: public MyAnalysis {
 
 		Double_t bugR;
 		Double_t bugPt;
-		TransverseSpherocity* mTS[V0consts::NTYPE][V0consts::NMULTI-1];
-		TransverseSpherocity* mTSNorm[V0consts::NTYPE][V0consts::NMULTI-1];
+		TransverseSpherocity* mTS[V0consts::NTYPE][V0consts::NMULTI];
+		TransverseSpherocity* mTSNorm[V0consts::NTYPE][V0consts::NMULTI];
 		
 		Double_t eventRt;
 		Int_t nChTrans;
@@ -283,6 +289,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hEventTSNormMCvRC;
 		TH2D* hEventTSMCvNorm;
 		TH2D* hEventTSRCvNorm;
+		TH2D* hEventMultvSpheroD;
+		TH2D* hEventMultvSpheroMC;
 
 		TH2D* hLeadPhivPt;
 		TH1D* hNchvLeadPt;

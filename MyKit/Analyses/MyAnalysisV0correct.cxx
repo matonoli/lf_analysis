@@ -74,10 +74,12 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 
-	hEventType	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
-	hNchTrans	= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
-	hRt			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt");
-	hRt2		= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
+	hEventType			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
+	hEventMultvSpheroD 	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hEventMultvSpheroD");
+	hEventMultvSpheroMC	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hEventMultvSpheroMC");
+	hNchTrans			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
+	hRt					= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt");
+	hRt2				= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
 	
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
@@ -92,8 +94,8 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
@@ -150,8 +152,8 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]	= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Clone(
 			Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]) );
 
@@ -504,40 +506,31 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 			
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
-		Double_t NormEv = hEventType->GetBinContent(24);	// MB
-		if (iMu == 1)	{	NormEv = hEventType->GetBinContent(3);		// FHM
-			if (iSph == 1)	NormEv = hEventType->GetBinContent(8);		// FHM JET
-			if (iSph == 2)	NormEv = hEventType->GetBinContent(7);	}	// FHM ISO
-		if (iMu == 2)	{	NormEv = hEventType->GetBinContent(4);		// MHM
-			if (iSph == 1)	NormEv = hEventType->GetBinContent(10);		// MHM JET
-			if (iSph == 2)	NormEv = hEventType->GetBinContent(9);	}	// MHM ISO
-
-		if (iMu == 3)	{	NormEv = hEventType->GetBinContent(25);		// FHM 0-1%
-			if (iSph == 1)	NormEv = hEventType->GetBinContent(28);		// FHM 0-1% JET
-			if (iSph == 2)	NormEv = hEventType->GetBinContent(27);	}	// FHM 0-1% ISO
-		if (iMu == 4)	{	NormEv = hEventType->GetBinContent(26);		// MHM 0-1%
-			if (iSph == 1)	NormEv = hEventType->GetBinContent(30);		// MHM 0-1% JET
-			if (iSph == 2)	NormEv = hEventType->GetBinContent(29);	}	// MHM 0-1% ISO
-
-		if (iMu == 5 || iMu == 6 || iMu == 7)	{	NormEv = hEventType->GetBinContent(11);		// RT
-			if (iSph == 3)	NormEv = hEventType->GetBinContent(12);		// RT 0-1
-			if (iSph == 4)	NormEv = hEventType->GetBinContent(13);		// RT 1-2
-			if (iSph == 5)	NormEv = hEventType->GetBinContent(14);		// RT 2-3
-			if (iSph == 6)	NormEv = hEventType->GetBinContent(15);		// RT 3-4
-			if (iSph == 7)	NormEv = hEventType->GetBinContent(16);	}	// RT 4-5
-		if (iType == 1) {
-			if (iMu == 1) {
-				if (iSph == 1 )	NormEv = hEventType->GetBinContent(18);		// FHM JET MC
-				if (iSph == 2 )	NormEv = hEventType->GetBinContent(17);	}	// FHM ISO MC
-			if (iMu == 2) {
-				if (iSph == 1 )	NormEv = hEventType->GetBinContent(20);		// MHM JET MC
-				if (iSph == 2 )	NormEv = hEventType->GetBinContent(19);	}	// MHM ISO MC
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
+		Double_t NormEv = hEventType->GetBinContent(6);	// MB
+		if (iMu || iSph) {
+			if (iType==1) NormEv = hEventMultvSpheroMC->GetBinContent(1+iSph,1+iMu);
+			else NormEv = hEventMultvSpheroD->GetBinContent(1+iSph,1+iMu);
 		}
+
+		//if (iMu == 5 || iMu == 6 || iMu == 7)	{	NormEv = hEventType->GetBinContent(11);		// RT
+		//	if (iSph == 3)	NormEv = hEventType->GetBinContent(12);		// RT 0-1
+		//	if (iSph == 4)	NormEv = hEventType->GetBinContent(13);		// RT 1-2
+		//	if (iSph == 5)	NormEv = hEventType->GetBinContent(14);		// RT 2-3
+		//	if (iSph == 6)	NormEv = hEventType->GetBinContent(15);		// RT 3-4
+		//	if (iSph == 7)	NormEv = hEventType->GetBinContent(16);	}	// RT 4-5
+		//if (iType == 1) {
+		//	if (iMu == 1) {
+		//		if (iSph == 1 )	NormEv = hEventType->GetBinContent(18);		// FHM JET MC
+		//		if (iSph == 2 )	NormEv = hEventType->GetBinContent(17);	}	// FHM ISO MC
+		//	if (iMu == 2) {
+		//		if (iSph == 1 )	NormEv = hEventType->GetBinContent(20);		// MHM JET MC
+		//		if (iSph == 2 )	NormEv = hEventType->GetBinContent(19);	}	// MHM ISO MC
+		//}
 		
 		if (NormEv>0) {
-			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+			NormEv += NormEv * hEventType->GetBinContent(4) * 1./(hEventType->GetBinContent(5) + hEventType->GetBinContent(6));
 		}
 
 		if (NormEv == 0) NormEv = 1;
@@ -957,9 +950,9 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 	// DIVIDING BLINDLY REC. MC DATA (CORRECTED) W MC GENERATED PARTICLES
 
 	mHandler->root()->SetBatch(kTRUE);
-	Double_t NormEv = hEventType->GetBinContent(24);	// MB
+	Double_t NormEv = hEventType->GetBinContent(6);	// MB
 	if (NormEv>0) {
-			NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+			NormEv += NormEv * hEventType->GetBinContent(4) * 1./(hEventType->GetBinContent(5) + hEventType->GetBinContent(6));
 		}
 	Double_t MBtrigEff = 0.7448;
 	TF1* funcRapCorrection = new TF1("funcRapCorrection",rap_correction,XBINS[0],XBINS[NPTBINS],2);

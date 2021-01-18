@@ -108,6 +108,8 @@ class MyAnalysisV0correct: public MyAnalysis {
 		// V0 HISTOGRAMS
 		//borrowed
 		TH1D* hEventType;
+		TH2D* hEventMultvSpheroD;
+		TH2D* hEventMultvSpheroMC;
 		TH1D* hNchTrans;
 		TH1D* hRt;
 		TH1D* hRt2;
