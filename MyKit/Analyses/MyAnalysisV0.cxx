@@ -762,23 +762,23 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 				if (isEventFHM) {
 					ProcessV0toHist(v0,iSp,D,V0M,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M][iSph]) ProcessV0toHist(v0,iSp,D,V0M,iSph);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessV0toHist(v0,iSp,D,V0M,iSph);
 				}
 
 				if (isEventMHM) {
 					ProcessV0toHist(v0,iSp,D,NCharged,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged][iSph]) ProcessV0toHist(v0,iSp,D,NCharged,iSph);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessV0toHist(v0,iSp,D,NCharged,iSph);
 				}
 
 
 				if (isEventFHM01) {
 					ProcessV0toHist(v0,iSp,D,V0M01,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M01][iSph]) ProcessV0toHist(v0,iSp,D,V0M01,iSph);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessV0toHist(v0,iSp,D,V0M01,iSph);
 				}
 
 				if (isEventMHM01) {
 					ProcessV0toHist(v0,iSp,D,NCharged01,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged01][iSph]) ProcessV0toHist(v0,iSp,D,NCharged01,iSph);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0toHist(v0,iSp,D,NCharged01,iSph);
 				}
 				
 

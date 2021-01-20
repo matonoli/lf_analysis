@@ -201,8 +201,8 @@ Int_t MyAnalysisV0correct::Finish() {
 	NormaliseSpectra();
 	CorrectForFeeddown();
 
-	LoadEfficiency();
-	//DoEfficiencyFromFile();
+	//LoadEfficiency();
+	DoEfficiencyFromFile();
 	CorrectSpectra();
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
@@ -839,8 +839,8 @@ void MyAnalysisV0correct::CorrectSpectra() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
 		//hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(1,"width");
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(hV0Efficiency[iSp]);
 
