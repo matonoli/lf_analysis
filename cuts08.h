@@ -16,8 +16,8 @@ namespace cuts {
 	const Float_t EV_SPH_NCharged_ISO[4]		= {0.833, 0.871, 0.896, 0.930};
 	const Float_t EV_SPH_NCharged01_ISO[4]		= {0.859, 0.892, 0.913, 0.942};	
 
-	const Float_t EV_MHM[2]			= {26., 300.};
-	const Float_t EV_MHM01[2]		= {47., 300.};
+	const Float_t EV_MHM[2]			= {26., 999.};
+	const Float_t EV_MHM01[2]		= {47., 999.};
 
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};

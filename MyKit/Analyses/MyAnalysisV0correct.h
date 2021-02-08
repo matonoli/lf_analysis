@@ -90,6 +90,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void StudyCuts();
 		void DoClosureTest(Int_t opt = 0);
 		void DoXCheckV0M();
+		void CreateOutputFile(const Char_t *name, Int_t Sp);
 
 		//Double_t rap_correction(Double_t* x, Double_t* par);
 

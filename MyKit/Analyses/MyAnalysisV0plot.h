@@ -35,6 +35,7 @@ class MyAnalysisV0plot: public MyAnalysis {
 		void MakeFinalFiguresSpherocity();
 		void MakeFinalFiguresRt();
 		void MakeFinalFiguresEvent();
+		void MakeFinalFiguresRatios();
 
 		ClassDef(MyAnalysisV0plot,1);
 

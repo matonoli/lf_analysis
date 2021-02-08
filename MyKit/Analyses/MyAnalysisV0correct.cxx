@@ -207,9 +207,10 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
 
-	//DoXCheckV0M();
+	DoXCheckV0M();
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
+	CreateOutputFile("k0s_spherocity.root",1);
 
 	printf("mb k0s spectrum final \n");
 	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << " at " << hV0PtFitCorr[1][0][0][0]->GetBinLowEdge(30) << endl;
@@ -850,7 +851,7 @@ void MyAnalysisV0correct::CorrectSpectra() {
 
 		hV0PtFitCorr[iSp][iType][iMu][iSph]->Divide(funcRapCorrection,1.);
 
-		hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(MBtrigEff);
+		if (iMu == 0) hV0PtFitCorr[iSp][iType][iMu][iSph]->Scale(MBtrigEff);
 
 
 
@@ -1020,10 +1021,10 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	hLLbarMB->Scale(1./0.7448);
 	TH1D* hLLbarV0M = (TH1D*)hV0PtFitCorr[2][0][1][0]->Clone("hLLbarV0M"); 
 	hLLbarV0M->Add(hV0PtFitCorr[3][0][1][0]);
-	hLLbarV0M->Scale(1./0.7448);
+	//hLLbarV0M->Scale(1./0.7448);
 
 	TF1* funcRapCorrectionL = new TF1("funcRapCorrectionL",rap_correction,XBINS[0],XBINS[NPTBINS],2);
-	funcRapCorrectionL->SetParameters(1.6,MASSES[2]);
+	funcRapCorrectionL->SetParameters(0.8,MASSES[2]);
 	//hLLbarMB->Divide(funcRapCorrectionL,1);
 	//hLLbarV0M->Divide(funcRapCorrectionL,1);
 
@@ -1031,6 +1032,7 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	//hLLbarV0M->Divide(hOffiL);
 	//hLLbarMB->Divide(hOffiLMB);
 
+cout << "blaaadawdaaa " << endl;
 	
 	if (1) {
 		TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
@@ -1046,15 +1048,18 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 		hLLbarMB->Draw("same");
 		hOffiLMB->Draw("same");
 	}
+	cout << "blaaadawdaaa " << endl;
 
 	TH1D* hK0sMB = (TH1D*)hV0PtFitCorr[1][0][0][0]->Clone("hK0sMB");
 	TH1D* hK0sMBeff = (TH1D*)hV0Efficiency[1]->Clone("hK0sMBeff");
 	TH1D* hK0sMBraw = (TH1D*)hV0PtFit[1][0][0][0]->Clone("hK0sMBraw");
 	hK0sMBraw->Scale(1./NormEta);
 
-	Double_t NormEv = hEventType->GetBinContent(24);
-	NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
-	hK0sMBraw->Scale(1./NormEv);
+	cout << "blaaadawdaaa " << endl;
+
+	//Double_t NormEv = hEventType->GetBinContent(24);
+	//NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
+	//hK0sMBraw->Scale(1./NormEv);
 
 	cout << "badawda " << hK0sMB << endl;
 	cout << "badawda222 " << hK0sMBeff << endl;
@@ -1065,38 +1070,61 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	cout << hK0sMBeff->GetBinContent(30) << endl;
 
 	TF1* funcRapCorrection3 = new TF1("funcRapCorrection3",rap_correction,XBINS[0],XBINS[NPTBINS],2);
-	funcRapCorrection3->SetParameters(1.6,MASSES[1]);
+	funcRapCorrection3->SetParameters(0.8,MASSES[1]);
 	//hOffiKMBeff->Divide(funcRapCorrection3,1);
 
-	hK0sMB->Divide(hOffiKMB);
-	hOffiKMBeff->Divide(hK0sMBeff);
-	hK0sMBraw->Divide(hOffiKMBraw);
+	//hK0sMB->Divide(hOffiKMB);
+	//hOffiKMBeff->Divide(hK0sMBeff);
+	//hK0sMBraw->Divide(hOffiKMBraw);
 
 
 	TCanvas* cXcheck2 = new TCanvas("cXcheck2","",900,900);
 	cXcheck2->SetGridy();
-	//cXcheck2->SetLogy();
+	cXcheck2->SetLogy();
 	//hOffiLMB->SetMarkerStyle(21);
 	mHandler->MakeNiceHistogram(hK0sMB,kRed);
-	mHandler->MakeNiceHistogram(hK0sMBeff,kBlue);
-	mHandler->MakeNiceHistogram(hK0sMBraw,kBlue);
+	mHandler->MakeNiceHistogram((TH1D*)hOffiKMB,kRed+1);
+	hOffiKMB->SetMarkerStyle(21);
+	//mHandler->MakeNiceHistogram(hK0sMBeff,kBlue);
+	//mHandler->MakeNiceHistogram(hK0sMBraw,kBlue);
 	//hLLbarMB->SetMarkerStyle(21);
-	hK0sMB->GetYaxis()->SetRangeUser(0.,2.);
+	//hK0sMB->GetYaxis()->SetRangeUser(0.,2.);
 	hK0sMB->GetYaxis()->SetTitle("this analysis / official MB analysis");
+	hK0sMB->GetXaxis()->SetRangeUser(0.2,10.);
+	
 	hK0sMB->Draw();
+	hOffiKMB->Draw("same");
 
+	mHandler->MakeRatioPlotInterp(hK0sMB,(TH1D*)hOffiKMB,cXcheck2,0.799,1.201,0.2,10.);
 	//hOffiKMB->Draw("same");
 	
 	//hK0sMBeff->Draw("same");
-	hOffiKMBeff->Draw("same");
-	hK0sMBraw->Draw("same");
-	{TLegend *leg1 = new TLegend(0.45,0.72,0.85,0.85);
+	//hOffiKMBeff->Draw("same");
+	//hK0sMBraw->Draw("same");
+	/*{TLegend *leg1 = new TLegend(0.45,0.72,0.85,0.85);
 		mHandler->MakeNiceLegend(leg1,0.037,1);
 		leg1->AddEntry(hK0sMB,"corrected MB","pl");
 		leg1->AddEntry(hOffiKMBeff,"1/efficiency","pl");
 		leg1->AddEntry(hK0sMBraw,"raw yields","pl");
 		leg1->Draw();
-	}
+	}*/
 	cXcheck2->SaveAs("plots/xcheckK0s.png");	
 	//mHandler->root()->SetBatch(kFALSE);
+}
+
+void MyAnalysisV0correct::CreateOutputFile(const Char_t *name, Int_t Sp) {
+
+	TString fileName = TString(name);
+	TFile* outFile = new TFile(fileName,"RECREATE");
+
+	for (Int_t iMu = 0; iMu < NMULTI; iMu++) {
+	for (Int_t iSph = 0; iSph < NSPHERO; iSph++) {
+		if (iMu == 0 && iSph != 0) continue;
+		hV0PtFitCorr[Sp][0][iMu][iSph]->Write();
+	}	}
+
+	printf("Output file %s created. \n", fileName.Data()); 
+	outFile->Close();
+	mDirFile->cd();
+
 }
