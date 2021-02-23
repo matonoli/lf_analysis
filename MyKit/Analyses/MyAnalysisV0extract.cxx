@@ -479,10 +479,10 @@ void MyAnalysisV0extract::GetTemplates() {
 		cPars[iSp]	= new TCanvas(Form("cPars_%s",SPECIES[iSp]),Form("cPars_%s",SPECIES[iSp]),1000,900);
 		cPars[iSp]->Divide(2,2,1e-03,1e-03);
 
-		fPol1_0[iSp] = new TF1(Form("fPol1_0_%s",SPECIES[iSp]),"[1]",XBINS[26],XBINS[51]);
-		fPol1_1[iSp] = new TF1(Form("fPol1_1_%s",SPECIES[iSp]),"[0]*x+[1]",XBINS[21],XBINS[51]);
-		fPol1_2[iSp] = new TF1(Form("fPol1_2_%s",SPECIES[iSp]),"[1]",XBINS[0],XBINS[NPTBINS]);
-		fPol1_3[iSp] = new TF1(Form("fPol1_3_%s",SPECIES[iSp]),"[0]*x+[1]",XBINS[0],XBINS[NPTBINS]);
+		//fPol1_0[iSp] = new TF1(Form("fPol1_0_%s",SPECIES[iSp]),"[1]",XBINS[26],XBINS[51]);
+		//fPol1_1[iSp] = new TF1(Form("fPol1_1_%s",SPECIES[iSp]),"[0]*x+[1]",XBINS[21],XBINS[51]);
+		//fPol1_2[iSp] = new TF1(Form("fPol1_2_%s",SPECIES[iSp]),"[1]",XBINS[0],XBINS[NPTBINS]);
+		//fPol1_3[iSp] = new TF1(Form("fPol1_3_%s",SPECIES[iSp]),"[0]*x+[1]",XBINS[0],XBINS[NPTBINS]);
 		
 		Double_t boundsPar0[NPTBINS];
 		for (int i=0; i<NPTBINS; i++) boundsPar0[i] = 0;
