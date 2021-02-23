@@ -20,6 +20,17 @@ class MyEvent;
 class MyTrack;
 class MyParticle;
 
+Bool_t gFReject;
+Double_t gFLeft;
+Double_t gFRight;
+Double_t gfpol3(Double_t *x, Double_t *par)
+{
+    if (gFReject && x[0] > gFLeft && x[0] < gFRight) {
+      TF1::RejectPoint();
+      return 0;
+   }
+   return par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
+}
 
 class MyAnalysisV0extract: public MyAnalysis {
 
@@ -36,7 +47,6 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Double_t* ExtractYieldFit(TH1D* hist = 0, Int_t Type = 0, Int_t MB = 0);
 		Double_t* ExtractYieldFitRt(TTree* tree = 0, Int_t Type = 0);
 		Double_t* ExtractYieldFitPtTree(TTree* tree = 0, Int_t Type = 0);
-
 
 		void DrawConstraints();
 		void DefineSidebands();
@@ -75,6 +85,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		//SIDEBANDS
 		TH1D* hSidebandMean[V0consts::NSPECIES];
 		TH1D* hSidebandSigma[V0consts::NSPECIES];
+		TH1D* hSidebandSF[V0consts::NSPECIES];
 
 
 		// V0 HISTOGRAMS

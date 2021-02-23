@@ -611,6 +611,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		v0.SetHandler(mHandler);
 
 
+
 		if (mFlagMC) {
 			MyParticle v0mc; v0mc.SetHandler(mHandler);
 			Bool_t MCfound = false;
@@ -631,28 +632,68 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						cout << "PARTICLE FOUND TWICE" << endl;
 						return 1; }
 
+					//cout << "bbb " << v0mc.GetPdgCode() << " " << v0.GetMCPdgCode() << endl;
 					if (v0mc.GetPdgCode() == v0.GetMCPdgCode()) MCfound = true;
 					// found a MC particle with the same label and PDGCode
 					// MyV0::GetMCPdgCode() also requires both daughters to point to the same mother
 				}
 			}
 
+
 			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 				//cout << "Testing 1 iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
 					
 				if (IsV0(v0,iSp,RC)) {
-
-
+					
 					//if (iSp==1) cout << "detected k0s with label " << v0.GetMCLabel() << endl;
-					//else hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
+					//else 
+					//hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //
+					//printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
+					
+					Bool_t properDaughters = ((v0.GetPosTrackPdg() == PDG_IDS_DPOS[iSp]) && (v0.GetNegTrackPdg() == PDG_IDS_DNEG[iSp]));
+					//if (iSp == 1 && !MCfound) cout << "mc code " << v0.GetMCPdgCode() << " pt " << v0.GetPt() << " primary " << v0.IsMCPrimary() << " daughters " << properDaughters << " granma " << v0.GetMCPrimaryPdgCode() << endl;
+					if (!properDaughters) continue;
 						
-						
+					/**MyParticle v0mc2; v0mc2.SetHandler(mHandler);
+					for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
+						v0mc2 = MyParticle(mHandler->particle(PartIds[iP])); v0mc2.SetHandler(mHandler); v0mc2.SetLabel(PartIds[iP]);
+								
 
 					// ask for primary
 					// get the MC label of mother
 					// get the Xi
 					// fill histo  l.pt and xi.pt
-					//printf("primary %i and grandma pdg code %i \n", v0.IsMCPrimary(), v0.GetMCPrimaryPdgCode());
+					if (!v0.IsMCPrimary()) {
+						printf("primary %i and grandma pdg code %i and v0 codes mc %i and rc %i \n", v0.IsMCPrimary(), v0.GetMCPrimaryPdgCode(),v0mc2.GetPdgCode(),v0.GetMCPdgCode());
+						printf("labels are mc %i and rc %i ",v0mc2.GetLabel(),v0.GetMCPrimaryLabel());
+						cout << iSp << endl;
+						cout << properDaughters << endl;
+						cout << "mc f " << MCfound << endl;
+					}
+					}
+					*/
+
+					if (!v0.IsMCPrimary()) {
+							// using secondary particles to build the feeddown matrix
+							// not requiring matched Particle (we store only primaries)
+
+						if (iSp>1) {
+							MyParticle xiMC; xiMC.SetHandler(mHandler);
+						
+							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
+								xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
+								
+								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && 
+									v0.GetMCPrimaryPdgCode() == 3312 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
+									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+								}
+								if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && 
+									v0.GetMCPrimaryPdgCode() == -3312 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
+									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+								}
+							}
+						}
+					}
 					/*if (!v0.IsMCPrimary()) {			// ask for secondary
 						hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode());
 						
@@ -675,20 +716,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					}*/
 
 					// also require daughter pdg id for association
-					Bool_t properDaughters = ((v0.GetPosTrackPdg() == PDG_IDS_DPOS[iSp]) && (v0.GetNegTrackPdg() == PDG_IDS_DNEG[iSp]));
 
-					if (!v0.IsMCPrimary() && MCfound) {
+					/*if (!v0.IsMCPrimary() && MCfound) {
 							// using secondary particles to build the feeddown matrix
 
 
-							//cout << "v0 not primary " << iSp << endl;
+							cout << "v0 not primary " << iSp << endl;
 							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
 						if (iSp>1) {
 							MyParticle xiMC; xiMC.SetHandler(mHandler);
 						
 							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 								xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
-								//cout << "found particle w id " << xiMC.GetPdgCode() << endl;
+								cout << "found particle w id " << xiMC.GetPdgCode() << endl;
 								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == 3312)	{
 									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 								}
@@ -697,13 +737,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 								}
 							}
 						}
-					}
+					}*/
 
-					
 
 					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
 					if (!MCfound) continue;
-					if (!properDaughters) continue;
 
 					// MC v RC histograms
 					hV0PtRCvMC[iSp]->Fill(v0mc.GetPt(), v0.GetPt());
@@ -841,6 +879,14 @@ Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, Int_t ntracks)
 	    kAll = 511
   	};
   	*/
+
+  	/* event.IsGoodAliEvent() does:
+	if (!fIsCollisionCandidate) return kFALSE;
+	if (fCentralityQuality != 0) return kFALSE;
+	if (!(fIsEventSelected & AliVEvent::kINT7)) return kFALSE;
+	if((fEventFlags&fgFlagToCheck)!=fgFlagToCheck) return kFALSE;
+	return kTRUE;
+	*/
 
 	event.SetCheckFlag(1);
 	if(!event.IsGoodAliEvent()) {
@@ -1260,7 +1306,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0EtavY[iSp][iType][iMu][iSph]			= new TH2D(Form("hV0EtavY_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; V0 y; Entries", 										200, -1., 1., 200, -1., 1.);
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.1, 0.1);
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
 
 
 	} } } }

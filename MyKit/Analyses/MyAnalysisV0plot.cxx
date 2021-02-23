@@ -236,7 +236,7 @@ Int_t MyAnalysisV0plot::Finish() {
 	BorrowHistograms();
 	CloneHistograms();
 	MakeFinalFiguresRatios();
-	MakeFinalFiguresSpherocity();
+	//MakeFinalFiguresSpherocity();
 	//MakeFinalFiguresEvent();
 	//MakeFinalFiguresRt();
 
@@ -299,9 +299,10 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 
 	hOffiMB->SetTitle("");
 
-	mHandler->MakeRatioPlotInterp(hMB,(TH1D*)hOffiMB,cOffiK0,0.7,1.3,0.2,10.);
-	mHandler->MakeRatioPlotInterp(hV0M1,(TH1D*)hOffiV0M1,cOffiK0,0.7,1.3,0.2,10.);
-	mHandler->MakeRatioPlotInterp(hV0M10,(TH1D*)hOffiV0M10,cOffiK0,0.7,1.3,0.2,10.);
+	mDirFile->cd();
+	mHandler->MakeRatioPlot(hMB,(TH1D*)hOffiMB,cOffiK0,0.7,1.3,0.2,10.);
+	mHandler->MakeRatioPlot(hV0M1,(TH1D*)hOffiV0M1,cOffiK0,0.7,1.3,0.2,10.);
+	mHandler->MakeRatioPlot(hV0M10,(TH1D*)hOffiV0M10,cOffiK0,0.7,1.3,0.2,10.);
 
 	/*mHandler->MakeZoomPlot(hMB,cOffiK0,0.2,1.501,0.599,1.401);
 	hMB->DrawCopy();
@@ -315,7 +316,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 	cOffiK0->SaveAs("plots/K0toK0_MBandV0M_offi.png");
 
 	}
-
+	return;
 
 	{
 	TFile* fV0MKpm = new TFile("../official/Final_combined_spectra_TPCTOFTOFonlyrTPCKinksITSsa_pp13TeV.root","READ");

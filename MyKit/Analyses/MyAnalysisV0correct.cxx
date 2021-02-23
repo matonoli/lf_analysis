@@ -129,11 +129,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	} } } }		
 
 	
-	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-		
-		hV0FeeddownMotherPt[iSp]	= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
-		
-	}		// should be loaded from external files instead
+	
 
 
 
@@ -184,7 +180,7 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 
 
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-	for (int iMu = 0; iMu < 2; ++iMu)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 		hV0PtFeeddown[iSp][iMu]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
 			Form("hV0PtFeeddown_%s_%s",SPECIES[iSp],MULTI[iMu]));
 	}	}
@@ -207,7 +203,7 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
 
-	DoXCheckV0M();
+	//DoXCheckV0M();
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 	CreateOutputFile("k0s_spherocity.root",1);
@@ -356,14 +352,31 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[iSp][iMu] = 0x0;
 	}	}
 
+	
 	TCutG* cutg;
 	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-		hV0FeeddownMatrix[iSp]	= (TH2D*)dirFile1->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		hV0FeeddownMatrix[iSp]		= (TH2D*)dirFile1->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		hV0FeeddownMotherPt[iSp]	= (TH1D*)dirFile1->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
 		if (!hV0FeeddownMatrix[iSp]) {
 			printf("Feed-down matrix not found, no correction performed.\n");
 			return;
 		}
+
+		// NORMALIZING 
+		Int_t nCols = hV0FeeddownMatrix[iSp]->GetNbinsX();
+		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
+
+		for (int iC = 1; iC < nCols+1; ++iC)	{
+			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);
+			for (int iR = 1; iR < nRows+1; ++iR) {
+				
+				Double_t binContent = hV0FeeddownMatrix[iSp]->GetBinContent(iC,iR);
+				if (binContent>0) hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
+			}
+		}
+	
+
 
 		cutg = new TCutG("CUTG",11);
 		cutg->SetPoint(0,1.10641,0.395916);
@@ -386,15 +399,29 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 				Double_t cX = hV0FeeddownMatrix[2]->GetXaxis()->GetBinCenter(iMotherBin);
 				Double_t cY = hV0FeeddownMatrix[2]->GetYaxis()->GetBinCenter(iPtBin);
 				hFMatrix->SetBinContent(iMotherBin,iPtBin,0);
-				if (!cutg->IsInside(cX,cY)) continue;
+				//if (!cutg->IsInside(cX,cY)) continue;
 				hFMatrix->SetBinContent(iMotherBin,iPtBin,hV0FeeddownMatrix[2]->GetBinContent(iMotherBin,iPtBin));
 	}	}
 
-	mFileXi = new TFile("../official/xi_HM_spectra_sep_9_2019.root","READ");
+	mFileXi = 0x0;//new TFile("../official/xi_HM_spectra_sep_9_2019.root","READ");
+
 	if (!mFileXi) {
 		printf("No Xi file loaded in, using MC Xi spectra instead. \n");
 		hXiPt[2][0] = hV0FeeddownMotherPt[2];
 		hXiPt[3][0] = hV0FeeddownMotherPt[3];
+
+		NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
+		Double_t NormEv = hEventType->GetBinContent(6);	// MB
+		if (NormEv>0) {
+			NormEv += NormEv * hEventType->GetBinContent(4) * 1./(hEventType->GetBinContent(5) + hEventType->GetBinContent(6));
+		}
+		hXiPt[2][0]->Scale(1.,"width");
+		hXiPt[2][0]->Scale(1./NormEv);
+		hXiPt[2][0]->Scale(1./NormEta);
+		hXiPt[3][0]->Scale(1.,"width");
+		hXiPt[3][0]->Scale(1./NormEv);
+		hXiPt[3][0]->Scale(1./NormEta);
+
 	} else {
 
 		hXiPt[2][1] = (TH1D*)mFileXi->Get("hHMSpectrum_HM");
@@ -408,7 +435,6 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hXiPt[2][0] = (TH1D*)hV0FeeddownMotherPt[2]->Clone("hXiPt_L_MB");
 		hXiPt[3][0] = (TH1D*)hV0FeeddownMotherPt[3]->Clone("hXiPt_Lbar_MB");
 		// these need to be normalised
-		NormEta = (cuts::V0_ETA[1] - cuts::V0_ETA[0]);
 		//NormEta = (cuts::V0_Y[1] - cuts::V0_Y[0]);
 		Double_t NormEv = hEventType->GetBinContent(24);	// MB
 		if (NormEv>0) {
@@ -431,7 +457,10 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 
 	// INTERPOLATE XI SPECTRA
 	TF1* funcLT = LevyTsallis("LT",XIMASS);
-	if (!mFileXi) funcLT->SetParameter(3,100000);
+	if (!mFileXi) {
+		funcLT->SetParameter(1,17);
+		funcLT->SetParameter(2,0.5);
+		funcLT->SetParameter(3,0.003); }
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	
@@ -454,15 +483,16 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 				
 				Double_t cX = hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinCenter(iMotherBin);
 				Double_t cY = hV0FeeddownMatrix[iSp]->GetYaxis()->GetBinCenter(iBin);
-				if (!cutg->IsInside(cX,cY)) continue;
+				//if (!cutg->IsInside(cX,cY)) continue;
 
 				Double_t left 	= hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinLowEdge(iMotherBin);
 				Double_t right 	= hV0FeeddownMatrix[iSp]->GetXaxis()->GetBinLowEdge(iMotherBin+1);
-				if (iBin>7 && iBin <10) printf("bin %i range %f - %f adding %f times %f -> sum before %f \n", iBin, left, right, 
+				if (iBin>7 && iBin <10) printf("bin %i range %f - %f adding %f times %f -> sum before %f \n", 
+					iBin, left, right, 
 					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
 				sum +=
 					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
-					funcLT->Integral(left,right) / (2.*(right-left)); //(2.*(right-left)); //2 because xi,xibar
+					funcLT->Integral(left,right) / (1.*(right-left)); //(2.*(right-left)); //2 because xi,xibar
 
 				sumErr +=
 					(hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin) *
@@ -470,10 +500,10 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 					(funcLT->IntegralError(left,right) *
 					funcLT->IntegralError(left,right));	
 			}
-			hV0PtFeeddown[iSp][iMu]->SetBinContent(iBin, 2*sum);
+			hV0PtFeeddown[iSp][iMu]->SetBinContent(iBin, 2*sum);	//2 also because xi0
 			hV0PtFeeddown[iSp][iMu]->SetBinError(iBin, 0);//TMath::Sqrt(sumErr));
 		}
-		hV0PtFeeddown[iSp][iMu]->Scale(1,"width");
+		//hV0PtFeeddown[iSp][iMu]->Scale(1,"width");
 
 		TH1D* htmp = (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone("htmp");
 		hV0PtFitCorr[iSp][0][iMu][0]->Add(hV0PtFeeddown[iSp][iMu],-1.);
@@ -531,7 +561,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		//}
 		
 		if (NormEv>0) {
-			NormEv += NormEv * hEventType->GetBinContent(4) * 1./(hEventType->GetBinContent(5) + hEventType->GetBinContent(6));
+			if (iMu == 0) NormEv += NormEv * hEventType->GetBinContent(4) * 1./(hEventType->GetBinContent(5) + hEventType->GetBinContent(6));
 		}
 
 		if (NormEv == 0) NormEv = 1;
@@ -745,11 +775,15 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS); //NPTBINS2, XBINS2);
 		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
-		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),"","goff");
+		TString masscut = Form("MassDT < 0.03 && MassDT > -0.03");
+		cout << "wtf" << endl;
+		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),masscut.Data(),"goff");
+		cout << "wtf" << endl;
 		tV0PtMCMB[iSp]->Draw("lPt>>hDen","","goff");
+		cout << "wtf" << endl;
 
 		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
-		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,15.0);
+		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,20.0);
 
 		hV0Efficiency[iSp]->Divide(hDen);
 		delete hDen;
@@ -782,9 +816,8 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		}
 		TLegend* leg1 = new TLegend(0.19,0.13,0.9,0.25);//cFits[canCounter/NPTBINS]->BuildLegend();
 		mHandler->MakeNiceLegend(leg1, 0.065, 3);
-		leg1->AddEntry(hV0Efficiency[1],Form("%s",SPECNAMES[1]),"pl");
-		leg1->AddEntry(hV0Efficiency[2],Form("%s",SPECNAMES[2]),"pl");
-		leg1->AddEntry(hV0Efficiency[3],Form("%s",SPECNAMES[3]),"pl");
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+			leg1->AddEntry(hV0Efficiency[iSp],Form("%s",SPECNAMES[iSp]),"pl"); }
 		leg1->Draw();
 		cEffi->Write();
 	}
@@ -830,7 +863,7 @@ void MyAnalysisV0correct::CorrectSpectra() {
 	
 
 	printf("mb k0s spectrum before corr \n");
-	cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
+	//cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	TF1* funcRapCorrection = new TF1("funcRapCorrection",rap_correction,XBINS[0],XBINS[NPTBINS],2);
@@ -860,10 +893,10 @@ void MyAnalysisV0correct::CorrectSpectra() {
 
 
 	printf("mb k0s eff \n");
-	cout << hV0Efficiency[2]->GetBinContent(30) << endl;
+	//cout << hV0Efficiency[2]->GetBinContent(30) << endl;
 
 	printf("mb k0s spectrum after corr \n");
-	cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
+	//cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
 
 	TF1* funcRapCorrection2 = new TF1("funcRapCorrection2",rap_correction,XBINS2[0],XBINS2[NPTBINS2],2);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{

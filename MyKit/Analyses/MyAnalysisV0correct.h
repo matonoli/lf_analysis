@@ -60,8 +60,8 @@ LevyTsallis(const Char_t *name, Double_t mass, Double_t n = 5., Double_t C = 0.1
   fLevyTsallis->SetParameters(mass, n, C, norm);
   fLevyTsallis->SetParNames("mass", "n", "C", "norm");
   fLevyTsallis->FixParameter(0, mass);
-  fLevyTsallis->SetParLimits(1, 1.e-3, 1.e3);
-  fLevyTsallis->SetParLimits(2, 1.e-3, 1.e3);
+  fLevyTsallis->SetParLimits(1, 1.e-4, 1.e3);
+  fLevyTsallis->SetParLimits(2, 1.e-4, 1.e3);
   fLevyTsallis->SetParLimits(3, 1.e-6, 1.e8);
   return fLevyTsallis;
 }

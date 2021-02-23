@@ -253,12 +253,69 @@ void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Doub
 
 	if (!hasRatio)	hr->Draw();
 	else			hr->Draw("same");
+	hr->Write();
 
 	//c->SetCanvasSize()
 	c->cd();
 
 }
 
+void MyHandler::SafeDivide(TH1D* hn, TH1D* hd, Double_t sF) {
+
+	// case 1: hd is a subrange of hn
+	// case 2: hn is a subrange of hd
+	// case 3: hn and hd have different binnings
+	
+	Int_t which = -1;
+	Int_t hnBin = 0; Int_t hdBin = 0;
+
+	for (hdBin = 1; hdBin < hd->GetNbinsX(); hdBin++) {
+		for (hnBin = 1; hnBin < hn->GetNbinsX(); hnBin++) {
+			cout << "hd " << hd->GetBinLowEdge(hdBin) << " hn " << hn->GetBinLowEdge(hnBin) << endl;			
+			if (hd->GetBinLowEdge(hdBin) == hn->GetBinLowEdge(hnBin)) break;}
+			cout << "hdbin " << hdBin << endl;
+		if (hdBin == hd->GetNbinsX()) {
+			which = 0;		// found a hd bin which is not in hn -> hd is not a subset
+			break;
+		}
+	}
+	//^^problems: hn doesnt go to 12 but 8
+	//numbers of bins probably are off
+	//offi starts with 0.01 whereas mine w 0.0
+
+	cout << "w " << which << endl;
+	if (which<0) which = 1;  // hd is subset of hn
+
+	// test other way round
+	if (which == 0) {
+		which = -1;
+		for (hnBin = 1; hnBin < hn->GetNbinsX(); hnBin++) {
+			for (hdBin = 1; hdBin < hd->GetNbinsX(); hdBin++) {			
+				if (hn->GetBinLowEdge(hnBin) == hd->GetBinLowEdge(hdBin)) break;}
+			if (hnBin == hn->GetNbinsX()) {
+				which = 0;		// found a hn bin which is not in hd -> hn is not a subset
+				break;
+			}
+		}
+		if (which<0) which = 2;  // hn is subset of hd
+	}
+
+	switch (which) {
+		default:
+			printf("Something wrong!\n");
+			break;
+		case 0:
+			printf("No subsets\n");
+			break;
+		case 1:
+			printf("Hd subset of hn\n");
+			break;
+		case 2:
+			printf("Hn subset of hd\n");
+			break;
+	}
+
+}
 
 void MyHandler::MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
 	

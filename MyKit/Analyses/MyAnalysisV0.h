@@ -24,18 +24,18 @@ class TransverseSpherocity;
 
 // Defining a namespace with constants
 namespace V0consts {
-	const Int_t NSPECIES = 4;
+	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 5;
-	const Int_t NSPHERO = 9;
+	const Int_t NMULTI = 5;//5;
+	const Int_t NSPHERO = 1;//9;
 	const Int_t NREGIONS = 3;
-	const char* SPECIES[NSPECIES] = {"inc","K0s","L","Lbar"};
-	const Float_t MASSES[NSPECIES] = {0., 0.497614, 1.11568, 1.11568};
+	const char* SPECIES[] = {"inc","K0s","L","Lbar"};
+	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
 	const Float_t XIMASS = 1.32171;
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
-	const char* MULTI[NMULTI] = {"MB","V0M","NCharged","V0M01","NCharged01"};//,"RTTrans","RTNear","RTAway"};
-	const char* PLOTS_MULTI[NMULTI] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
-	const char* SPHERO[NSPHERO] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1",};//,"0-1","1-2","2-3","3-4","4-5"};
+	const char* MULTI[] = {"MB","V0M","NCharged","V0M01","NCharged01"};//,"RTTrans","RTNear","RTAway"};
+	const char* PLOTS_MULTI[] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
+	const char* SPHERO[] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1",};//,"0-1","1-2","2-3","3-4","4-5"};
 	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
 	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away"};
 	//const Int_t NPTBINS = 35;
@@ -66,7 +66,7 @@ namespace V0consts {
 		2.80, 3.00, 3.20, 3.40, 3.60, 3.80,	4.00, 4.50, 5.00, 
 		5.50, 6.00, 6.50, 7.00, 8.00, 10.0, 20.0 };*/
 
-	const Int_t NPTBINS = 54;		//official K+- spectra
+	/*const Int_t NPTBINS = 54;		//official K+- spectra
 	const Double_t XBINS[NPTBINS+1] = {
 		0.00, 0.05, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 
 		0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 
@@ -74,6 +74,15 @@ namespace V0consts {
 		1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 
 		2.80, 3.00, 3.20, 3.40, 3.60, 3.80,	4.00, 4.50, 5.00, 
 		5.50, 6.00, 6.50, 7.00, 8.00, 10.0, 13.0, 20.0 };
+	*/
+
+	/*const Int_t NPTBINS = 38;		//official K0s V0M spectra
+	const Double_t XBINS[NPTBINS+1] = {
+		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
+		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
+		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 
+		3.6, 3.9, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
+		8.0, 10.0, 12.0 };*/
 
 	/*const Int_t NPTBINS = 18;
 	const Double_t XBINS[NPTBINS+1] = { 
@@ -114,12 +123,12 @@ namespace V0consts {
 		2.20, 2.80, 3.40, 4.00, 5.00, 
 		7.00, 9.00,	11.00, 15.00 };
 
-	/*const Int_t NPTBINS = 16;
+	const Int_t NPTBINS = 16;		// offi HM L spectra
 	const Double_t XBINS[NPTBINS+1] = { 
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.5, 2.9, 3.4, 4.0, 5.0, 
-		6.5, 8.0 };*/
+		6.5, 8.0 };
 
 	/*const Int_t NPTBINS2 = 44;		//official MB spectra
 	const Double_t XBINS2[NPTBINS2+1] = {
@@ -190,10 +199,10 @@ namespace V0consts {
 		6.5, 8.0 };*/
 
 
-	const Int_t PDG_IDS[NSPECIES] = {-999, 310, 3122, -3122};
-	const Int_t PDG_IDS_DPOS[NSPECIES] = {-999, 211, 2212, 211};
-	const Int_t PDG_IDS_DNEG[NSPECIES] = {-999, -211, -211, -2212};
-	const char* SPECNAMES[NSPECIES] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
+	const Int_t PDG_IDS[] = {-999, 310, 3122, -3122};
+	const Int_t PDG_IDS_DPOS[] = {-999, 211, 2212, 211};
+	const Int_t PDG_IDS_DNEG[] = {-999, -211, -211, -2212};
+	const char* SPECNAMES[] = {"inc.","K^{0}_{s}","#Lambda","#bar{#Lambda}"};
 	//const Int_t COLOURS[7] = {kAzure-3,kOrange+8,kGreen+2,kMagenta+2, kViolet+10,kPink+10,kGreen+2};
 	const Int_t COLOURS[7] = {kRed, kBlack, kGreen+2, kBlue, kViolet+10,kPink+10,kGreen+2};
 

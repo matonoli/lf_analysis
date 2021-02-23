@@ -107,6 +107,7 @@ class MyHandler: public TObject {
 		void MakeNiceHistogram(TH1D* h, Int_t col);
 		void MakeNiceLegend(TLegend* leg, Float_t size = 0.07, Int_t columns = 2);
 		void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
+		void SafeDivide(TH1D* hn, TH1D* hd, Double_t sF);
 		void MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
 		void MakeZoomPlot(TH1D* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
 
