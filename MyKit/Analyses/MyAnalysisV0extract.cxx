@@ -1394,11 +1394,11 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	//hist->Fit(fbg,"0");
 	gFReject = kFALSE;
 	//store 2 separate functions for visualization
-   	TF1 *fleft = new TF1("fleft",fbg,Mean-3.*NSig*Sigma,Mean-1.*NSig*Sigma,3);
+   	TF1 *fleft = new TF1("fleft",fbg,Double_t(Mean-3.*NSig*Sigma),Double_t(Mean-1.*NSig*Sigma),3);
 	fleft->SetParameters(fbg->GetParameters());
 	hist->GetListOfFunctions()->Add(fleft);
 	mHandler->root()->GetListOfFunctions()->Remove(fleft);
-	TF1 *fright = new TF1("fright",fbg,Mean+1.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
+	TF1 *fright = new TF1("fright",fbg,Double_t(Mean+1.*NSig*Sigma),Double_t(Mean+3.*NSig*Sigma),3);
 	fright->SetParameters(fbg->GetParameters());
 	hist->GetListOfFunctions()->Add(fright);
 	mHandler->root()->GetListOfFunctions()->Remove(fright);
