@@ -315,7 +315,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			SBscale 	= fbg->Integral(a,b);
 			Double_t SBscaleErr = fbg->IntegralError(a,b,r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
 			SBscale /= (fbg->Integral(c,a)+fbg->Integral(b,d)) > 0 ? (fbg->Integral(c,a)+fbg->Integral(b,d)) : 1;
-			*/
+			
 			SBscale = 1.;
 			//cout << "sb scale is " << SBscale << endl;
 			//cout << "sb scale is " << SBscale << endl;
@@ -323,7 +323,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			hSidebandSF[iSp]->SetBinContent(iBin,SBscale);
 			hSidebandSF[iSp]->SetBinError(iBin,0.5*SBscaleErr);
 			//}
-   			
+   			*/
 
 
 			cFitsSB[iSp]->cd(iBin);
