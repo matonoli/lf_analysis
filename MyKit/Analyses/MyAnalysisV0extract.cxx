@@ -296,6 +296,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			hSidebandSigma[iSp]->SetBinError(iBin,0.0002+SigmaError);
 
 			// NOW FIT BACKGROUND
+			Double_t SBscale;
 			Double_t NSig = 6.;
 			TF1 *fbg;/* = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
 			fbg->SetParameters(1.,0.,0.);
@@ -311,10 +312,10 @@ void MyAnalysisV0extract::DefineSidebands() {
 			double b = Mean+NSig*Sigma;
 			double c = Mean-2.*NSig*Sigma;
 			double d = Mean+2.*NSig*Sigma;
+			SBscale 	= fbg->Integral(a,b);
 			Double_t SBscaleErr = fbg->IntegralError(a,b,r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
 			SBscale /= (fbg->Integral(c,a)+fbg->Integral(b,d)) > 0 ? (fbg->Integral(c,a)+fbg->Integral(b,d)) : 1;
 			*/
-			Double_t SBscale 	= fbg->Integral(a,b);
 			SBscale = 1.;
 			//cout << "sb scale is " << SBscale << endl;
 			//cout << "sb scale is " << SBscale << endl;
