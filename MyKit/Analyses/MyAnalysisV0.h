@@ -27,7 +27,7 @@ namespace V0consts {
 	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
 	const Int_t NMULTI = 5;//5;
-	const Int_t NSPHERO = 9;
+	const Int_t NSPHERO = 1;//9;
 	const Int_t NREGIONS = 3;
 	const char* SPECIES[] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
@@ -76,13 +76,13 @@ namespace V0consts {
 		5.50, 6.00, 6.50, 7.00, 8.00, 10.0, 13.0, 20.0 };
 	*/
 
-	/*const Int_t NPTBINS = 38;		//official K0s V0M spectra
+	const Int_t NPTBINS = 38;		//official K0s V0M spectra
 	const Double_t XBINS[NPTBINS+1] = {
 		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
 		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
 		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 
 		3.6, 3.9, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
-		8.0, 10.0, 12.0 };*/
+		8.0, 10.0, 12.0 };
 
 	/*const Int_t NPTBINS = 18;
 	const Double_t XBINS[NPTBINS+1] = { 
@@ -123,12 +123,12 @@ namespace V0consts {
 		2.20, 2.80, 3.40, 4.00, 5.00, 
 		7.00, 9.00,	11.00, 15.00 };
 
-	const Int_t NPTBINS = 16;		// offi HM L spectra
+	/*const Int_t NPTBINS = 16;		// offi HM L spectra
 	const Double_t XBINS[NPTBINS+1] = { 
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.5, 2.9, 3.4, 4.0, 5.0, 
-		6.5, 8.0 };
+		6.5, 8.0 };*/
 
 	/*const Int_t NPTBINS2 = 44;		//official MB spectra
 	const Double_t XBINS2[NPTBINS2+1] = {
@@ -355,6 +355,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0BaselineIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
 		TH2D* hV0FastSignalIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
 		TH2D* hV0CutIMvPt[V0consts::NSPECIES][V0consts::NTYPE][25];
+
+		TH1D* hV0PtNoTrigger[V0consts::NSPECIES];
 
 		// V0 RC V MC HISTOGRAMS
 		TH2D* hV0PtRCvMC[V0consts::NSPECIES];

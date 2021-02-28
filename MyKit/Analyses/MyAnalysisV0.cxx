@@ -83,6 +83,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	if (mFlagHist) return 0;
 
+	enum { multMB, V0M, NCharged, V0M01, NCharged01, sizeofMult, RT };
+	enum { sphMB, Jetty20, Iso20, Jetty10, Iso10, Jetty5, Iso5, Jetty1, Iso1};
+	enum { D, RC, MC };
+
 	// EVENT INFO HISTOGRAMS
 	hEventMonitor->Fill(0);
 	if (!mHandler->event()) return 1;
@@ -94,7 +98,35 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	// EVENT SELECTION
 	hEventType->Fill(EVENTTYPES[0],1);	//preES MB
 	hEventVz->Fill(event.GetZ());
-	
+
+	// SIGNAL LOSS STUDY
+	if (mFlagMC) {
+
+		Bool_t isINEL = false;
+		for (int iP = 0; iP < mHandler->getNparticles(); ++iP)		{
+			
+			if (!mHandler->particle(iP)) continue;
+			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
+			
+			if (p.GetSign() != 0 && TMath::Abs(p.GetEta()) < 1.0) {
+				isINEL = true;
+				break;	}
+		}
+
+		if (isINEL && TMath::Abs(event.GetZ()) < 10.)	{
+			for (int iP = 0; iP < mHandler->getNparticles(); ++iP)		{
+				
+				if (!mHandler->particle(iP)) continue;
+				MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
+							
+				if (!SelectParticle(p))		 			continue;
+				for (int iSp = 1; iSp < NSPECIES; ++iSp)	{	
+					if (p.GetPdgCode() != PDG_IDS[iSp]) continue;
+					hV0PtNoTrigger[iSp]->Fill(p.GetPt());
+				}	
+			}
+		}
+	}
 
 	switch (ClassifyEvent(event,mHandler->getNtracks())) {
 		default : break;
@@ -127,9 +159,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventMonitor->Fill(3);
 
 	// EVENT CLASSIFICATION
-	enum { multMB, V0M, NCharged, V0M01, NCharged01, sizeofMult, RT };
-	enum { sphMB, Jetty20, Iso20, Jetty10, Iso10, Jetty5, Iso5, Jetty1, Iso1};
-	enum { D, RC, MC };
 	Int_t isEventCentral = 0;
 	hEventV0MCentrality->Fill(event.GetV0MCentrality());
 	hEventRefMult->Fill(event.GetRefMult());
@@ -1359,6 +1388,12 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	}
 
 	// V0 CUTS STUDY HISTOGRAMS
+
+	// SIGNAL LOSS STUDY
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+		hV0PtNoTrigger[iSp]			= new TH1D(Form("hV0PtNoTrigger_%s",SPECIES[iSp]),
+			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+	}
 	
 
 
@@ -1509,6 +1544,11 @@ Int_t MyAnalysisV0::Finish() {
 	//if (mFlagMC) DoEfficiencyFromTrees();
 	//if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
 	if (mFlagMC) DoLambdaFeeddown();
+	if (mFlagMC) {
+		for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+			hV0PtNoTrigger[iSp]->Divide(hV0Pt[iSp][2][0][0]);
+		}
+	}
 
 	return 0;	
 }
