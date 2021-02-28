@@ -203,7 +203,7 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
 
-	//DoXCheckV0M();
+	DoXCheckV0M();
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 	CreateOutputFile("k0s_spherocity.root",1);
@@ -368,6 +368,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
 
 		for (int iC = 1; iC < nCols+1; ++iC)	{
+			//Double_t integral = hV0FeeddownMatrix[iSp]->ProjectionY("",iC,iC)->Integral(0,999);
 			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);
 			for (int iR = 1; iR < nRows+1; ++iR) {
 				
@@ -390,6 +391,8 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		cutg->SetPoint(8,1.61654,1.82252);
 		cutg->SetPoint(9,0.346886,0.395916);
 		cutg->SetPoint(10,1.10641,0.395916);
+
+		hV0FeeddownMatrix[iSp]->Write();
 	}
 
 	TH2D* hFMatrix = (TH2D*)hV0FeeddownMatrix[2]->Clone("hFMatrix");
@@ -403,7 +406,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 				hFMatrix->SetBinContent(iMotherBin,iPtBin,hV0FeeddownMatrix[2]->GetBinContent(iMotherBin,iPtBin));
 	}	}
 
-	mFileXi = 0x0;//new TFile("../official/xi_HM_spectra_sep_9_2019.root","READ");
+	mFileXi = (mHandler->GetFlagMC()) ? 0x0 : new TFile("../official/xi_HM_spectra_sep_9_2019.root","READ");
 
 	if (!mFileXi) {
 		printf("No Xi file loaded in, using MC Xi spectra instead. \n");
@@ -456,6 +459,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 	}
 
 	// INTERPOLATE XI SPECTRA
+	Double_t xixibarFactor = (mFileXi) ? 2. : 1.;
 	TF1* funcLT = LevyTsallis("LT",XIMASS);
 	if (!mFileXi) {
 		funcLT->SetParameter(1,17);
@@ -492,7 +496,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 					funcLT->Integral(left,right), hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin), sum);
 				sum +=
 					hV0FeeddownMatrix[iSp]->GetBinContent(iMotherBin,iBin) *
-					funcLT->Integral(left,right) / (1.*(right-left)); //(2.*(right-left)); //2 because xi,xibar
+					funcLT->Integral(left,right) / (xixibarFactor);//*(right-left)); //(2.*(right-left)); //2 because xi,xibar
 
 				sumErr +=
 					(hV0FeeddownMatrix[iSp]->GetBinError(iMotherBin,iBin) *
@@ -501,9 +505,9 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 					funcLT->IntegralError(left,right));	
 			}
 			hV0PtFeeddown[iSp][iMu]->SetBinContent(iBin, 2*sum);	//2 also because xi0
-			hV0PtFeeddown[iSp][iMu]->SetBinError(iBin, 0);//TMath::Sqrt(sumErr));
+			hV0PtFeeddown[iSp][iMu]->SetBinError(iBin, 0.5e-6*TMath::Sqrt(sumErr));
 		}
-		//hV0PtFeeddown[iSp][iMu]->Scale(1,"width");
+		hV0PtFeeddown[iSp][iMu]->Scale(1,"width");
 
 		TH1D* htmp = (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone("htmp");
 		hV0PtFitCorr[iSp][0][iMu][0]->Add(hV0PtFeeddown[iSp][iMu],-1.);
@@ -775,7 +779,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS); //NPTBINS2, XBINS2);
 		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
-		TString masscut = Form("MassDT < 0.03 && MassDT > -0.03");
+		TString masscut = (iSp == 1 ) ? Form("MassDT < 0.03 && MassDT > -0.03") : Form("MassDT < 0.01 && MassDT > -0.01");
 		cout << "wtf" << endl;
 		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),masscut.Data(),"goff");
 		cout << "wtf" << endl;
@@ -1080,6 +1084,8 @@ cout << "blaaadawdaaa " << endl;
 		hLLbarV0M->Draw("same");
 		hLLbarMB->Draw("same");
 		hOffiLMB->Draw("same");
+		mHandler->MakeRatioPlot(hLLbarMB,(TH1D*)hOffiLMB,cXcheck,0.6,1.4,0.4,8.);
+		mHandler->MakeRatioPlot(hLLbarV0M,(TH1D*)hOffiL,cXcheck,0.6,1.4,0.4,8.);
 	}
 	cout << "blaaadawdaaa " << endl;
 

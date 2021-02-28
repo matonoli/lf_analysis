@@ -235,10 +235,13 @@ void MyAnalysisV0extract::DefineSidebands() {
 				iBin,iBin);
 
 
-			TH1D* histrc = (TH1D*)hV0IMvPt[iSp][1][iMu][iSph]->ProjectionY(
+			TH1D* histrc;
+			if (mHandler->GetFlagMC()) {
+				histrc = (TH1D*)hV0IMvPt[iSp][1][iMu][iSph]->ProjectionY(
 				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, 1, iMu, iSph, iBin),
 				iBin,iBin);
-			histrc->Rebin(10);
+				histrc->Rebin(10);
+			}
 
 			Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
 			if (empty<10) continue;
@@ -251,12 +254,12 @@ void MyAnalysisV0extract::DefineSidebands() {
 			RooRealVar pGaus1A("pGaus1A","Mean 1",-0.0019,0.0019);
 			RooRealVar pGaus1B("pGaus1B","Sigma 1",0.001,0.00001,0.015);
 			RooGaussian fGaus1("fGaus1","fGaus1",MassDT,pGaus1A,pGaus1B); 
-			RooRealVar nGaus1("nGaus1","N_{Gaus1}",1,0,9e08);
+			RooRealVar nGaus1("nGaus1","N_{Gaus1}",0.5,0,9e08);
 		
 			//RooRealVar pGaus2A("pGaus2A","Mean 2",-0.004,0.004);
 			RooRealVar pGaus2B("pGaus2B","Sigma 2",0.008,0.0002,0.025);
 			RooGaussian fGaus2("fGaus2","fGaus2",MassDT,pGaus1A,pGaus2B); 
-			RooRealVar nGaus2("nGaus2","N_{Gaus2}",1,0,9e08);
+			RooRealVar nGaus2("nGaus2","N_{Gaus2}",0.5,0,9e08);
 		
 			RooRealVar pPolBgA("pPolBgA","Pol. par. A",0,-9,9);
 			RooRealVar pPolBgB("pPolBgB","Pol. par. B",0,-9,9);
@@ -267,17 +270,23 @@ void MyAnalysisV0extract::DefineSidebands() {
 			RooAddPdf fGaus("fGaus","fGaus",RooArgList(fGaus1,fGaus2),RooArgList(nGaus1,nGaus2));
 			RooRealVar nGaus("nGaus","N_{Gaus}",0.5*hmax,0,9e09);
 
-			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus1,fPolBg),RooArgList(nGaus1,nPolBg));
+			RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fGaus,fPolBg),RooArgList(nGaus,nPolBg));
 
 			RooFitResult* fR = 0; 
 			printf("Trying to fit iSp %i bin %i \n", iSp, iBin);
-			if (empty>3) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+			if (iSp == 1 && empty>10) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
 			//if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 
 			// GENERATE RMS
 			RooDataSet* histSigma = fGaus.generate(MassDT,100000);
 			Double_t Sigma = histSigma->sigma(MassDT);
 			Double_t Mean = pGaus1A.getVal();
+
+			// Using a very simplified fixed SB for lambdas
+			if (iSp > 1) {
+				Mean = 0.;
+				Sigma = 0.0018;
+			}
 
 			// SAVE PARS
 			hSidebandMean[iSp]->SetBinContent(iBin,Mean);
@@ -320,16 +329,17 @@ void MyAnalysisV0extract::DefineSidebands() {
 			DT_set.plotOn(plot1,MarkerSize(0.4));
 			if (empty!=0) {
 				//fTotal.plotOn(plot1,Components(fGaus2),LineStyle(2),LineWidth(2),LineColor(kRed));
-				//fTotal.plotOn(plot1,Components(fGaus1),LineStyle(2),LineWidth(2),LineColor(kRed));
-				//fTotal.plotOn(plot1,Components(fPolBg),LineStyle(1),LineWidth(2),LineColor(kBlue));
+				fTotal.plotOn(plot1,Components(fGaus),LineStyle(2),LineWidth(2),LineColor(kRed));
+				fTotal.plotOn(plot1,Components(fPolBg),LineStyle(1),LineWidth(2),LineColor(kBlue));
 			}
 			plot1->SetMinimum(1e-05);
 			plot1->SetMaximum(1.40*plot1->GetMaximum());
 			plot1->GetXaxis()->SetTitleSize(0.05);
 			plot1->GetYaxis()->SetTitleSize(0.05);
 			plot1->Draw();
-			//hist->Add(histrc,-1.);
-			//hist->Draw();
+			hist->Add(histrc,-1.);
+			hist->GetXaxis()->SetRangeUser(-0.099,0.099);
+			hist->Draw();
 
 			fbg->Draw("same");
 
@@ -347,11 +357,14 @@ void MyAnalysisV0extract::DefineSidebands() {
 		// INTERPOLATE PARAMETERS
 		TF1 *fsigma = new TF1(Form("fsigma_%i",iSp),"[0]+[1]*x+[2]/x",1e-3+XBINS[0],XBINS[NPTBINS]);
 		//TF1 *fmean	= new TF1(Form("fsigma_%i",iSp),"[0]+[1]*x+[2]/x",XBINS[0],XBINS[NPTBINS]);
-		TF1 *fsf	= new TF1(Form("fsf_%i",iSp),"[0]+[1]/x+[2]*x^[3]",1e-3+XBINS[0],XBINS[NPTBINS]);
-		fsf->SetParameters(-6.,0.003,7.,0.01);
+		TF1 *fsf;
+		if (iSp == 1) {
+			fsf = new TF1(Form("fsf_%i",iSp),"[0]+[1]/x+[2]*x^[3]",1e-3+XBINS[0],XBINS[NPTBINS]);
+			fsf->SetParameters(-6.,0.003,7.,0.01); }
+		else fsf = new TF1(Form("fsf_%i",iSp),"pol0",1e-3+XBINS[0],XBINS[NPTBINS]);
 
 		hSidebandSigma[iSp]->Fit(fsigma,"");
-		cout << "fk this " << endl;
+
 		//hSidebandSF[iSp]->Fit(fsf,"W");
 
 	}
@@ -1361,7 +1374,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 
 	static Double_t val[2];
 	val[0] = 0; val[1] = 0;
-	Float_t fitMin = -0.15, fitMax = 0.15;
+	Float_t fitMin = -0.1, fitMax = 0.1;
 
 	TString histName(hist->GetName());
 	TString binName(histName(histName.Index("iBin")+4,2));
@@ -1382,10 +1395,10 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 
 	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, xBins[binNumber-1], xBins[binNumber]);
 
-	Double_t NSig = 8;
-	hist->Rebin(10);
+	Double_t NSig = 6;
+	hist->Rebin(2);
 	
-	TF1 *fbg;// = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
+	TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
 	fbg->SetParameters(1.,0.,0.);
 	//fit only the linear background excluding the signal area
 	gFReject = kTRUE;
@@ -1394,11 +1407,11 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	//hist->Fit(fbg,"0");
 	gFReject = kFALSE;
 	//store 2 separate functions for visualization
-   	TF1 *fleft;// = new TF1("fleft",fbg,Double_t(Mean-3.*NSig*Sigma),Double_t(Mean-1.*NSig*Sigma),3);
+   	TF1 *fleft = new TF1("fleft",fbg,Double_t(Mean-3.*NSig*Sigma),Double_t(Mean-1.*NSig*Sigma),3);
 	fleft->SetParameters(fbg->GetParameters());
 	hist->GetListOfFunctions()->Add(fleft);
 	mHandler->root()->GetListOfFunctions()->Remove(fleft);
-	TF1 *fright;// = new TF1("fright",fbg,Double_t(Mean+1.*NSig*Sigma),Double_t(Mean+3.*NSig*Sigma),3);
+	TF1 *fright = new TF1("fright",fbg,Double_t(Mean+1.*NSig*Sigma),Double_t(Mean+3.*NSig*Sigma),3);
 	fright->SetParameters(fbg->GetParameters());
 	hist->GetListOfFunctions()->Add(fright);
 	mHandler->root()->GetListOfFunctions()->Remove(fright);
@@ -2038,7 +2051,7 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 	mHandler->root()->SetBatch(kTRUE);
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
-		hClosureTest[iSp]	= (TH1D*)hV0PtFit[iSp][1][iMu][iSph]->Clone(Form("hClosureTest_%s",SPECIES[iSp]));
+		hClosureTest[iSp]	= (TH1D*)hV0PtFit[iSp][0][iMu][iSph]->Clone(Form("hClosureTest_%s",SPECIES[iSp]));
 		TH1D* hDen = (TH1D*)hV0Pt[iSp][1][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1.,"width");
 
