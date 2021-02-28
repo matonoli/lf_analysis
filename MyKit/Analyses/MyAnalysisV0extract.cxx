@@ -297,7 +297,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 			// NOW FIT BACKGROUND
 			Double_t NSig = 6.;
-			TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
+			TF1 *fbg;/* = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
 			fbg->SetParameters(1.,0.,0.);
 			//fit only background excluding the signal area
 			gFReject = kTRUE;
@@ -316,6 +316,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			//cout << "sb scale is " << SBscale << endl;
 			SBscale /= (fbg->Integral(c,a)+fbg->Integral(b,d)) > 0 ? (fbg->Integral(c,a)+fbg->Integral(b,d)) : 1;
 			//cout << "sb scale is " << SBscale << endl;
+			*/
 			SBscale = 1.;
 			//if (hSidebandSF[spNumber]->GetBinContent(binNumber)==0) {
 			hSidebandSF[iSp]->SetBinContent(iBin,SBscale);
