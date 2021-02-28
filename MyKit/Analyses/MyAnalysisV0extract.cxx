@@ -311,13 +311,13 @@ void MyAnalysisV0extract::DefineSidebands() {
 			double b = Mean+NSig*Sigma;
 			double c = Mean-2.*NSig*Sigma;
 			double d = Mean+2.*NSig*Sigma;
-			Double_t SBscale 	= fbg->Integral(a,b);
 			Double_t SBscaleErr = fbg->IntegralError(a,b,r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray());
-			//cout << "sb scale is " << SBscale << endl;
 			SBscale /= (fbg->Integral(c,a)+fbg->Integral(b,d)) > 0 ? (fbg->Integral(c,a)+fbg->Integral(b,d)) : 1;
-			//cout << "sb scale is " << SBscale << endl;
 			*/
+			Double_t SBscale 	= fbg->Integral(a,b);
 			SBscale = 1.;
+			//cout << "sb scale is " << SBscale << endl;
+			//cout << "sb scale is " << SBscale << endl;
 			//if (hSidebandSF[spNumber]->GetBinContent(binNumber)==0) {
 			hSidebandSF[iSp]->SetBinContent(iBin,SBscale);
 			hSidebandSF[iSp]->SetBinError(iBin,0.5*SBscaleErr);
