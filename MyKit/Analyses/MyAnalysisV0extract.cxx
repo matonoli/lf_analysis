@@ -237,9 +237,9 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 			TH1D* histrc;
 			if (mHandler->GetFlagMC()) {
-				histrc = (TH1D*)hV0IMvPt[iSp][1][iMu][iSph]->ProjectionY(
-				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, 1, iMu, iSph, iBin),
-				iBin,iBin);
+				//histrc = (TH1D*)hV0IMvPt[iSp][1][iMu][iSph]->ProjectionY(
+				//Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, 1, iMu, iSph, iBin),
+				//iBin,iBin);
 				histrc->Rebin(10);
 			}
 
