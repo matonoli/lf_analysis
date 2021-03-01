@@ -339,7 +339,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			plot1->GetXaxis()->SetTitleSize(0.05);
 			plot1->GetYaxis()->SetTitleSize(0.05);
 			plot1->Draw();
-			hist->Add(histrc,-1.);
+			//if (mHandler->GetFlagMC()) hist->Add(histrc,-1.);
 			hist->GetXaxis()->SetRangeUser(-0.099,0.099);
 			hist->Draw();
 
