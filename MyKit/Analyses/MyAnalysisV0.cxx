@@ -1206,15 +1206,21 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 
-	if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
-	if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
-	//if (p.GetY() < cuts::V0_Y[0]) 		return false;
-	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	if (p.GetPdgCode() != PDG_IDS[1]
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3]
 		&& p.GetPdgCode() != 3312			// also Xi pm for feed-down study
 		&& p.GetPdgCode() != -3312 )		return false;
+
+	if (p.GetPdgCode() == -3312 || p.GetPdgCode() == 3312) {
+		if (p.GetY() < cuts::V0_ETA[0]) 		return false;
+		if (p.GetY() > cuts::V0_ETA[1]) 		return false;
+	} else {
+		if (p.GetEta() < cuts::V0_ETA[0]) 		return false;
+		if (p.GetEta() > cuts::V0_ETA[1]) 		return false;
+	}
+	//if (p.GetY() < cuts::V0_Y[0]) 		return false;
+	//if (p.GetY() > cuts::V0_Y[1]) 		return false;
 	
 	//printf("code is %i and %i \n", p.GetPdgCode(), p.GetMotherPdgCode());
 
@@ -1495,6 +1501,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 		hV0FeeddownMatrix[iSp]		= (TH2D*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
 		hV0FeeddownMotherPt[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]));
 
+		hV0PtNoTrigger[iSp]	= (TH1D*)mDirFile->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
+		cout << "is " << hV0PtNoTrigger[iSp] << endl;
 	}
 
 	Int_t nType = (mFlagMC) ? 2 : 1;
@@ -1540,15 +1548,19 @@ Int_t MyAnalysisV0::Finish() {
 
 	hRt2->SetBins(nbins,rtbins);
 
+
+
 	if (mFlagMC) DoEfficiency();
 	//if (mFlagMC) DoEfficiencyFromTrees();
 	//if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
 	if (mFlagMC) DoLambdaFeeddown();
 	if (mFlagMC) {
-		for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{	
 			hV0PtNoTrigger[iSp]->Divide(hV0Pt[iSp][2][0][0]);
 		}
 	}
+
+	cout << "aa " << endl;
 
 	return 0;	
 }

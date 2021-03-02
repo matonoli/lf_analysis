@@ -105,7 +105,10 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		Int_t iType = 2; Int_t iMu = 0; Int_t iSph = 0;
 		hV0Pt[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-			
+		
+		if (hV0Pt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS) 
+			hV0Pt[iSp][iType][iMu][iSph] = (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
+	
 	}
 
 

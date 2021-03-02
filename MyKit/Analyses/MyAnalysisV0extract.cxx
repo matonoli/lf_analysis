@@ -86,8 +86,23 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 		//if (iMu < 5 && iSph > 2) continue; 
 		hV0IMvPt[iSp][iType][iMu][iSph] 
 			= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-
-
+		
+		if (hV0IMvPt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS) {
+			
+			TH2D *htmp = new TH2D("htmp",
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+			TAxis *xaxis = hV0IMvPt[iSp][iType][iMu][iSph]->GetXaxis(); 
+			TAxis *yaxis = hV0IMvPt[iSp][iType][iMu][iSph]->GetYaxis(); 
+			for (int j=1; j<=yaxis->GetNbins();j++)	{ 
+			for (int i=1; i<=xaxis->GetNbins();i++)	{ 
+				htmp->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),hV0IMvPt[iSp][iType][iMu][iSph]->GetBinContent(i,j)); 
+			}	}	
+			
+			hV0IMvPt[iSp][iType][iMu][iSph] = (TH2D*)htmp->Clone(hV0IMvPt[iSp][iType][iMu][iSph]->GetName());
+			delete htmp;
+			
+		}
+		cout  << hV0IMvPt[iSp][iType][iMu][iSph] << endl;
 
 	} } } }
 
@@ -97,6 +112,13 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 		hV0Pt[iSp][iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
+		cout << hV0Pt[iSp][iType][iMu][iSph] << endl;
+		if (hV0Pt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS)	{
+			cout << hV0Pt[iSp][iType][iMu][iSph] << endl;
+			hV0Pt[iSp][iType][iMu][iSph] = (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
+			cout << hV0Pt[iSp][iType][iMu][iSph] << endl;
+		}
+		cout << hV0Pt[iSp][iType][iMu][iSph] << endl;
 	} 
 
 	
@@ -228,19 +250,20 @@ void MyAnalysisV0extract::DefineSidebands() {
 		cFitsSB[iSp] = new TCanvas(Form("cFitsSB_iSp%i",iSp),"",2800,2000);
 		cFitsSB[iSp]->Divide(nPads+1,nPads-1,0.00005,0.00005);
 
+
 		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
 
 			TH1D* hist = (TH1D*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
 				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, iBin),
 				iBin,iBin);
-
+			
 
 			TH1D* histrc;
 			if (mHandler->GetFlagMC()) {
 				//histrc = (TH1D*)hV0IMvPt[iSp][1][iMu][iSph]->ProjectionY(
 				//Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, 1, iMu, iSph, iBin),
 				//iBin,iBin);
-				histrc->Rebin(10);
+				//histrc->Rebin(10);
 			}
 
 			Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
@@ -277,6 +300,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			if (iSp == 1 && empty>10) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
 			//if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 
+
 			// GENERATE RMS
 			RooDataSet* histSigma = fGaus.generate(MassDT,100000);
 			Double_t Sigma = histSigma->sigma(MassDT);
@@ -287,6 +311,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 				Mean = 0.;
 				Sigma = 0.0018;
 			}
+
 
 			// SAVE PARS
 			hSidebandMean[iSp]->SetBinContent(iBin,Mean);
@@ -343,7 +368,8 @@ void MyAnalysisV0extract::DefineSidebands() {
 			hist->GetXaxis()->SetRangeUser(-0.099,0.099);
 			hist->Draw();
 
-			fbg->Draw("same");
+
+			//fbg->Draw("same");
 
 			TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
 			mHandler->MakeNiceLegend(leg1, 0.10, 1.);
