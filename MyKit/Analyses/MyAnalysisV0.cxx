@@ -826,7 +826,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			if (IsV0(v0,iSp,D)) {
 
 				if (iSp == 1) if (v0.GetMCPdgCode() == 310) continue;
-				if (iSp > 1) if (v0.IsMCPrimary()) continue;
+				if (iSp > 1) if (!v0.IsMCPrimary()) continue;
 				ProcessV0toHist(v0,iSp,D,multMB,sphMB);
 
 				if (isEventFHM) {
