@@ -105,6 +105,7 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
+		if (iMu == 0 && iSph > 0) continue;	
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFitCorr[iSp][iType][iMu][iSph] 
@@ -139,6 +140,7 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		
+		if (iMu == 0 && iSph > 0) continue;	
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph] 
@@ -185,7 +187,7 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-		
+		if (iMu == 0 && iSph > 0) continue;	
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
 		hBtoM[iMu][iSph] =			(TH1D*)hV0PtFitCorr[2][0][iMu][iSph]->Clone(Form("hBtoM_%s_%s",MULTI[iMu],SPHERO[iSph]));
@@ -205,7 +207,7 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
-
+		if (iMu == 0 && iSph > 0) continue;	
 		hV0toNchDR[0][iType][iMu][iSph] =	(TH1D*)hV0PtFit[1][iType][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[1],TYPE[iType],MULTI[iMu],SPHERO[iSph]));	//k0s
 		hV0toNchDR[1][iType][iMu][iSph] =	(TH1D*)hV0PtFit[2][iType][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[2],TYPE[iType],MULTI[iMu],SPHERO[iSph]));	//l+lbar
 	}	}	}
@@ -218,6 +220,7 @@ Bool_t MyAnalysisV0plot::CloneHistograms() {
 		//	if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//	if (iMu < 5 && iSph > 2) continue; 
 
+		if (iMu == 0 && iSph > 0) continue;	
 			hV0toNchDR[0][2][iMu][iSph] =	(TH1D*)hV0Pt[1][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[1],TYPE[2],MULTI[iMu],SPHERO[iSph]));
 			hV0toNchDR[1][2][iMu][iSph] =	(TH1D*)hV0Pt[2][2][iMu][iSph]->Clone(Form("hV0toNchDR_%s_%s_%s_%s",SPECIES[2],TYPE[2],MULTI[iMu],SPHERO[iSph]));
 		}	}			// so for mc we do particle level v0 only --> add also track lvl
@@ -236,7 +239,7 @@ Int_t MyAnalysisV0plot::Finish() {
 	BorrowHistograms();
 	CloneHistograms();
 	MakeFinalFiguresRatios();
-	//MakeFinalFiguresSpherocity();
+	MakeFinalFiguresSpherocity();
 	//MakeFinalFiguresEvent();
 	//MakeFinalFiguresRt();
 
@@ -292,9 +295,10 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 			legPt->AddEntry((TObject*)0,Form("|#eta| < 0.8"),"");
 			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
 			legPt->AddEntry((TObject*)0,"","");
-			legPt->AddEntry(hMB,"minimum bias / #epsilon_{MB}","pl");
+			legPt->AddEntry(hMB,"minimum bias (V0M 0-100%)","pl");
 			legPt->AddEntry(hV0M1,"V0M I","pl");
 			legPt->AddEntry(hV0M10,"V0M I-III","pl");
+			legPt->AddEntry(hOffiV0M10,"LHC15f (offi.)","pl");
 			legPt->Draw();
 
 	hOffiMB->SetTitle("");
@@ -316,7 +320,231 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 	cOffiK0->SaveAs("plots/K0toK0_MBandV0M_offi.png");
 
 	}
+
+	{	// period ratios
+
+	//files
+	const Int_t nfiles = 11;
+	const char* files[nfiles] = {"16k_k.root", "18b_k.root","18d_k.root","18e_k.root",
+	"18f_k.root", "18g_k.root", "18l_k.root", "18m_k.root",
+	"18n_k.root", "18o_k.root", "18p_k.root"};
+	const char* pnames[nfiles] = {"LHC16k","LHC18b","LHC18d","LHC18e","LHC18f",
+		"LHC18g", "LHC18l", "LHC18m", "LHC18n", "LHC18o", "LHC18p"};
+
+	Int_t clrs[nfiles] = {kRed, kMagenta+2, kViolet-2, kBlue+2, kBlue-4,
+		kAzure+1, kCyan+1, kTeal+2, kGreen+2, kOrange+10, kOrange-2};
+	TFile* periodF[nfiles];
+	TDirectoryFile* periodDirC[nfiles];
+	TH1D* hMB[nfiles];
+	TH1D* hV0M1[nfiles];
+	TH1D* hV0M10[nfiles];
+	TH1D* hEffiK0s[nfiles];
+	for (int i = 0; i < nfiles; ++i) {
+		periodF[i]		= new TFile(files[i],"READ");
+		periodDirC[i]	= (TDirectoryFile*)periodF[i]->Get("MyAnalysisV0correct_2");
+		hMB[i] 			= (TH1D*)periodDirC[i]->Get("hV0PtFitCorr_K0s_D_MB_MB");
+		hV0M1[i] 			= (TH1D*)periodDirC[i]->Get("hV0PtFitCorr_K0s_D_V0M01_MB");
+		hV0M10[i] 			= (TH1D*)periodDirC[i]->Get("hV0PtFitCorr_K0s_D_V0M_MB");
+		hEffiK0s[i]			= (TH1D*)periodDirC[i]->Get("hV0Efficiency_K0s");
+
+		mHandler->MakeNiceHistogram(hMB[i],clrs[i]); hMB[i]->SetMarkerStyle(23); hMB[i]->SetMarkerSize(0.7);
+		mHandler->MakeNiceHistogram(hV0M1[i],clrs[i]); hV0M1[i]->SetMarkerStyle(21); hV0M1[i]->SetMarkerSize(0.7);
+		mHandler->MakeNiceHistogram(hV0M10[i],clrs[i]); hV0M10[i]->SetMarkerStyle(21); hV0M10[i]->SetMarkerSize(0.7);
+		mHandler->MakeNiceHistogram(hEffiK0s[i],clrs[i]); hEffiK0s[i]->SetMarkerStyle(21); hEffiK0s[i]->SetMarkerSize(0.7);
+		hMB[i]->Scale(1./0.7448);
+	}
+
+
+	TFile* fV0MK0 = new TFile("../official/SpectraVsMultiplicityK0Short.root","READ");
+	TH1F* hOffiV0M1 = (TH1F*)fV0MK0->Get("hPtK0ShortStatOnly_V0M_00000to00100-epsPart-epsEv-Corrected");
+	TH1F* hOffiV0M15 = (TH1F*)fV0MK0->Get("hPtK0ShortStatOnly_V0M_00100to00500-epsPart-epsEv-Corrected");
+	TH1F* hOffiV0M510 = (TH1F*)fV0MK0->Get("hPtK0ShortStatOnly_V0M_00500to01000-epsPart-epsEv-Corrected");
+	
+	TH1F* hOffiV0M10 = (TH1F*)hOffiV0M1->Clone("hOffiV0M10K0");
+	hOffiV0M10->Add(hOffiV0M15,4.); hOffiV0M10->Add(hOffiV0M510,5.);
+	hOffiV0M10->Scale(0.1);
+	TH1F* hOffiMB	= (TH1F*)fV0MK0->Get("hPtK0ShortStatOnly_V0M_00000to10000-epsPart-epsEv-Corrected");
+
+	TH1D* hMBall = (TH1D*)hV0PtFitCorr[1][0][0][0]->Clone("hMBK0");
+	TH1D* hV0M1all = (TH1D*)hV0PtFitCorr[1][0][3][0]->Clone("hV0M1K0");
+	TH1D* hV0M10all = (TH1D*)hV0PtFitCorr[1][0][1][0]->Clone("hV0M10K0");
+	TH1D* hEffiK0sall = (TH1D*)mHandler->analysis(2)->dirFile()->Get("hV0Efficiency_K0s");
+	mHandler->MakeNiceHistogram(hMBall,kBlack);
+	mHandler->MakeNiceHistogram(hV0M1all,kBlack);
+	mHandler->MakeNiceHistogram(hV0M10all,kRed);
+	mHandler->MakeNiceHistogram(hV0M10all,kBlack);
+	mHandler->MakeNiceHistogram((TH1D*)hOffiMB,kGray+3);
+	mHandler->MakeNiceHistogram((TH1D*)hOffiV0M1,kBlue+1);
+	mHandler->MakeNiceHistogram((TH1D*)hOffiV0M10,kRed+1);
+	hOffiMB->SetMarkerStyle(21); hOffiV0M1->SetMarkerStyle(21); hOffiV0M10->SetMarkerStyle(21);
+	hEffiK0sall->SetMarkerStyle(21);
+
+	hMBall->Scale(1./0.7448); hV0M1all->Scale(1.); hV0M10all->Scale(1.);
+	//hMB->Divide(hOffiMB); hV0M1->Divide(hOffiV0M1); hV0M10->Divide(hOffiV0M10);
+	TCanvas* cOffiK0MBp = new TCanvas("cOffiK0MBp","",1000,1000);
+	//hMB->GetYaxis()->SetTitle("2K^{0}_{S} / K^{#pm}");
+	hMBall->GetYaxis()->SetRangeUser(1e-5,3.001);
+	hMBall->GetXaxis()->SetRangeUser(0.2,10.);
+	cOffiK0MBp->SetGridx(); cOffiK0MBp->SetGridy(); //cOffiK0MBp->SetLogy();
+	hMBall->Draw();
+	
+
+	for (int i = nfiles-1; i >= 0; --i) {
+		hMB[i]->Draw("same"); }
+
+	cOffiK0MBp->cd();
+	TLegend* legPt = new TLegend(0.40,.14,0.85,0.36);
+			mHandler->MakeNiceLegend(legPt,0.023,2);
+			
+			legPt->AddEntry((TObject*)0,Form("|#eta| < 0.8"),"");
+			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+			legPt->AddEntry((TObject*)0,"","");
+			legPt->AddEntry((TObject*)0,"minimum bias (0-100%)","");
+			legPt->AddEntry(hMBall,"LHC16k + LHC18*","pl");
+			for (int i = 0; i < nfiles; ++i) legPt->AddEntry(hMB[i],pnames[i],"pl");
+			legPt->Draw();
+
+	hOffiMB->SetTitle("");
+
+	mDirFile->cd();
+	//mHandler->MakeRatioPlot(hMBall,(TH1D*)hOffiMB,cOffiK0MBp,0.7,1.3,0.2,10.);
+	hMBall->GetYaxis()->SetRangeUser(0.8,1.2);
+	hMBall->GetXaxis()->SetRangeUser(0.2,10.);
+	hMBall->Divide(hOffiMB); hMBall->Draw();
+	legPt->Draw();
+	for (int i = 0; i < nfiles; ++i) {
+		hMB[i]->Divide(hOffiMB); hMB[i]->Draw("same");}
+	//for (int i = 0; i < nfiles; ++i) mHandler->MakeRatioPlot(hMB[i],(TH1D*)hMBall,cOffiK0MBp,0.8,1.2,0.2,10.);
+
+	cOffiK0MBp->SaveAs("plots/K0toK0_MB_offi_p.png");
+
+
+	TCanvas* cOffiK0V0M1p = new TCanvas("cOffiK0V0M1p","",1000,1000);
+	//hMB->GetYaxis()->SetTitle("2K^{0}_{S} / K^{#pm}");
+	hV0M1all->GetYaxis()->SetRangeUser(1e-5,3.001);
+	hV0M1all->GetXaxis()->SetRangeUser(0.2,10.);
+	cOffiK0V0M1p->SetGridx(); cOffiK0V0M1p->SetGridy(); //cOffiK0V0M1p->SetLogy();
+	hV0M1all->Draw();
+	
+
+	for (int i = nfiles-1; i >= 0; --i) {
+		hV0M1[i]->Draw("same"); }
+
+	cOffiK0V0M1p->cd();
+	//legPt = new TLegend(0.60,.31,0.85,0.88);
+	//		mHandler->MakeNiceLegend(legPt,0.04,1);
+	legPt = new TLegend(0.40,.14,0.85,0.36);
+			mHandler->MakeNiceLegend(legPt,0.023,2);
+			
+			legPt->AddEntry((TObject*)0,Form("|#eta| < 0.8"),"");
+			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+			legPt->AddEntry((TObject*)0,"","");
+			legPt->AddEntry((TObject*)0,"V0M I","");
+			legPt->AddEntry(hV0M1all,"LHC16k + LHC18*","pl");
+			for (int i = 0; i < nfiles; ++i) legPt->AddEntry(hV0M1[i],pnames[i],"pl");
+			legPt->Draw();
+
+	hOffiV0M1->SetTitle("");
+
+	mDirFile->cd();
+	hV0M1all->GetYaxis()->SetRangeUser(0.8,1.2);
+	hV0M1all->GetXaxis()->SetRangeUser(0.2,10.);
+	hV0M1all->Divide(hOffiV0M1); hV0M1all->Draw("");
+	legPt->Draw();
+	for (int i = 0; i < nfiles; ++i) {
+		hV0M1[i]->Divide(hOffiV0M1); hV0M1[i]->Draw("same");}
+	//mHandler->MakeRatioPlot(hMBall,(TH1D*)hOffiMB,cOffiK0MBp,0.7,1.3,0.2,10.);
+	//for (int i = 0; i < nfiles; ++i) mHandler->MakeRatioPlot(hV0M1[i],(TH1D*)hV0M1all,cOffiK0V0M1p,0.8,1.2,0.2,10.);
+
+
+	cOffiK0V0M1p->SaveAs("plots/K0toK0_V0M1_offi_p.png");
+
+
+
+	TCanvas* cOffiK0V0M10p = new TCanvas("cOffiK0V0M10p","",1000,1000);
+	//hMB->GetYaxis()->SetTitle("2K^{0}_{S} / K^{#pm}");
+	hV0M10all->GetYaxis()->SetRangeUser(1e-5,3.001);
+	hV0M10all->GetXaxis()->SetRangeUser(0.2,10.);
+	cOffiK0V0M10p->SetGridx(); cOffiK0V0M10p->SetGridy(); //cOffiK0V0M10p->SetLogy();
+	hV0M10all->Draw();
+	
+
+	for (int i = nfiles-1; i >= 0; --i) {
+		hV0M10[i]->Draw("same"); }
+
+	cOffiK0V0M10p->cd();
+	//legPt = new TLegend(0.60,.31,0.85,0.88);
+	//		mHandler->MakeNiceLegend(legPt,0.04,1);
+
+	legPt = new TLegend(0.40,.14,0.85,0.36);
+			mHandler->MakeNiceLegend(legPt,0.023,2);
+			
+			legPt->AddEntry((TObject*)0,Form("|#eta| < 0.8"),"");
+			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+			legPt->AddEntry((TObject*)0,"","");
+			legPt->AddEntry((TObject*)0,"V0M I-III","");
+			legPt->AddEntry(hV0M10all,"LHC16k + LHC18*","pl");
+			for (int i = 0; i < nfiles; ++i) legPt->AddEntry(hV0M10[i],pnames[i],"pl");
+			legPt->Draw();
+
+	hOffiV0M10->SetTitle("");
+
+	mDirFile->cd();
+	hV0M10all->GetYaxis()->SetRangeUser(0.8,1.2);
+	hV0M10all->GetXaxis()->SetRangeUser(0.2,10.);
+	hV0M10all->Divide(hOffiV0M10); hV0M10all->Draw();
+	legPt->Draw();
+	for (int i = 0; i < nfiles; ++i) {
+		hV0M10[i]->Divide(hOffiV0M10); hV0M10[i]->Draw("same");}
+	//mHandler->MakeRatioPlot(hMBall,(TH1D*)hOffiMB,cOffiK0MBp,0.7,1.3,0.2,10.);
+	//for (int i = 0; i < nfiles; ++i) mHandler->MakeRatioPlot(hV0M10[i],(TH1D*)hV0M10all,cOffiK0V0M10p,0.8,1.2,0.2,10.);
+
+
+	cOffiK0V0M10p->SaveAs("plots/K0toK0_V0M10_offi_p.png");
+
+
+	TCanvas* cOffiK0EffiK0sp = new TCanvas("cOffiK0EffiK0sp","",1000,1000);
+	//hMB->GetYaxis()->SetTitle("2K^{0}_{S} / K^{#pm}");
+	hEffiK0sall->GetYaxis()->SetRangeUser(1e-5,0.8);
+	hEffiK0sall->GetXaxis()->SetRangeUser(0.2,10.);
+	cOffiK0EffiK0sp->SetGridx(); cOffiK0EffiK0sp->SetGridy(); 
+	hEffiK0sall->Draw();
+	
+
+	for (int i = nfiles-1; i >= 0; --i) {
+		hEffiK0s[i]->Draw("same"); }
+
+	cOffiK0EffiK0sp->cd();
+	legPt = new TLegend(0.13,.46,0.36,0.88);
+			mHandler->MakeNiceLegend(legPt,0.031,1);
+			
+			legPt->AddEntry((TObject*)0,Form("|#eta| < 0.8"),"");
+			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
+			legPt->AddEntry((TObject*)0,"","");
+			legPt->AddEntry((TObject*)0,"rec. efficiency K0s","");
+			legPt->AddEntry(hEffiK0sall,"LHC16k + LHC18*","pl");
+			for (int i = 0; i < nfiles; ++i) legPt->AddEntry(hEffiK0s[i],pnames[i],"pl");
+			legPt->Draw();
+
+	mDirFile->cd();
+	//mHandler->MakeRatioPlot(hMBall,(TH1D*)hOffiMB,cOffiK0MBp,0.7,1.3,0.2,10.);
+	for (int i = 0; i < nfiles; ++i) mHandler->MakeRatioPlot(hEffiK0s[i],(TH1D*)hEffiK0sall,cOffiK0EffiK0sp,0.9,1.1,0.2,10.);
+
+
+	cOffiK0EffiK0sp->SaveAs("plots/K0toK0_effi_offi_p.png");
+
+	}
 	return;
+
+
+
+
+
+
+
+
+
+
 
 	{
 	TFile* fV0MKpm = new TFile("../official/Final_combined_spectra_TPCTOFTOFonlyrTPCKinksITSsa_pp13TeV.root","READ");
@@ -1250,9 +1478,9 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 
 	// PT SPECTRA
 	TCanvas* cPt[4][5];
-	Double_t rangePtL = 0.;
-	Double_t rangePtH = 15.;
-	for (Int_t iSp = 1; iSp < 2; ++iSp)	{				
+	Double_t rangePtL = 0.4;
+	Double_t rangePtH = 8.;
+	for (Int_t iSp = 1; iSp < 4; ++iSp)	{				
 	//for (Int_t iSp = 1; iSp < NSPECIES; ++iSp)	{				
 	
 		mHandler->MakeNiceHistogram(hV0PtFitCorr[iSp][0][0][0],COLOURS[2]);
@@ -1274,11 +1502,12 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			cPt[iSp][iMu-1]->SetLogy(1);
 			Double_t lowerRange = 0.1*hV0PtFitCorr[iSp][0][0][0]->GetBinContent(hV0PtFitCorr[iSp][0][0][0]->FindLastBinAbove());
 			if (iMu==1) hV0PtFitCorr[iSp][0][0][0]->GetYaxis()->SetRangeUser(lowerRange,10.*hV0PtFitCorr[iSp][0][0][0]->GetMaximum());
+			hV0PtFitCorr[iSp][0][0][0]->GetXaxis()->SetRangeUser(rangePtL,rangePtH);
 			hV0PtFitCorr[iSp][0][0][0]->Draw();
 			cPt[iSp][iMu-1]->Update();
 			hV0PtFitCorr[iSp][0][iMu][0]->Draw("same");
-			hV0PtFitCorr[iSp][0][iMu][7]->Draw("same");
-			hV0PtFitCorr[iSp][0][iMu][8]->Draw("same");
+			hV0PtFitCorr[iSp][0][iMu][3]->Draw("same");
+			hV0PtFitCorr[iSp][0][iMu][4]->Draw("same");
 
 			TLegend* legPt = new TLegend(0.56,0.54,0.85,0.88);
 			mHandler->MakeNiceLegend(legPt,0.04,1);
@@ -1288,14 +1517,14 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 			legPt->AddEntry((TObject*)0,"","");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][0][0],"MB","pl");
 			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][0],PLOTS_MULTI[iMu],"pl");
-			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][7],Form("%s, %s",PLOTS_MULTI[iMu],SPHERO[7]),"pl");
-			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][8],Form("%s, %s",PLOTS_MULTI[iMu],SPHERO[8]),"pl");
+			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][3],Form("%s, %s",PLOTS_MULTI[iMu],SPHERO[3]),"pl");
+			legPt->AddEntry(hV0PtFitCorr[iSp][0][iMu][4],Form("%s, %s",PLOTS_MULTI[iMu],SPHERO[4]),"pl");
 			legPt->Draw();
 
-			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][7],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.4,1.9,rangePtL,rangePtH);
-			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][8],hV0PtFitCorr[iSp][0][iMu][0],
-				cPt[iSp][iMu-1], 0.4,1.9,rangePtL,rangePtH);
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][3],hV0PtFitCorr[iSp][0][iMu][0],
+				cPt[iSp][iMu-1], 0.4,2.5,rangePtL,rangePtH);
+			mHandler->MakeRatioPlot(hV0PtFitCorr[iSp][0][iMu][4],hV0PtFitCorr[iSp][0][iMu][0],
+				cPt[iSp][iMu-1], 0.4,2.5,rangePtL,rangePtH);
 
 			cPt[iSp][iMu-1]->Write();
 			cPt[iSp][iMu-1]->SaveAs(Form("plots/pt_%s_%s.png",SPECIES[iSp],MULTI[iMu]));
@@ -1369,8 +1598,9 @@ void MyAnalysisV0plot::MakeFinalFiguresSpherocity() {
 	//TH1D* hBtoM[NMULTI][NSPHERO];
 	for (int iMu = 0; iMu < NMULTI; ++iMu) {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph) {
-		if (iMu > 4 && (iSph < 3 && iSph)) continue;
-		if (iMu < 5 && iSph > 2) continue; 
+		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
+		//if (iMu < 5 && iSph > 2) continue; 
+		if (iMu == 0 && iSph > 0) continue;	
 		
 		hBtoM[iMu][iSph]->GetYaxis()->SetTitle("(#Lambda + #bar{#Lambda}) / 2K^{0}_{s}");
 		hBtoM[iMu][iSph]->Add(hV0PtFitCorr[3][0][iMu][iSph]);

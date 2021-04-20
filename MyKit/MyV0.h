@@ -30,6 +30,8 @@ class MyV0: public TObject {
 		MyV0(AnyV0* v0);// : mAliV0(v0) { }	
 		~MyV0() { }
 		void SetHandler(MyHandler* handler)		{ mHandler = handler;};
+		Double_t GetCut(Int_t Cut);
+
 #if INPUTFORMAT == 1
 		Double_t GetPt() 					const { return mAliV0->GetPt();};
 		Double_t GetEta() 					const { return mAliV0->GetEta();};
@@ -47,7 +49,7 @@ class MyV0: public TObject {
 		Double_t* CalculateAP();
 		Double_t GetPhi();
 		Double_t CalculateY(Int_t Sp);
-		Bool_t HasFastSignal();
+		Int_t HasFastSignal();
 		Bool_t IsOffline()				const { return 1;};
 
 		Int_t GetMCLabel() 				const { return mAliV0->GetPosAnalysisTrack()->GetMCMotherLabel();};
@@ -76,7 +78,7 @@ class MyV0: public TObject {
 		Double_t* CalculateAP();
 		Double_t GetPhi()				const { return mAliV0->Phi();};
 		Double_t CalculateY(Int_t Sp)	const { return ((Sp==1) ? mAliV0->RapK0Short() : ((Sp==2 || Sp==3) ? mAliV0->RapLambda() : -999));};
-		Bool_t HasFastSignal();
+		Int_t HasFastSignal();
 		Bool_t IsOffline()				const { return !mAliV0->GetOnFlyStatus();};
 
 		Double_t CalculateY(Int_t Sp);
@@ -105,5 +107,18 @@ class MyV0: public TObject {
 		Double_t mPhi;
 		Bool_t mYcalculated[4];
 		Double_t mY[4];
+
+		enum sysCuts { NoCut,														//0
+		DCAdd, CPA, RadiusL, RadiusH,											//4
+		FastSignal, CompMassK0s, CompMassL,						//8
+		CompMassLbar, LifetimeK0s,					//12
+		LifetimeL, LifetimeLbar, 												//14
+		cutsV0cuts,																//15
+		NSigmaTPCposPiL, NSigmaTPCposPiH, NSigmaTPCnegPiL, NSigmaTPCnegPiH,		//19
+		NSigmaTPCposPrL, NSigmaTPCposPrH, NSigmaTPCnegPrL, NSigmaTPCnegPrH,		//23
+		DCAPVpos, NClusterpos, NClusterFpos, 									//26
+		DCAPVneg, NClusterneg, NClusterFneg,  									//29
+		cutsSizeof 																//30
+	};
 };
 #endif

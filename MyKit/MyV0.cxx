@@ -19,6 +19,53 @@ MyV0::MyV0(AnyV0* v0) : mAliV0(v0),
 	mAP[0] = 0;
 	mAP[1] = 0;
 	mPhi = 0;
+
+}
+
+Double_t MyV0::GetCut(Int_t Cut) {
+	
+	MyTrack trP;
+	MyTrack trN;
+	if (Cut>cutsV0cuts) {
+		trP = MyTrack(this->GetPosTrack());
+		trN = MyTrack(this->GetNegTrack());
+	}
+
+	switch (Cut) {
+
+		default: break;
+		case NoCut : return 1;
+		case DCAdd : return this->GetDCAdd(); break;
+		case CPA : return this->GetCPA(); break;
+		case RadiusL : return this->GetRadius(); break;
+		case RadiusH : return this->GetRadius(); break;
+		case FastSignal : return this->HasFastSignal(); break;
+		case CompMassK0s : return this->GetIMK0s(); break;
+		case CompMassL : return this->GetIML(); break;
+		case CompMassLbar : return this->GetIMLbar(); break;
+		case LifetimeK0s : return (this->GetPt() > 0 ) ? (0.497614+this->GetIMK0s())*this->GetRadius()/this->GetPt() : 0; break;
+		case LifetimeL : return (this->GetPt() > 0 ) ? (1.11568+this->GetIML())*this->GetRadius()/this->GetPt() : 0; break;
+		case LifetimeLbar : return (this->GetPt() > 0 ) ? (1.11568+this->GetIMLbar())*this->GetRadius()/this->GetPt() : 0; break;
+		case cutsV0cuts : break;
+
+		case NSigmaTPCposPiL : return trP.GetNSigmaPionTPC(); break;
+		case NSigmaTPCposPiH : return trP.GetNSigmaPionTPC(); break;
+		case NSigmaTPCposPrL : return trP.GetNSigmaProtonTPC(); break;
+		case NSigmaTPCposPrH : return trP.GetNSigmaProtonTPC(); break;
+		case NSigmaTPCnegPiL : return trN.GetNSigmaPionTPC(); break;
+		case NSigmaTPCnegPiH : return trN.GetNSigmaPionTPC(); break;
+		case NSigmaTPCnegPrL : return trN.GetNSigmaProtonTPC(); break;
+		case NSigmaTPCnegPrH : return trN.GetNSigmaProtonTPC(); break;
+		case DCAPVpos : return TMath::Abs(trP.GetDCApvXY()); break;
+		case NClusterpos : return trP.GetTPCnc(); break;
+		case NClusterFpos : return (trP.GetTPCNclsF()>0) ? trP.GetTPCnc()/trP.GetTPCNclsF() : 0; break;
+		case DCAPVneg : return TMath::Abs(trN.GetDCApvXY()); break;
+		case NClusterneg : return trN.GetTPCnc(); break;
+		case NClusterFneg : return (trN.GetTPCNclsF()>0) ? trN.GetTPCnc()/trN.GetTPCNclsF() : 0; break;
+		case cutsSizeof : break;
+	}
+
+	return 1;
 }
 
 #if INPUTFORMAT == 2
@@ -119,19 +166,20 @@ Double_t* MyV0::CalculateAP() {
 	return mAP;
 }
 
-Bool_t MyV0::HasFastSignal() {
+Int_t MyV0::HasFastSignal() {
+  
+  Int_t howMany = 0;
   
   // logical or
-  Bool_t hasFast = kFALSE;
-  if ((this->GetNegTrack()->GetStatus() & AliESDtrack::kITSrefit)) hasFast = kTRUE;
-  if ((this->GetPosTrack()->GetStatus() & AliESDtrack::kITSrefit)) hasFast = kTRUE;
+  if ((this->GetNegTrack()->GetStatus() & AliESDtrack::kITSrefit)) howMany++;
+  if ((this->GetPosTrack()->GetStatus() & AliESDtrack::kITSrefit)) howMany++;
   
   MyTrack trP(this->GetPosTrack());
   MyTrack trN(this->GetNegTrack());
-  if (trP.HasTOFPID()) hasFast = kTRUE;
-  if (trN.HasTOFPID()) hasFast = kTRUE;
+  if (trP.HasTOFPID()) howMany++;
+  if (trN.HasTOFPID()) howMany++;
     
-  return hasFast;
+  return howMany;
 }
 
 
@@ -231,15 +279,15 @@ Double_t MyV0::CalculateY(Int_t Sp) {
 	}
 }
 
-Bool_t MyV0::HasFastSignal() {
+Int_t MyV0::HasFastSignal() {
   
   // logical or
-  Bool_t hasFast = kFALSE;
-  if ((this->GetNegTrack()->GetStatus() & AliESDtrack::kITSrefit)) hasFast = kTRUE;
-  if ((this->GetPosTrack()->GetStatus() & AliESDtrack::kITSrefit)) hasFast = kTRUE;
-  if (this->GetNegTrack()->HasTOFPID()) hasFast = kTRUE;
-  if (this->GetPosTrack()->HasTOFPID()) hasFast = kTRUE;
+  Int_t howMany = 0;
+  if ((this->GetNegTrack()->GetStatus() & AliESDtrack::kITSrefit)) howMany++;
+  if ((this->GetPosTrack()->GetStatus() & AliESDtrack::kITSrefit)) howMany++;
+  if (this->GetNegTrack()->HasTOFPID()) howMany++;
+  if (this->GetPosTrack()->HasTOFPID()) howMany++;
     
-  return hasFast;
+  return howMany++;
 }
 #endif

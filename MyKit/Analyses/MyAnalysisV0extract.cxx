@@ -81,11 +81,14 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-			
+		
+		if (iMu == 0 && iSph > 0) continue;	
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
 		hV0IMvPt[iSp][iType][iMu][iSph] 
 			= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		
+		cout << "ccc " << iSph << iMu << iType << iSp << " " << hV0IMvPt[iSp][iType][iMu][iSph] << endl;
 		
 		if (hV0IMvPt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS) {
 			
@@ -102,10 +105,10 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 			delete htmp;
 			
 		}
-		cout  << hV0IMvPt[iSp][iType][iMu][iSph] << endl;
 
 	} } } }
 
+	if (mHandler->GetFlagMC()) {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		Int_t iType = 1, iMu = 0, iSph = 0;	
 
@@ -119,7 +122,15 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 			cout << hV0Pt[iSp][iType][iMu][iSph] << endl;
 		}
 		cout << hV0Pt[iSp][iType][iMu][iSph] << endl;
-	} 
+
+		hV0IMvPtPrimary[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtPrimary_%s",SPECIES[iSp]));
+		hV0IMvPtPrimaryPDG[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtPrimaryPDG_%s",SPECIES[iSp]));
+		hV0IMvPtSecondary[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtSecondary_%s",SPECIES[iSp]));
+		hV0IMvPtSecondaryPDG[iSp]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtSecondaryPDG_%s",SPECIES[iSp]));
+		hV0IMvPtSecondaryXi[iSp]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtSecondaryXi_%s",SPECIES[iSp]));
+		hV0IMvPtBackground[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtBackground_%s",SPECIES[iSp]));
+
+	}	}
 
 	
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
@@ -166,6 +177,24 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 		}
 
 	} } } }
+
+	if (mHandler->GetFlagMC()) {
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+
+		hV0PtFitPrimary[iSp]		= new TH1D(Form("hV0PtFitPrimary_%s",SPECIES[iSp]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hV0PtFitPrimaryPDG[iSp]		= new TH1D(Form("hV0PtFitPrimaryPDG_%s",SPECIES[iSp]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hV0PtFitSecondary[iSp]		= new TH1D(Form("hV0PtFitSecondary_%s",SPECIES[iSp]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hV0PtFitSecondaryPDG[iSp]	= new TH1D(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hV0PtFitSecondaryXi[iSp]	= new TH1D(Form("hV0PtFitSecondaryXi_%s",SPECIES[iSp]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hV0PtFitBackground[iSp]		= new TH1D(Form("hV0PtFitBackground_%s",SPECIES[iSp]),
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+
+	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
@@ -214,7 +243,8 @@ Int_t MyAnalysisV0extract::Finish() {
 
 	//GetTemplates();
 
-	DefineSidebands();
+	//DefineSidebands();
+	TakeoverSidebands();
 	ProducePtSpectraFromHists();
 	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
@@ -297,7 +327,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 			RooFitResult* fR = 0; 
 			printf("Trying to fit iSp %i bin %i \n", iSp, iBin);
-			if (iSp == 1 && empty>10) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
+			//if (iSp == 1 && empty>10) fR = fTotal.chi2FitTo(DT_set,Save(),PrintLevel(-1));
 			//if (!empty) fR = fTotal.fitTo(DT_set,Save(),PrintLevel(-1));
 
 
@@ -308,6 +338,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 			// Using a very simplified fixed SB for lambdas
 			if (iSp > 1) {
+			//if (iSp > 0) {
 				Mean = 0.;
 				Sigma = 0.0018;
 			}
@@ -366,13 +397,14 @@ void MyAnalysisV0extract::DefineSidebands() {
 			plot1->Draw();
 			//if (mHandler->GetFlagMC()) hist->Add(histrc,-1.);
 			hist->GetXaxis()->SetRangeUser(-0.099,0.099);
+			hist->SetStats(0);
 			hist->Draw();
 
 
 			//fbg->Draw("same");
 
 			TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
-			mHandler->MakeNiceLegend(leg1, 0.10, 1.);
+			mHandler->MakeNiceLegend(leg1, 0.08, 1.);
 			leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",XBINS[iBin-1],XBINS[iBin])," ");
 			leg1->AddEntry((TObject*)0,Form("%s",SPECNAMES[iSp])," ");
 			leg1->Draw();
@@ -383,7 +415,14 @@ void MyAnalysisV0extract::DefineSidebands() {
 		cFitsSB[iSp]->Write();
 
 		// INTERPOLATE PARAMETERS
-		TF1 *fsigma = new TF1(Form("fsigma_%i",iSp),"[0]+[1]*x+[2]/x",1e-3+XBINS[0],XBINS[NPTBINS]);
+		TString periodName;// = mHandler->filehist()->GetName();
+		TF1 *fsigma;
+		if (periodName.Contains("18n"))	{
+			fsigma = new TF1(Form("fsigma_%i",iSp),"pol1",1e-3+XBINS[0],XBINS[NPTBINS]);
+		} else {
+			if (iSp==1) fsigma = new TF1(Form("fsigma_%i",iSp),"[0]+[1]*x+[2]/x",1e-3+XBINS[0],XBINS[NPTBINS]);
+			else fsigma = new TF1(Form("fsigma_%i",iSp),"pol0",1e-3+XBINS[0],XBINS[NPTBINS]);
+		} 
 		//TF1 *fmean	= new TF1(Form("fsigma_%i",iSp),"[0]+[1]*x+[2]/x",XBINS[0],XBINS[NPTBINS]);
 		TF1 *fsf;
 		if (iSp == 1) {
@@ -391,7 +430,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 			fsf->SetParameters(-6.,0.003,7.,0.01); }
 		else fsf = new TF1(Form("fsf_%i",iSp),"pol0",1e-3+XBINS[0],XBINS[NPTBINS]);
 
-		hSidebandSigma[iSp]->Fit(fsigma,"");
+		hSidebandSigma[iSp]->Fit(fsigma,"W");
 
 		//hSidebandSF[iSp]->Fit(fsf,"W");
 
@@ -426,6 +465,21 @@ void MyAnalysisV0extract::DefineSidebands() {
 	mHandler->root()->SetBatch(kFALSE);
 
 }
+
+void MyAnalysisV0extract::TakeoverSidebands() {
+
+	cout << "mpar " << mParMuK0s << endl; 
+
+	
+	mParMuK0s	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcMuK0s");
+	mParSigK0s	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcSigK0s");
+	mParMuL		= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcMuL");
+	mParSigL	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcSigL");
+
+	cout << "mpar " << mParMuK0s << endl; 
+}
+
+
 
 void MyAnalysisV0extract::GetTemplates() {
 
@@ -1180,11 +1234,12 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 		printf("Extracting yield for pt spectrum iSp%i_iType%i_iMu%i_iSph%i \n",iSp,iType,iMu,iSph);
 
-		cFits[iCan] = new TCanvas(Form("cFits_iSp%i_iType%i_iMu%i_iSph%i",iSp,iType,iMu,iSph),"",2800,2000);
+		cFits[iCan] = new TCanvas(Form("cFits_iSp%i_iType%i_iMu%i_iSph%i",iSp,iType,iMu,iSph),"",4200,3000);
 		cFits[iCan]->Divide(nPads+2,nPads,0.00005,0.00005);
 			
 		Double_t* yield = 0;
 		Int_t binCounter = 1;
+
 		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1+binSize)	{
 		//for (int iBin = 10; iBin < 11; ++iBin)	{
 			
@@ -1192,6 +1247,45 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, binCounter),
 				iBin,iBin+binSize),		iType,	(iType==0&&iMu==3&&iSph==0) );		// should be perhaps changed to FindBin
 			*/
+
+			// FOR CLOSURE STUDY
+			if (mHandler->GetFlagMC()) {
+				cout << "blaa" << endl;
+				yield = ExtractYieldSB((TH1D*)hV0IMvPtPrimary[iSp]->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+				hV0PtFitPrimary[iSp]->SetBinContent(binCounter,*(yield+0));
+				hV0PtFitPrimary[iSp]->SetBinError(binCounter,*(yield+1));
+				cout << "blaaaaa" << endl;
+				yield = ExtractYieldSB((TH1D*)hV0IMvPtPrimaryPDG[iSp]->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+				hV0PtFitPrimaryPDG[iSp]->SetBinContent(binCounter,*(yield+0));
+				hV0PtFitPrimaryPDG[iSp]->SetBinError(binCounter,*(yield+1));
+				cout << "blaaaaaaaaaaaaaa" << endl;
+				yield = ExtractYieldSB((TH1D*)hV0IMvPtSecondary[iSp]->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+				hV0PtFitSecondary[iSp]->SetBinContent(binCounter,*(yield+0));
+				hV0PtFitSecondary[iSp]->SetBinError(binCounter,*(yield+1));
+				cout << "blaaaaaaaaaaaaaa" << endl;
+				cout << hV0IMvPtSecondaryPDG[iSp] << endl;
+				cout << hV0IMvPtSecondaryPDG[iSp]->ProjectionY(Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize) << endl;
+				yield = ExtractYieldSB((TH1D*)hV0IMvPtSecondaryPDG[iSp]->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+				hV0PtFitSecondaryPDG[iSp]->SetBinContent(binCounter,*(yield+0));
+				hV0PtFitSecondaryPDG[iSp]->SetBinError(binCounter,*(yield+1));
+				cout << "blaaaaaaaaaaaaaa" << endl;
+				yield = ExtractYieldSB((TH1D*)hV0IMvPtSecondaryXi[iSp]->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+				hV0PtFitSecondaryXi[iSp]->SetBinContent(binCounter,*(yield+0));
+				hV0PtFitSecondaryXi[iSp]->SetBinError(binCounter,*(yield+1));
+				cout << "blaaaaaaaaaaaaaa" << endl;
+				yield = ExtractYieldSB((TH1D*)hV0IMvPtBackground[iSp]->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+				hV0PtFitBackground[iSp]->SetBinContent(binCounter,*(yield+0));
+				hV0PtFitBackground[iSp]->SetBinError(binCounter,*(yield+1));
+				cout << "blaaaaaaaaaaaaaa" << endl;
+			}
+
+			// ACTUAL RAW YIELDS
 			yield = ExtractYieldSB((TH1D*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
 				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, binCounter),
 				iBin,iBin+binSize));
@@ -1203,9 +1297,20 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 		//if (iType==0&&iMu==0&&iSph==0) cFits[iCan]->SaveAs(Form("tmp/%s.png",cFits[iCan]->GetName()));
 		cFits[iCan]->Write();
+		//cFits[iCan]->SaveAs(Form("plots/cFits_%i.png",iCan));
 		iCan++;
 
 		//return 0;
+
+		if (mHandler->GetFlagMC()) {
+			hV0PtFitPrimary[iSp]->Scale(1,"width");
+			hV0PtFitPrimaryPDG[iSp]->Scale(1,"width");
+			hV0PtFitSecondary[iSp]->Scale(1,"width");
+			hV0PtFitSecondaryPDG[iSp]->Scale(1,"width");
+			hV0PtFitSecondaryXi[iSp]->Scale(1,"width");
+			hV0PtFitBackground[iSp]->Scale(1,"width");
+		}
+
 		hV0PtFit[iSp][iType][iMu][iSph]->Scale(1,"width");
 		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerColor(1);
 		hV0PtFit[iSp][iType][iMu][iSph]->SetMarkerStyle(20);
@@ -1404,6 +1509,8 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	val[0] = 0; val[1] = 0;
 	Float_t fitMin = -0.1, fitMax = 0.1;
 
+	for (int ib = 1; ib < hist->GetNbinsX()+1; ib++) hist->SetBinError(ib,TMath::Sqrt(hist->GetBinContent(ib)));
+
 	TString histName(hist->GetName());
 	TString binName(histName(histName.Index("iBin")+4,2));
 	Int_t binNumber = binName.Atoi();
@@ -1417,14 +1524,23 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 
 	Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
 
-	Double_t Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(xBins[binNumber-1]));
-	Double_t Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
-	Double_t SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*xBins[binNumber-1]+0.4*xBins[binNumber]));
+	Double_t Mean, Sigma, SF;
+	
+	if (mParMuK0s) {
+		Mean	= (spNumber==1) ? mParMuK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParMuL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		Sigma	= (spNumber==1) ? mParSigK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParSigL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		SF = 1;
+	} else {
 
+		Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(xBins[binNumber-1]));
+		Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*xBins[binNumber-1]+0.4*xBins[binNumber]));
+
+	}
 	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, xBins[binNumber-1], xBins[binNumber]);
 
 	Double_t NSig = 6;
-	hist->Rebin(2);
+	hist->Rebin(8);
 	
 	TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
 	fbg->SetParameters(1.,0.,0.);
@@ -1540,9 +1656,11 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	mHandler->MakeNiceHistogram(hist,kBlack);
 	hist->SetMarkerSize(0.5); hist->GetXaxis()->SetLabelSize(0.055);
 	//hist->Rebin(8);
-	hist->Draw();
 	hist->GetXaxis()->SetRangeUser(fitMin,fitMax);
-	fbg->Draw("same");
+	if (spNumber>1) hist->GetXaxis()->SetRangeUser(-0.05,0.05);
+	hist->GetYaxis()->SetRangeUser(1e-3,2.*hist->GetMaximum());
+	hist->Draw();
+	//fbg->Draw("same");
 	if (!isTree) {
 		cFits[canCounter/nBins]->Update();
 		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
@@ -1563,7 +1681,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
 	leg1->Draw();
 	
-	canCounter++;
+	if (histName.Contains("hV0IMvPt_")) canCounter++;
 	return val;
 }
 
@@ -2076,6 +2194,7 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 	// DIVIDING BLINDLY REC. MC DATA BY PDG-ID'D PT SPECTRA
 	// NUM HAS FEEDDOWN, DEN DOESN'T -- really though ?
 
+
 	mHandler->root()->SetBatch(kTRUE);
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
@@ -2089,12 +2208,19 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 		hClosureTest[iSp]->Divide(hDen);
 		TCanvas* cClosure = new TCanvas("cClosure","",900,900);
 		hClosureTest[iSp]->Draw();
-		TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+		if (iSp == 3) hClosureTest[3]->SetMarkerStyle(24);
+		hClosureTest[iSp]->Draw();
+		if (iSp == 3) hClosureTest[2]->Draw("same");
+		TLegend* leg1 = new TLegend(0.171,0.67,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
 		mHandler->MakeNiceLegend(leg1, 0.05, 1.);
-		leg1->AddEntry((TObject*)0,Form("%s",SPECNAMES[iSp])," ");
+		if (iSp == 3) leg1->AddEntry(hClosureTest[2],Form("%s",SPECNAMES[2]),"pl");
+		leg1->AddEntry(hClosureTest[iSp],Form("%s",SPECNAMES[iSp]),"pl");
 		leg1->Draw();
-		cClosure->SaveAs(Form("tmp/closure_%s.png",SPECIES[iSp]));
+		cClosure->SaveAs(Form("plots/closure_%s.png",SPECIES[iSp]));
+		
 		delete hDen;
+
+
 		
 	}
 	mHandler->root()->SetBatch(kFALSE);

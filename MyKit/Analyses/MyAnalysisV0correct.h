@@ -133,6 +133,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 
 		TH2D* hV0FeeddownMatrix[V0consts::NSPECIES];
 		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
+		TH1D* hV0PtNoTrigger[V0consts::NSPECIES];
 
 		//owned
 		TH1D* hRtRebin;
@@ -142,6 +143,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1D* hV0PtFeeddown[V0consts::NSPECIES][V0consts::NMULTI];
 		TH1D* hXiPt[V0consts::NSPECIES][V0consts::NMULTI];
+		TH1D* hV0PtSignalLoss[V0consts::NSPECIES];
 
 };
 #endif

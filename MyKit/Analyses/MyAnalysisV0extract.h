@@ -50,6 +50,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 
 		void DrawConstraints();
 		void DefineSidebands();
+		void TakeoverSidebands();
 		void GetTemplates();
 		void StudyIMShapeRC();
 		void DoClosureTest(Int_t opt = 0);
@@ -87,6 +88,11 @@ class MyAnalysisV0extract: public MyAnalysis {
 		TH1D* hSidebandSigma[V0consts::NSPECIES];
 		TH1D* hSidebandSF[V0consts::NSPECIES];
 
+		TF1* mParMuK0s = 0x0;
+		TF1* mParSigK0s = 0x0;
+		TF1* mParMuL = 0x0;
+		TF1* mParSigL = 0x0;
+
 
 		// V0 HISTOGRAMS
 		//borrowed
@@ -95,6 +101,13 @@ class MyAnalysisV0extract: public MyAnalysis {
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TNtuple* tV0massRt[V0consts::NSPECIES][2][V0consts::NREGIONS];
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
+		TH2D* hV0IMvPtPrimary[V0consts::NSPECIES];
+		TH2D* hV0IMvPtPrimaryPDG[V0consts::NSPECIES];
+		TH2D* hV0IMvPtSecondary[V0consts::NSPECIES];
+		TH2D* hV0IMvPtSecondaryPDG[V0consts::NSPECIES];
+		TH2D* hV0IMvPtSecondaryXi[V0consts::NSPECIES];
+		TH2D* hV0IMvPtBackground[V0consts::NSPECIES];
+		
 
 		//owned
 		TH1D* hRtV0Yields[V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
@@ -102,6 +115,13 @@ class MyAnalysisV0extract: public MyAnalysis {
 		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
+
+		TH1D* hV0PtFitPrimary[V0consts::NSPECIES];
+		TH1D* hV0PtFitPrimaryPDG[V0consts::NSPECIES];
+		TH1D* hV0PtFitSecondary[V0consts::NSPECIES];
+		TH1D* hV0PtFitSecondaryPDG[V0consts::NSPECIES];
+		TH1D* hV0PtFitSecondaryXi[V0consts::NSPECIES];
+		TH1D* hV0PtFitBackground[V0consts::NSPECIES];
 
 		TH1D* hClosureTest[V0consts::NSPECIES];
 

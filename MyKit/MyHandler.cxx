@@ -140,8 +140,9 @@ Int_t MyHandler::Finish() {
 
 	if (mFile) {
 		mFile->cd();
-		//mFile->Write();
-		printf("File written \n");
+		mFile->Write();
+		printf("File written. \n");
+		if (nAnalyses == 1) mFile->Close();
 	}
 
 	return 0;	

@@ -76,13 +76,13 @@ namespace V0consts {
 		5.50, 6.00, 6.50, 7.00, 8.00, 10.0, 13.0, 20.0 };
 	*/
 
-	/*const Int_t NPTBINS = 38;		//official K0s V0M spectra
+	const Int_t NPTBINS = 38;		//official K0s V0M spectra
 	const Double_t XBINS[NPTBINS+1] = {
 		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
 		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
 		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 
 		3.6, 3.9, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
-		8.0, 10.0, 12.0 };*/
+		8.0, 10.0, 12.0 };
 
 	/*const Int_t NPTBINS = 42;		//superset of official K0s and L V0M spectra
 	const Double_t XBINS[NPTBINS+1] = {
@@ -92,12 +92,12 @@ namespace V0consts {
 		3.4, 3.6, 3.9, 4.0, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
 		8.0, 10.0, 12.0 };	*/
 
-	const Int_t NPTBINS = 16;		// offi HM L spectra
+	/*const Int_t NPTBINS = 16;		// offi HM L spectra
 	const Double_t XBINS[NPTBINS+1] = { 
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.5, 2.9, 3.4, 4.0, 5.0, 
-		6.5, 8.0 };
+		6.5, 8.0 };*/
 
 	/*const Int_t NPTBINS = 18;
 	const Double_t XBINS[NPTBINS+1] = { 
@@ -232,7 +232,20 @@ namespace V0consts {
 	};
 
 	const Float_t RT_DEN		= 7.449;
-	const Float_t RT_DEN_MC		= 7.525; 
+	const Float_t RT_DEN_MC		= 7.525;
+
+	enum sysCuts { NoCut,														//0
+		DCAdd, CPA, RadiusL, RadiusH,											//4
+		FastSignal, CompMassK0s, CompMassL,						//8
+		CompMassLbar, LifetimeK0s,					//12
+		LifetimeL, LifetimeLbar, 												//14
+		cutsV0cuts,																//15
+		NSigmaTPCposPiL, NSigmaTPCposPiH, NSigmaTPCnegPiL, NSigmaTPCnegPiH,		//19
+		NSigmaTPCposPrL, NSigmaTPCposPrH, NSigmaTPCnegPrL, NSigmaTPCnegPrH,		//23
+		DCAPVpos, NClusterpos, NClusterFpos, 									//26
+		DCAPVneg, NClusterneg, NClusterFneg,  									//29
+		cutsSizeof 																//30
+	};
 
 }
 
@@ -255,6 +268,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Int_t ClassifyEvent(MyEvent &event, Int_t ntracks);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
+		Bool_t IsV0VaryCut(MyV0 &v0, Int_t Sp, Int_t Type, Int_t VarCut, Float_t VarVal);
 		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);
 		Int_t  WhatRegion(Double_t phi1, Double_t phiTrig);
 		Bool_t SelectV0Daughter(MyTrack &tr);
@@ -284,6 +298,14 @@ class MyAnalysisV0: public MyAnalysis {
 		Int_t nChTrans;
 		Double_t phiLead;
 		Double_t ptLead;
+
+		TF1* mParMuK0s;
+		TF1* mParSigK0s;
+		TF1* mParMuL;
+		TF1* mParSigL;
+
+		Int_t mCutsDir[V0consts::NSPECIES][V0consts::NTYPE][V0consts::cutsSizeof+1];
+		Double_t mCutsVal[V0consts::NSPECIES][V0consts::cutsSizeof+1];
 
 		// MONITORS
 		TH1D* hEventMonitor;
@@ -367,6 +389,22 @@ class MyAnalysisV0: public MyAnalysis {
 
 		TH1D* hV0PtNoTrigger[V0consts::NSPECIES];
 
+		// DETAILED MC CLOSURE STUDY
+		TH2D* hV0IMvPtPrimary[V0consts::NSPECIES];
+		TH2D* hV0IMvPtPrimaryPDG[V0consts::NSPECIES];
+		TH2D* hV0IMvPtSecondary[V0consts::NSPECIES];
+		TH2D* hV0IMvPtSecondaryPDG[V0consts::NSPECIES];
+		TH2D* hV0IMvPtSecondaryXi[V0consts::NSPECIES];
+		TH2D* hV0IMvPtBackground[V0consts::NSPECIES];
+		TH2D* hK0sLowDaughtersPDG;
+		TH2D* hK0sLowIMvPDG;
+		TH2D* hK0sLowIMvDaughterPDGPos;
+		TH2D* hK0sLowIMvDaughterPDGNeg;
+		TH2D* hK0sHighDaughtersPDG;
+		TH2D* hK0sHighIMvPDG;
+		TH2D* hK0sHighIMvDaughterPDGPos;
+		TH2D* hK0sHighIMvDaughterPDGNeg;
+
 		// V0 RC V MC HISTOGRAMS
 		TH2D* hV0PtRCvMC[V0consts::NSPECIES];
 		TH2D* hV0EtaRCvMC[V0consts::NSPECIES];
@@ -377,5 +415,19 @@ class MyAnalysisV0: public MyAnalysis {
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
 		TNtuple* tV0PtMCRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TNtuple* tV0massRt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+
+		// SYSTEMATICS STUDY
+		TH2D* hV0IMvRadiusL[V0consts::NSPECIES];
+		TH2D* hV0IMvDCAdd[V0consts::NSPECIES];
+		TH2D* hV0IMvCPA[V0consts::NSPECIES];
+		TH2D* hV0IMvFastSignal[V0consts::NSPECIES];
+		TH2D* hV0IMvCompMass[V0consts::NSPECIES];
+		TH2D* hV0IMvLifetime[V0consts::NSPECIES];
+		TH2D* hV0IMvNSigmaTPC[V0consts::NSPECIES];
+		TH2D* hV0IMvDCAPVpos[V0consts::NSPECIES];
+		TH2D* hV0IMvDCAPVneg[V0consts::NSPECIES];
+		TH2D* hV0IMvNCluster[V0consts::NSPECIES];
+		TH2D* hV0IMvNClusterF[V0consts::NSPECIES];
+
 };
 #endif
