@@ -27,6 +27,8 @@ cp ../MyKit/Analyses/MyAnalysisV0extract.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0extract.h .
 cp ../MyKit/Analyses/MyAnalysisV0correct.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0correct.h .
+cp ../MyKit/Analyses/MyAnalysisV0syst.cxx .
+cp ../MyKit/Analyses/MyAnalysisV0syst.h .
 cp ../MyKit/Analyses/MyAnalysisV0plot.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0plot.h .
 cp ../AliAnalysisTaskMyTask.cxx .
