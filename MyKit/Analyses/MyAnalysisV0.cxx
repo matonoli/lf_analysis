@@ -105,10 +105,10 @@ Int_t MyAnalysisV0::Init() {
 		mCutsDir[iSp][iType][FastSignal] = -1; 	mCutsVal[iSp][FastSignal] = cuts::V0_FASTSIGNAL;
 		mCutsDir[iSp][iType][cutsV0cuts] = 0; 	mCutsVal[iSp][cutsV0cuts] = 0;
 
-		mCutsDir[iSp][iType][DCAPVpos] = -1; 	mCutsVal[iSp][DCAPVpos] = cuts::K0S_D_DCAPVXY;
+		mCutsDir[iSp][iType][DCAPVpos] = -1; 	mCutsVal[iSp][DCAPVpos] = cuts::V0_D_DCAPVXY;
 		mCutsDir[iSp][iType][NClusterpos] = -1; mCutsVal[iSp][NClusterpos] = cuts::V0_D_NCR;
 		mCutsDir[iSp][iType][NClusterFpos] = -1; mCutsVal[iSp][NClusterFpos] = cuts::V0_D_NRATIO;
-		mCutsDir[iSp][iType][DCAPVneg] = -1; 	mCutsVal[iSp][DCAPVneg] = cuts::K0S_D_DCAPVXY;
+		mCutsDir[iSp][iType][DCAPVneg] = -1; 	mCutsVal[iSp][DCAPVneg] = cuts::V0_D_DCAPVXY;
 		mCutsDir[iSp][iType][NClusterneg] = -1; mCutsVal[iSp][NClusterneg] = cuts::V0_D_NCR;;
 		mCutsDir[iSp][iType][NClusterFneg] = -1; mCutsVal[iSp][NClusterFneg] = cuts::V0_D_NRATIO;
 		mCutsDir[iSp][iType][cutsSizeof] = 0;	mCutsVal[iSp][cutsSizeof] = 0;
@@ -770,7 +770,19 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 				//cout << "Testing 1 iSp " << iSp << " with pdg " << v0.GetMCPdgCode() << " label " << v0.GetMCLabel() << endl;
-					
+				
+				// SYSTEMATIC CUT VARIATIONS FOR EFF. CALCULATIONS
+				if (mFlagMC) {
+					Bool_t properDaughters = ((v0.GetPosTrackPdg() == PDG_IDS_DPOS[iSp]) && (v0.GetNegTrackPdg() == PDG_IDS_DNEG[iSp]));
+					if (!properDaughters) continue;
+					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
+					if (!MCfound) continue;
+
+					if (isEventFHM01) ProcessV0SystVar(v0,iSp,RC,V0M01);	
+					if (isEventMHM01) ProcessV0SystVar(v0,iSp,RC,NCharged01);
+
+				}
+
 				if (IsV0(v0,iSp,RC)) {
 					
 					//if (iSp==1) cout << "detected k0s with label " << v0.GetMCLabel() << endl;
@@ -929,58 +941,67 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				printf("%i and %i \n", IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,NClusterpos,70.));
 			}
 			Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+			if (1) {
+				for (Int_t iBin = 1; iBin < hV0IMvRadiusL[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,RadiusL,hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvRadiusL[iSp]->Fill(hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				for (Int_t iBin = 1; iBin < hV0IMvDCAdd[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,DCAdd,hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAdd[iSp]->Fill(hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				for (Int_t iBin = 1; iBin < hV0IMvCPA[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,CPA,hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvCPA[iSp]->Fill(hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				for (Int_t iBin = 1; iBin < hV0IMvFastSignal[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,FastSignal,hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin))) hV0IMvFastSignal[iSp]->Fill(hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
+				
+				for (Int_t iBin = 1; iBin < hV0IMvCompMass[iSp]->GetNbinsX()+1; iBin++)
+					if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,CompMassL,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,CompMassLbar,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) )
+					|| (iSp>1 && IsV0VaryCut(v0,iSp,D,CompMassK0s,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) ) )
+					 hV0IMvCompMass[iSp]->Fill(hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				
+				if (iSp>1) for (Int_t iBin = 1; iBin < hV0IMvLifetime[iSp]->GetNbinsX()+1; iBin++)
+					if ( (iSp==2 && IsV0VaryCut(v0,iSp,D,LifetimeL,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)))
+					|| (iSp==3 && IsV0VaryCut(v0,iSp,D,LifetimeLbar,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)) ) ) 
+					 hV0IMvLifetime[iSp]->Fill(hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				
+				for (Int_t iBin = 1; iBin < hV0IMvNSigmaTPC[iSp]->GetNbinsX()+1; iBin++)
+					if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
+					|| (iSp==2 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
+					|| (iSp==3 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )	)
+					 hV0IMvNSigmaTPC[iSp]->Fill(hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
 
-			for (Int_t iBin = 1; iBin < hV0IMvRadiusL[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,RadiusL,hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvRadiusL[iSp]->Fill(hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			for (Int_t iBin = 1; iBin < hV0IMvDCAdd[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,DCAdd,hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAdd[iSp]->Fill(hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			for (Int_t iBin = 1; iBin < hV0IMvCPA[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,CPA,hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvCPA[iSp]->Fill(hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			for (Int_t iBin = 1; iBin < hV0IMvFastSignal[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,FastSignal,hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin))) hV0IMvFastSignal[iSp]->Fill(hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
-			
-			for (Int_t iBin = 1; iBin < hV0IMvCompMass[iSp]->GetNbinsX()+1; iBin++)
-				if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,CompMassL,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,CompMassLbar,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) )
-				|| (iSp>1 && IsV0VaryCut(v0,iSp,D,CompMassK0s,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) ) )
-				 hV0IMvCompMass[iSp]->Fill(hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			
-			if (iSp>1) for (Int_t iBin = 1; iBin < hV0IMvLifetime[iSp]->GetNbinsX()+1; iBin++)
-				if ( (iSp==2 && IsV0VaryCut(v0,iSp,D,LifetimeL,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)))
-				|| (iSp==3 && IsV0VaryCut(v0,iSp,D,LifetimeLbar,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)) ) ) 
-				 hV0IMvLifetime[iSp]->Fill(hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			
-			for (Int_t iBin = 1; iBin < hV0IMvNSigmaTPC[iSp]->GetNbinsX()+1; iBin++)
-				if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
-				|| (iSp==2 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
-				|| (iSp==3 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-							&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )	)
-				 hV0IMvNSigmaTPC[iSp]->Fill(hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				for (Int_t iBin = 1; iBin < hV0IMvDCAPVpos[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,DCAPVpos,hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVpos[iSp]->Fill(hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				for (Int_t iBin = 1; iBin < hV0IMvDCAPVneg[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,DCAPVneg,hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVneg[iSp]->Fill(hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+				
+				for (Int_t iBin = 1; iBin < hV0IMvNCluster[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,NClusterpos,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin))
+					&& IsV0VaryCut(v0,iSp,D,NClusterneg,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin)) ) 
+						hV0IMvNCluster[iSp]->Fill(hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
+				
+				for (Int_t iBin = 1; iBin < hV0IMvNClusterF[iSp]->GetNbinsX()+1; iBin++)
+					if (IsV0VaryCut(v0,iSp,D,NClusterFpos,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin))
+					&& IsV0VaryCut(v0,iSp,D,NClusterFneg,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin)) ) 
+						hV0IMvNClusterF[iSp]->Fill(hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+			}
 
-			for (Int_t iBin = 1; iBin < hV0IMvDCAPVpos[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,DCAPVpos,hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVpos[iSp]->Fill(hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			for (Int_t iBin = 1; iBin < hV0IMvDCAPVneg[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,DCAPVneg,hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVneg[iSp]->Fill(hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			
-			for (Int_t iBin = 1; iBin < hV0IMvNCluster[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,NClusterpos,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin))
-				&& IsV0VaryCut(v0,iSp,D,NClusterneg,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin)) ) 
-					hV0IMvNCluster[iSp]->Fill(hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
-			
-			for (Int_t iBin = 1; iBin < hV0IMvNClusterF[iSp]->GetNbinsX()+1; iBin++)
-				if (IsV0VaryCut(v0,iSp,D,NClusterFpos,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin))
-				&& IsV0VaryCut(v0,iSp,D,NClusterFneg,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin)) ) 
-					hV0IMvNClusterF[iSp]->Fill(hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			
-			
+			//if (IsV0(v0,iSp,D) != IsV0VaryCut(v0,iSp,D,DCAPVpos,sysVar[iSp-1][sysDCAPVpos][deflt]))
+			//printf("iSp %i isV0 %i isV0vary %i w cut %f and dca %f VS cut %f and dca %f \n", iSp, IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,DCAPVpos,sysVar[iSp-1][sysDCAPVpos][deflt]),
+			//		sysVar[iSp-1][sysDCAPVpos][deflt], v0.GetCut(DCAPVpos), cuts::V0_D_DCAPVXY, TMath::Abs(v0.GetPosTrack()->GetImpactParameter(0)));
+
+			// SYSTEMATIC CUT VARIATIONS
+			if (!mFlagMC) {
+				if (isEventFHM01) ProcessV0SystVar(v0,iSp,D,V0M01);	
+				if (isEventMHM01) ProcessV0SystVar(v0,iSp,D,NCharged01);
+			} 
 
 			if (IsV0(v0,iSp,D)) {
 
@@ -1451,7 +1472,53 @@ Bool_t MyAnalysisV0::IsV0VaryCut(MyV0 &v0, Int_t Sp, Int_t Type, Int_t VarCut, F
 
 }
 
+void MyAnalysisV0::ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 
+	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+
+	for (Int_t iV = 0; iV < sysVarsSizeof; iV++) {
+	
+		if (IsV0VaryCut(v0,Sp,Type,RadiusL,sysVar[Sp-1][sysRadiusL][iV])) hV0IMvPtSys[Sp][Mu][sysRadiusL][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,DCAdd,sysVar[Sp-1][sysDCAdd][iV])) hV0IMvPtSys[Sp][Mu][sysDCAdd][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,CPA,sysVar[Sp-1][sysCPA][iV])) hV0IMvPtSys[Sp][Mu][sysCPA][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,FastSignal,sysVar[Sp-1][sysFastSignal][iV])) hV0IMvPtSys[Sp][Mu][sysFastSignal][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+
+		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,CompMassL,sysVar[Sp-1][sysCompMass][iV])
+					 && IsV0VaryCut(v0,Sp,Type,CompMassLbar,sysVar[Sp-1][sysCompMass][iV]) )
+			|| (Sp>1 && IsV0VaryCut(v0,Sp,Type,CompMassK0s,sysVar[Sp-1][sysCompMass][iV]) ) )
+			hV0IMvPtSys[Sp][Mu][sysCompMass][iV]->Fill(v0.GetPt(),v0mass[Sp]);			
+
+		if ( (Sp==2 && IsV0VaryCut(v0,Sp,Type,LifetimeL,sysVar[Sp-1][sysLifetime][iV]) )
+			|| (Sp==3 && IsV0VaryCut(v0,Sp,Type,LifetimeLbar,sysVar[Sp-1][sysLifetime][iV]) ) )
+			hV0IMvPtSys[Sp][Mu][sysLifetime][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+
+		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiH,sysVar[Sp-1][sysNSigmaTPC][iV])		)
+		  || (Sp==2 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPrL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPrH,sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiH,sysVar[Sp-1][sysNSigmaTPC][iV])		)
+		  || (Sp==3 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrH,sysVar[Sp-1][sysNSigmaTPC][iV])		)	)
+			hV0IMvPtSys[Sp][Mu][sysNSigmaTPC][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVpos,sysVar[Sp-1][sysDCAPVpos][iV])) hV0IMvPtSys[Sp][Mu][sysDCAPVpos][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVneg,sysVar[Sp-1][sysDCAPVneg][iV])) hV0IMvPtSys[Sp][Mu][sysDCAPVneg][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+
+		if (IsV0VaryCut(v0,Sp,Type,NClusterpos,sysVar[Sp-1][sysNCluster][iV])
+			&& IsV0VaryCut(v0,Sp,Type,NClusterneg,sysVar[Sp-1][sysNCluster][iV]) ) 
+			hV0IMvPtSys[Sp][Mu][sysNCluster][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+
+		if (IsV0VaryCut(v0,Sp,Type,NClusterFpos,sysVar[Sp-1][sysNClusterF][iV])
+			&& IsV0VaryCut(v0,Sp,Type,NClusterFneg,sysVar[Sp-1][sysNClusterF][iV]) ) 
+			hV0IMvPtSys[Sp][Mu][sysNClusterF][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+	}
+
+}
 
 Bool_t MyAnalysisV0::IsTrans(Double_t phi1, Double_t phiTrig) {
 
@@ -1475,7 +1542,7 @@ Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
 
 	if (tr.GetEta() < cuts::K0S_D_ETA[0])	return false;
 	if (tr.GetEta() > cuts::K0S_D_ETA[1])	return false;
-	if (TMath::Abs(tr.GetDCApvXY()) < cuts::K0S_D_DCAPVXY)	return false;
+	if (TMath::Abs(tr.GetDCApvXY()) < cuts::V0_D_DCAPVXY)	return false;
 	//if (!tr.IsITSTPC2011())	return false;
 
 	if ( cuts::V0_D_GOODTRACK && !tr.IsGoodV0daughter())	return false;
@@ -1771,6 +1838,36 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			25, 0.75, 1., 1000, -0.2, 0.2);
 
 	}
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+		if (iMu!=3 && iMu!=4) continue;
+
+		hV0IMvPtSys[iSp][iMu][sysRadiusL][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysRadiusL],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysDCAdd][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysDCAdd],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysCPA][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysCPA],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysFastSignal][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysFastSignal],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysCompMass][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysCompMass],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysLifetime][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysLifetime],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysNSigmaTPC][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysNSigmaTPC],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysDCAPVpos][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysDCAPVpos],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysDCAPVneg][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysDCAPVneg],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysNCluster][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysNCluster],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+		hV0IMvPtSys[iSp][iMu][sysNClusterF][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysNClusterF],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+
+	}	}	}
 
 
 }

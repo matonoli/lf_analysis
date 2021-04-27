@@ -470,11 +470,25 @@ void MyAnalysisV0extract::TakeoverSidebands() {
 
 	cout << "mpar " << mParMuK0s << endl; 
 
+	mParSigK0s	= new TF1("funcSigK0s","[0]+[1]*x+[2]/x",1e-4+XBINS[0],XBINS[NPTBINS]);
+	mParSigK0s->SetParameters(cuts::K0S_PARSIG[0],cuts::K0S_PARSIG[1],cuts::K0S_PARSIG[2]);
+	mParMuK0s	= new TF1("funcMuK0s","(x<=1.6)*([0]+[1]*x+[2]*x*x)+(x>1.6)*[3]",1e-4+XBINS[0],XBINS[NPTBINS]);
+	mParMuK0s->SetParameters(cuts::K0S_PARMU[0],cuts::K0S_PARMU[1],cuts::K0S_PARMU[2],cuts::K0S_PARMU[3]);
 	
-	mParMuK0s	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcMuK0s");
-	mParSigK0s	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcSigK0s");
-	mParMuL		= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcMuL");
-	mParSigL	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcSigL");
+	mParSigL	= new TF1("funcSigL","[0]+[1]*x+[2]/x",1e-4+XBINS[0],XBINS[NPTBINS]);
+	mParSigL->SetParameters(cuts::L_PARSIG[0],cuts::L_PARSIG[1],cuts::L_PARSIG[2]);
+	mParMuL	= new TF1("funcMuL","(x<=1.9)*([0]+[1]*x+[2]*x*x)+(x>1.9)*([3]+[4]*x)",1e-4+XBINS[0],XBINS[NPTBINS]);
+	mParMuL->SetParameters(cuts::L_PARMU[0],cuts::L_PARMU[1],cuts::L_PARMU[2],cuts::L_PARMU[3],cuts::L_PARMU[4]);
+	
+	mParSigK0s->Write();
+	mParSigL->Write();
+	mParMuK0s->Write();
+	mParMuL->Write();
+	
+	//mParMuK0s	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcMuK0s");
+	//mParSigK0s	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcSigK0s");
+	//mParMuL		= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcMuL");
+	//mParSigL	= (TF1*)mHandler->analysis(0)->dirFile()->Get("funcSigL");
 
 	cout << "mpar " << mParMuK0s << endl; 
 }
@@ -1250,39 +1264,37 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 			// FOR CLOSURE STUDY
 			if (mHandler->GetFlagMC()) {
-				cout << "blaa" << endl;
+				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtPrimary[iSp]->ProjectionY(
 					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitPrimary[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitPrimary[iSp]->SetBinError(binCounter,*(yield+1));
-				cout << "blaaaaa" << endl;
+				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtPrimaryPDG[iSp]->ProjectionY(
 					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitPrimaryPDG[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitPrimaryPDG[iSp]->SetBinError(binCounter,*(yield+1));
-				cout << "blaaaaaaaaaaaaaa" << endl;
+				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtSecondary[iSp]->ProjectionY(
 					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitSecondary[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitSecondary[iSp]->SetBinError(binCounter,*(yield+1));
-				cout << "blaaaaaaaaaaaaaa" << endl;
-				cout << hV0IMvPtSecondaryPDG[iSp] << endl;
-				cout << hV0IMvPtSecondaryPDG[iSp]->ProjectionY(Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize) << endl;
+				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtSecondaryPDG[iSp]->ProjectionY(
 					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitSecondaryPDG[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitSecondaryPDG[iSp]->SetBinError(binCounter,*(yield+1));
-				cout << "blaaaaaaaaaaaaaa" << endl;
+				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtSecondaryXi[iSp]->ProjectionY(
 					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitSecondaryXi[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitSecondaryXi[iSp]->SetBinError(binCounter,*(yield+1));
-				cout << "blaaaaaaaaaaaaaa" << endl;
+				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtBackground[iSp]->ProjectionY(
 					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitBackground[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitBackground[iSp]->SetBinError(binCounter,*(yield+1));
-				cout << "blaaaaaaaaaaaaaa" << endl;
+				
 			}
 
 			// ACTUAL RAW YIELDS

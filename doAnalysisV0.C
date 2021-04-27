@@ -52,6 +52,11 @@ using namespace RooFit;
 // example: 
 // aliroot '../doAnalysisV0.C(15000,"0EG","../lists/runlist_2015_LHC15f_pass2.list","test.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root")'
 // workflow on the grid: 0EL -> 0EG -> 0E -> 0EM -> 0ED
+//
+// RUNNING WITH ROOT6 FOR NOW REQUIRES TO RUN FIRST
+// bash prep.sh XX Y     , where XX is the cut version and Y the wrapper type (trees vs. ESD)
+// alirooot ../compile.C
+// .x doAnalysis(...)
 
 void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *inputFile="test.list", 
 	const Char_t *outputFile="test.root", const Char_t *MCinputFile="") {
@@ -59,6 +64,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	// flags:	0...basic analysis
 	//			x...signal extraction
 	//			c...post-processing corrections
+	//			s...calculation of systematics
 	//			p...plotting
 	//			E...run on ESD files instead of local trees
 	//			L...test analysis on an ESD file locally, inputfile must be AliESDs.root file
@@ -128,6 +134,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	gSystem->Exec("cp ../MyKit/Analyses/MyAnalysisV0.cxx .; cp ../MyKit/Analyses/MyAnalysisV0.h .");	// MyKit analyses
 	gSystem->Exec("cp ../MyKit/Analyses/MyAnalysisV0extract.cxx .; cp ../MyKit/Analyses/MyAnalysisV0extract.h .");
 	gSystem->Exec("cp ../MyKit/Analyses/MyAnalysisV0correct.cxx .; cp ../MyKit/Analyses/MyAnalysisV0correct.h .");
+	gSystem->Exec("cp ../MyKit/Analyses/MyAnalysisV0syst.cxx .; cp ../MyKit/Analyses/MyAnalysisV0syst.h .");
 	gSystem->Exec("cp ../MyKit/Analyses/MyAnalysisV0plot.cxx .; cp ../MyKit/Analyses/MyAnalysisV0plot.h .");
 	gSystem->Exec("cp ../AliAnalysisTaskMyTask.cxx .; cp ../AliAnalysisTaskMyTask.h .");	// alice task
 	gSystem->Exec("cp ../AddMyTask.C .");
@@ -152,6 +159,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 	if (fl.Contains("0")) root->LoadMacro("MyAnalysisV0.cxx+");
 	if (fl.Contains("x")) root->LoadMacro("MyAnalysisV0extract.cxx+");
 	if (fl.Contains("c")) root->LoadMacro("MyAnalysisV0correct.cxx+");
+	if (fl.Contains("c")) root->LoadMacro("MyAnalysisV0syst.cxx+");
 	if (fl.Contains("p")) root->LoadMacro("MyAnalysisV0plot.cxx+");
 	std::cout << "Analyses compiled now \n";
 	if (mode == esds) {
@@ -203,6 +211,10 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			MyAnalysisV0correct* analysisV0correct		= new MyAnalysisV0correct();
 			analysisV0correct->SetMCInputFile(MCinputFile);
 			handler->AddAnalysis(analysisV0correct); }
+		if (fl.Contains("s")) {
+			MyAnalysisV0syst* analysisV0syst			= new MyAnalysisV0syst();
+			analysisV0syst->SetMCInputFile(MCinputFile);
+			handler->AddAnalysis(analysisV0syst); }
 		if (fl.Contains("p")) {
 			MyAnalysisV0plot* analysisV0plot			= new MyAnalysisV0plot();
 			handler->AddAnalysis(analysisV0plot); }

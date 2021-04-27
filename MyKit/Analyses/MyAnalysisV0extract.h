@@ -8,6 +8,7 @@
 #include "TString.h"
 #include "MyAnalysis.h"
 #include "MyAnalysisV0.h"
+#include "TF1.h"
 
 class TFile;	// forward declaration
 class TList;

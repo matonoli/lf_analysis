@@ -247,6 +247,68 @@ namespace V0consts {
 		cutsSizeof 																//30
 	};
 
+	enum sysSources {
+		sysRadiusL, sysDCAdd, sysCPA, sysFastSignal,
+		sysCompMass, sysLifetime, sysNSigmaTPC, sysDCAPVpos,
+		sysDCAPVneg, sysNCluster, sysNClusterF, sysSizeof
+	};
+
+	const char* SYSTS[sysSizeof] = { 
+		"sysRadiusL", "sysDCAdd", "sysCPA", "sysFastSignal",
+		"sysCompMass", "sysLifetime", "sysNSigmaTPC", "sysDCAPVpos",
+		"sysDCAPVneg", "sysNCluster", "sysNClusterF" 
+	};
+
+	enum sysVars {
+		loosest, loose, deflt, tight, tightest, sysVarsSizeof
+	};
+
+	const char* SYSTVAR[5] = {
+		"loosest", "loose", "deflt", "tight", "tightest"
+	};
+
+	Double_t sysVar[NSPECIES-1][sysSizeof][sysVarsSizeof] = {
+		{
+			{0.3, 0.4, 0.5, 0.6, 0.7},
+			{1.5, 1.25, 1.0, 0.75, 0.50},
+			{0.95, 0.96, 0.97, 0.98, 0.99},
+			{1., 1., 1., 2., 2.},
+			{2.5, 3., 4., 5., 5.5},
+			{0., 0., 0., 0., 0.},
+			{6.5, 6., 5., 4., 3.5},
+			{0.05, 0.055, 0.06, 0.07, 0.08},
+			{0.05, 0.055, 0.06, 0.07, 0.08},
+			{70., 70., 70., 75., 80.},
+			{0.8, 0.8, 0.8, 0.95, 0.95}
+		},
+		{
+			{0.3, 0.4, 0.5, 0.6, 0.7},
+			{1.5, 1.25, 1.0, 0.75, 0.50},
+			{0.993, 0.994, 0.995, 0.996, 0.997},
+			{1., 1., 1., 2., 2.},
+			{2.5, 3., 4., 5., 5.5},
+			{40., 40., 30., 20., 20.},
+			{6.5, 6., 5., 4., 3.5},
+			{0.05, 0.055, 0.06, 0.07, 0.08},
+			{0.05, 0.055, 0.06, 0.07, 0.08},
+			{70., 70., 70., 75., 80.},
+			{0.8, 0.8, 0.8, 0.95, 0.95}
+		},
+		{
+			{0.3, 0.4, 0.5, 0.6, 0.7},
+			{1.5, 1.25, 1.0, 0.75, 0.50},
+			{0.993, 0.994, 0.995, 0.996, 0.997},
+			{1., 1., 1., 2., 2.},
+			{2.5, 3., 4., 5., 5.5},
+			{40., 40., 30., 20., 20.},
+			{6.5, 6., 5., 4., 3.5},
+			{0.05, 0.055, 0.06, 0.07, 0.08},
+			{0.05, 0.055, 0.06, 0.07, 0.08},
+			{70., 70., 70., 75., 80.},
+			{0.8, 0.8, 0.8, 0.95, 0.95}
+		}
+	};
+
 }
 
 class MyAnalysisV0: public MyAnalysis {
@@ -274,6 +336,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
+		void ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 
 
 		void DoEfficiency();
@@ -428,6 +491,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0IMvDCAPVneg[V0consts::NSPECIES];
 		TH2D* hV0IMvNCluster[V0consts::NSPECIES];
 		TH2D* hV0IMvNClusterF[V0consts::NSPECIES];
+
+		TH2D* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 
 };
 #endif
