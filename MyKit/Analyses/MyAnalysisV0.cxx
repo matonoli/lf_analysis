@@ -777,9 +777,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (!properDaughters) continue;
 					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
 					if (!MCfound) continue;
-
-					if (isEventFHM01) ProcessV0SystVar(v0,iSp,RC,V0M01);	
-					if (isEventMHM01) ProcessV0SystVar(v0,iSp,RC,NCharged01);
+					ProcessV0SystVar(v0,iSp,RC,multMB);	
 
 				}
 
@@ -1842,7 +1840,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iMu!=3 && iMu!=4) continue;
+		if (!mFlagMC) if (iMu!=3 && iMu!=4) continue;
+		if (mFlagMC) if (iMu!=0) continue;
 
 		hV0IMvPtSys[iSp][iMu][sysRadiusL][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysRadiusL],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
