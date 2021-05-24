@@ -677,6 +677,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			if (p.GetPdgCode() == 3312) hV0FeeddownMotherPt[2]->Fill(p.GetPt());		// filling primary Xi
 			if (p.GetPdgCode() == -3312) hV0FeeddownMotherPt[3]->Fill(p.GetPt());
+			if (p.GetPdgCode() == 3322) hV0FeeddownMotherPtXi0[2]->Fill(p.GetPt());		// filling primary Xi
+			if (p.GetPdgCode() == -3322) hV0FeeddownMotherPtXi0[3]->Fill(p.GetPt());
 
 			for (int iSp = 0; iSp < NSPECIES; ++iSp)	{
 				if (p.GetPdgCode() == PDG_IDS[iSp])		{
@@ -777,7 +779,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (!properDaughters) continue;
 					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
 					if (!MCfound) continue;
-					ProcessV0SystVar(v0,iSp,RC,multMB);	
+					ProcessV0SystVar(v0,iSp,RC,multMB,sphMB);	
 
 				}
 
@@ -824,10 +826,21 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && 
 									v0.GetMCPrimaryPdgCode() == 3312 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
 									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 								}
 								if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && 
 									v0.GetMCPrimaryPdgCode() == -3312 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
 									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+								}
+
+								if (xiMC.GetPdgCode() == 3322 && iSp==2 && xiMC.IsPrimary() && 
+									v0.GetMCPrimaryPdgCode() == 3322 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+								}
+								if (xiMC.GetPdgCode() == -3322 && iSp==3 && xiMC.IsPrimary() && 
+									v0.GetMCPrimaryPdgCode() == -3322 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
 								}
 							}
 						}
@@ -997,8 +1010,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			// SYSTEMATIC CUT VARIATIONS
 			if (!mFlagMC) {
-				if (isEventFHM01) ProcessV0SystVar(v0,iSp,D,V0M01);	
-				if (isEventMHM01) ProcessV0SystVar(v0,iSp,D,NCharged01);
+				if (isEventFHM01) ProcessV0SystVar(v0,iSp,D,V0M01,sphMB);
+				if (isEventFHM01 && isEventSphero[D][V0M01][Jetty10]) ProcessV0SystVar(v0,iSp,D,V0M01,Jetty10);
+				if (isEventFHM01 && isEventSphero[D][V0M01][Iso10]) ProcessV0SystVar(v0,iSp,D,V0M01,Iso10);	
+				if (isEventMHM01) ProcessV0SystVar(v0,iSp,D,NCharged01,sphMB);
+				if (isEventMHM01 && isEventSphero[D][NCharged01][Jetty10]) ProcessV0SystVar(v0,iSp,D,NCharged01,Jetty10);
+				if (isEventMHM01 && isEventSphero[D][NCharged01][Iso10]) ProcessV0SystVar(v0,iSp,D,NCharged01,Iso10);
 			} 
 
 			if (IsV0(v0,iSp,D)) {
@@ -1429,11 +1446,11 @@ Bool_t MyAnalysisV0::IsV0VaryCut(MyV0 &v0, Int_t Sp, Int_t Type, Int_t VarCut, F
 			if (mCutsDir[Sp][Type][iCut]!=0) if ( (v0.GetIMK0s() > mParMuK0s->Eval(v0.GetPt()) - mCutsVal[Sp][iCut]*mParSigK0s->Eval(v0.GetPt()))
 			&&  (v0.GetIMK0s() < mParMuK0s->Eval(v0.GetPt()) + mCutsVal[Sp][iCut]*mParSigK0s->Eval(v0.GetPt())) ) return false;
 			continue;	}
-		if (iCut == CompMassL) {
+		if (iCut == CompMassL && VarCut != CompMassLbar) {
 			if (mCutsDir[Sp][Type][iCut]!=0) if ( (v0.GetIML() > mParMuL->Eval(v0.GetPt()) - mCutsVal[Sp][iCut]*mParSigL->Eval(v0.GetPt()) )
 			&&  (v0.GetIML() < mParMuL->Eval(v0.GetPt()) + mCutsVal[Sp][iCut]*mParSigL->Eval(v0.GetPt()) ) )	return false;
 			continue;	}
-		if (iCut == CompMassLbar) {
+		if (iCut == CompMassLbar && VarCut != CompMassL) {
 			if (mCutsDir[Sp][Type][iCut]!=0) if ( (v0.GetIMLbar() > mParMuL->Eval(v0.GetPt()) - mCutsVal[Sp][iCut]*mParSigL->Eval(v0.GetPt()) )
 			&&  (v0.GetIMLbar() < mParMuL->Eval(v0.GetPt()) + mCutsVal[Sp][iCut]*mParSigL->Eval(v0.GetPt()) ) )	return false;
 			continue;	}
@@ -1470,25 +1487,25 @@ Bool_t MyAnalysisV0::IsV0VaryCut(MyV0 &v0, Int_t Sp, Int_t Type, Int_t VarCut, F
 
 }
 
-void MyAnalysisV0::ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
+void MyAnalysisV0::ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph) {
 
 	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 
 	for (Int_t iV = 0; iV < sysVarsSizeof; iV++) {
 	
-		if (IsV0VaryCut(v0,Sp,Type,RadiusL,sysVar[Sp-1][sysRadiusL][iV])) hV0IMvPtSys[Sp][Mu][sysRadiusL][iV]->Fill(v0.GetPt(),v0mass[Sp]);
-		if (IsV0VaryCut(v0,Sp,Type,DCAdd,sysVar[Sp-1][sysDCAdd][iV])) hV0IMvPtSys[Sp][Mu][sysDCAdd][iV]->Fill(v0.GetPt(),v0mass[Sp]);
-		if (IsV0VaryCut(v0,Sp,Type,CPA,sysVar[Sp-1][sysCPA][iV])) hV0IMvPtSys[Sp][Mu][sysCPA][iV]->Fill(v0.GetPt(),v0mass[Sp]);
-		if (IsV0VaryCut(v0,Sp,Type,FastSignal,sysVar[Sp-1][sysFastSignal][iV])) hV0IMvPtSys[Sp][Mu][sysFastSignal][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,RadiusL,sysVar[Sp-1][sysRadiusL][iV])) hV0IMvPtSys[Sp][Mu][Sph][sysRadiusL][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,DCAdd,sysVar[Sp-1][sysDCAdd][iV])) hV0IMvPtSys[Sp][Mu][Sph][sysDCAdd][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,CPA,sysVar[Sp-1][sysCPA][iV])) hV0IMvPtSys[Sp][Mu][Sph][sysCPA][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,FastSignal,sysVar[Sp-1][sysFastSignal][iV])) hV0IMvPtSys[Sp][Mu][Sph][sysFastSignal][iV]->Fill(v0.GetPt(),v0mass[Sp]);
 
 		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,CompMassL,sysVar[Sp-1][sysCompMass][iV])
 					 && IsV0VaryCut(v0,Sp,Type,CompMassLbar,sysVar[Sp-1][sysCompMass][iV]) )
 			|| (Sp>1 && IsV0VaryCut(v0,Sp,Type,CompMassK0s,sysVar[Sp-1][sysCompMass][iV]) ) )
-			hV0IMvPtSys[Sp][Mu][sysCompMass][iV]->Fill(v0.GetPt(),v0mass[Sp]);			
+			hV0IMvPtSys[Sp][Mu][Sph][sysCompMass][iV]->Fill(v0.GetPt(),v0mass[Sp]);			
 
 		if ( (Sp==2 && IsV0VaryCut(v0,Sp,Type,LifetimeL,sysVar[Sp-1][sysLifetime][iV]) )
 			|| (Sp==3 && IsV0VaryCut(v0,Sp,Type,LifetimeLbar,sysVar[Sp-1][sysLifetime][iV]) ) )
-			hV0IMvPtSys[Sp][Mu][sysLifetime][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+			hV0IMvPtSys[Sp][Mu][Sph][sysLifetime][iV]->Fill(v0.GetPt(),v0mass[Sp]);
 
 		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
@@ -1502,18 +1519,18 @@ void MyAnalysisV0::ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrH,sysVar[Sp-1][sysNSigmaTPC][iV])		)	)
-			hV0IMvPtSys[Sp][Mu][sysNSigmaTPC][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+			hV0IMvPtSys[Sp][Mu][Sph][sysNSigmaTPC][iV]->Fill(v0.GetPt(),v0mass[Sp]);
 
-		if (IsV0VaryCut(v0,Sp,Type,DCAPVpos,sysVar[Sp-1][sysDCAPVpos][iV])) hV0IMvPtSys[Sp][Mu][sysDCAPVpos][iV]->Fill(v0.GetPt(),v0mass[Sp]);
-		if (IsV0VaryCut(v0,Sp,Type,DCAPVneg,sysVar[Sp-1][sysDCAPVneg][iV])) hV0IMvPtSys[Sp][Mu][sysDCAPVneg][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVpos,sysVar[Sp-1][sysDCAPVpos][iV])) hV0IMvPtSys[Sp][Mu][Sph][sysDCAPVpos][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVneg,sysVar[Sp-1][sysDCAPVneg][iV])) hV0IMvPtSys[Sp][Mu][Sph][sysDCAPVneg][iV]->Fill(v0.GetPt(),v0mass[Sp]);
 
 		if (IsV0VaryCut(v0,Sp,Type,NClusterpos,sysVar[Sp-1][sysNCluster][iV])
 			&& IsV0VaryCut(v0,Sp,Type,NClusterneg,sysVar[Sp-1][sysNCluster][iV]) ) 
-			hV0IMvPtSys[Sp][Mu][sysNCluster][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+			hV0IMvPtSys[Sp][Mu][Sph][sysNCluster][iV]->Fill(v0.GetPt(),v0mass[Sp]);
 
 		if (IsV0VaryCut(v0,Sp,Type,NClusterFpos,sysVar[Sp-1][sysNClusterF][iV])
 			&& IsV0VaryCut(v0,Sp,Type,NClusterFneg,sysVar[Sp-1][sysNClusterF][iV]) ) 
-			hV0IMvPtSys[Sp][Mu][sysNClusterF][iV]->Fill(v0.GetPt(),v0mass[Sp]);
+			hV0IMvPtSys[Sp][Mu][Sph][sysNClusterF][iV]->Fill(v0.GetPt(),v0mass[Sp]);
 	}
 
 }
@@ -1559,9 +1576,12 @@ Bool_t MyAnalysisV0::SelectParticle(MyParticle &p) {
 		&& p.GetPdgCode() != PDG_IDS[2]
 		&& p.GetPdgCode() != PDG_IDS[3]
 		&& p.GetPdgCode() != 3312			// also Xi pm for feed-down study
-		&& p.GetPdgCode() != -3312 )		return false;
+		&& p.GetPdgCode() != -3312 
+		&& p.GetPdgCode() != 3322			// also Xi0 for feed-down study
+		&& p.GetPdgCode() != -3322 )		return false;
 
-	if (p.GetPdgCode() == -3312 || p.GetPdgCode() == 3312) {
+	if (p.GetPdgCode() == -3312 || p.GetPdgCode() == 3312
+			|| p.GetPdgCode() == -3322 || p.GetPdgCode() == 3322 ) {
 		if (p.GetY() < cuts::V0_ETA[0]) 		return false;
 		if (p.GetY() > cuts::V0_ETA[1]) 		return false;
 	} else {
@@ -1741,6 +1761,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
 		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS);
 		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
+		hV0FeeddownMatrixXi0[iSp]	= new TH2D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS);
+		hV0FeeddownMotherPtXi0[iSp] 	= new TH1D(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
 		
 	}
 
@@ -1839,34 +1861,40 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)			{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+
+
 		if (!mFlagMC) if (iMu!=3 && iMu!=4) continue;
-		if (mFlagMC) if (iMu!=0) continue;
+		if (!mFlagMC) if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+		if (mFlagMC) if (iMu!=0) continue;		// efficiency is varied only in MB
+		if (mFlagMC) if (iSph!=0) continue;
 
-		hV0IMvPtSys[iSp][iMu][sysRadiusL][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysRadiusL],SYSTVAR[iVar]),
+
+		hV0IMvPtSys[iSp][iMu][iSph][sysRadiusL][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysRadiusL],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysDCAdd][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysDCAdd],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysDCAdd][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAdd],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysCPA][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysCPA],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysCPA][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysCPA],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysFastSignal][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysFastSignal],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysFastSignal][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysFastSignal],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysCompMass][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysCompMass],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysCompMass][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysCompMass],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysLifetime][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysLifetime],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysLifetime][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysLifetime],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysNSigmaTPC][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysNSigmaTPC],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysNSigmaTPC][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNSigmaTPC],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysDCAPVpos][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysDCAPVpos],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysDCAPVpos][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAPVpos],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysDCAPVneg][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysDCAPVneg],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysDCAPVneg][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAPVneg],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysNCluster][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysNCluster],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysNCluster][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNCluster],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][sysNClusterF][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SYSTS[sysNClusterF],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysNClusterF][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNClusterF],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
 
-	}	}	}
+	}	}	}	}
 
 
 }
@@ -1947,6 +1975,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 		hV0FeeddownPDG[iSp] = (TH1D*)mDirFile->Get(Form("hV0FeeddownPDG_%s",SPECIES[iSp]));
 		hV0FeeddownMatrix[iSp]		= (TH2D*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
 		hV0FeeddownMotherPt[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]));
+		hV0FeeddownMatrixXi0[iSp]		= (TH2D*)mDirFile->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]));
+		hV0FeeddownMotherPtXi0[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]));
 
 		hV0PtNoTrigger[iSp]	= (TH1D*)mDirFile->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
 		cout << "is " << hV0PtNoTrigger[iSp] << endl;

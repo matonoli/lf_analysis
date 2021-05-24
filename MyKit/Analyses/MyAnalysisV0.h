@@ -27,7 +27,7 @@ namespace V0consts {
 	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
 	const Int_t NMULTI = 5;//5;
-	const Int_t NSPHERO = 1;//9;
+	const Int_t NSPHERO = 9;//9;
 	const Int_t NREGIONS = 3;
 	const char* SPECIES[] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
@@ -336,7 +336,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
-		void ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
+		void ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 
 
 		void DoEfficiency();
@@ -427,6 +427,8 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0FeeddownPDG[V0consts::NSPECIES];
 		TH2D* hV0FeeddownMatrix[V0consts::NSPECIES];
 		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
+		TH2D* hV0FeeddownMatrixXi0[V0consts::NSPECIES];
+		TH1D* hV0FeeddownMotherPtXi0[V0consts::NSPECIES];
 
 		TH2D* hParticlePrimaryvPDG;
 		TH2D* hProtonNchTransvPt[V0consts::NREGIONS];
@@ -492,7 +494,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0IMvNCluster[V0consts::NSPECIES];
 		TH2D* hV0IMvNClusterF[V0consts::NSPECIES];
 
-		TH2D* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::sysSizeof][V0consts::sysVarsSizeof];
+		TH2D* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 
 };
 #endif
