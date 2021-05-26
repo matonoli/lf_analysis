@@ -782,6 +782,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					ProcessV0SystVar(v0,iSp,RC,multMB,sphMB);	
 
 				}
+			}
+
+			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
 				if (IsV0(v0,iSp,RC)) {
 					
@@ -2030,7 +2033,7 @@ Int_t MyAnalysisV0::Finish() {
 	if (mFlagMC) DoEfficiency();
 	//if (mFlagMC) DoEfficiencyFromTrees();
 	//if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
-	if (mFlagMC) DoLambdaFeeddown();
+	//if (mFlagMC) DoLambdaFeeddown();
 	if (mFlagMC) {
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{	
 			hV0PtNoTrigger[iSp]->Divide(hV0Pt[iSp][2][0][0]);
