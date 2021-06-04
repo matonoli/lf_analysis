@@ -22,6 +22,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -44,6 +45,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -67,6 +69,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -89,6 +92,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -112,6 +116,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -134,6 +139,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -157,6 +163,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -179,6 +186,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -202,6 +210,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -224,6 +233,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -247,6 +257,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -269,6 +280,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -292,6 +304,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -314,6 +327,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -337,6 +351,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -359,6 +374,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -382,6 +398,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -404,6 +421,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -427,6 +445,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -449,6 +468,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -472,6 +492,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_pass2.list","beast_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
@@ -494,6 +515,7 @@ root->LoadMacro("MyV0.cxx++");
 root->LoadMacro("MyAnalysisV0.cxx++");
 root->LoadMacro("MyAnalysisV0extract.cxx+");
 root->LoadMacro("MyAnalysisV0correct.cxx+");
+root->LoadMacro("MyAnalysisV0syst.cxx+");
 root->LoadMacro("MyAnalysisV0plot.cxx+");
 .x ../doAnalysisV0.C(${nev},"0","../lists/beast_${runlist}_MC_pass2.list","beastMC_${date}_${runlist}.root","../rootOutputs/pp16kP2MC_200512_AnalysisResults_hist.root");
 .q
