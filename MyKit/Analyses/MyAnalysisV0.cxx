@@ -2026,7 +2026,7 @@ Int_t MyAnalysisV0::Finish() {
 		//cout << "b bin " << rtbins[iBin] << endl;
 	}
 
-	hRt2->SetBins(nbins,rtbins);
+	//hRt2->SetBins(nbins,rtbins);	// files cannot be hadded afterwards
 
 
 

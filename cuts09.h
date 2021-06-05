@@ -22,7 +22,7 @@ namespace cuts {
 	// V0 SELECTION
 	const Float_t V0_ETA[2] 	= {-0.8, 0.8};
 	const Float_t V0_Y[2]		= {-0.5, 0.5};
-	const Float_t V0_PT[2] 		= {0.10, 15.};
+	const Float_t V0_PT[2] 		= {0.00, 25.};
 	//const Float_t V0_DCADD		= 0.5;
 	const Float_t V0_DCADD		= 1.0;
 	const Float_t V0_CPA		= 0.97;
@@ -48,7 +48,7 @@ namespace cuts {
 	//const Float_t L_NSIGTOF[2] 		= {-3., 3.}; 
 	const Float_t LBAR_NSIGTPC[2] 		= {-5., 5.};
 	//const Float_t LBAR_NSIGTOF[2] 	= {-3., 3.};
-	const Float_t L_PT[2] 				= {0.4, 15.};
+	const Float_t L_PT[2] 				= {0.3, 25.};
 	const Float_t L_COMP_M				= 0.010;
 	const Float_t L_TAU					= 30.;
 	const Float_t L_CPA					= 0.995;
