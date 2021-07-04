@@ -2,6 +2,7 @@
 
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3D.h>
 #include <TChain.h>
 #include <TBranch.h>
 #include <TCanvas.h>
@@ -822,28 +823,29 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 						if (iSp>1) {
 							MyParticle xiMC; xiMC.SetHandler(mHandler);
+							Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 						
 							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
 								xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
 								
 								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && 
 									v0.GetMCPrimaryPdgCode() == 3312 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
-									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
-									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt(),v0mass[iSp]);
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt(),v0mass[iSp]);
 								}
 								if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && 
 									v0.GetMCPrimaryPdgCode() == -3312 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
-									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
-									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt(),v0mass[iSp]);
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt(),v0mass[iSp]);
 								}
 
 								if (xiMC.GetPdgCode() == 3322 && iSp==2 && xiMC.IsPrimary() && 
 									v0.GetMCPrimaryPdgCode() == 3322 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
-									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt(),v0mass[iSp]);
 								}
 								if (xiMC.GetPdgCode() == -3322 && iSp==3 && xiMC.IsPrimary() && 
 									v0.GetMCPrimaryPdgCode() == -3322 && (v0.GetMCPrimaryLabel() == xiMC.GetLabel()))	{
-									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
+									hV0FeeddownMatrixXi0[iSp]->Fill(xiMC.GetPt(),v0.GetPt(),v0mass[iSp]);
 								}
 							}
 						}
@@ -1762,9 +1764,9 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
-		hV0FeeddownMatrix[iSp]	= new TH2D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS);
+		hV0FeeddownMatrix[iSp]	= new TH3D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS,1000,-0.2,0.2);
 		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
-		hV0FeeddownMatrixXi0[iSp]	= new TH2D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS);
+		hV0FeeddownMatrixXi0[iSp]	= new TH3D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS1000,-0.2,0.2);
 		hV0FeeddownMotherPtXi0[iSp] 	= new TH1D(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
 		
 	}
@@ -1976,9 +1978,9 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 
 		hV0Feeddown[iSp] 	= (TH1D*)mDirFile->Get(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] = (TH1D*)mDirFile->Get(Form("hV0FeeddownPDG_%s",SPECIES[iSp]));
-		hV0FeeddownMatrix[iSp]		= (TH2D*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
+		hV0FeeddownMatrix[iSp]		= (TH3D*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
 		hV0FeeddownMotherPt[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]));
-		hV0FeeddownMatrixXi0[iSp]		= (TH2D*)mDirFile->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]));
+		hV0FeeddownMatrixXi0[iSp]		= (TH3D*)mDirFile->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]));
 		hV0FeeddownMotherPtXi0[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]));
 
 		hV0PtNoTrigger[iSp]	= (TH1D*)mDirFile->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
@@ -2031,6 +2033,7 @@ Int_t MyAnalysisV0::Finish() {
 
 
 	if (mFlagMC) DoEfficiency();
+	
 	//if (mFlagMC) DoEfficiencyFromTrees();
 	//if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
 	//if (mFlagMC) DoLambdaFeeddown();
@@ -2110,7 +2113,7 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 	}*/
 
 	// NORMALIZING 
-	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+	/*for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 
 		Int_t nCols = hV0FeeddownMatrix[iSp]->GetNbinsX();
 		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
@@ -2128,6 +2131,30 @@ void MyAnalysisV0::DoLambdaFeeddown() {
 				if (binContent>0) hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
 			}
 		}
-	}
+	}*/
 
 }
+
+TH2D* MyAnalysisV0::RebinTH2(TH2D* h) {
+
+	if (!h) return 0x0;
+	if (h->GetNbinsX() != NPTBINS) {
+			
+		TAxis *xaxis = h->GetXaxis(); 
+		TAxis *yaxis = h->GetYaxis(); 
+		TH2D *htmp = new TH2D("htmp",
+			Form(";%s;%s;%s",xaxis->GetTitle(),yaxis->GetTitle(),h->GetZaxis()->GetTitle()),
+			NPTBINS, XBINS, yaxis->GetNbins(), yaxis->GetBinLowEdge(1), yaxis->GetBinLowEdge(h->GetYaxis()->GetNbins()+1));
+		for (int j=1; j<=yaxis->GetNbins();j++)	{ 
+		for (int i=1; i<=xaxis->GetNbins();i++)	{ 
+			htmp->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),h->GetBinContent(i,j)); 
+		}	}	
+			
+		h = (TH2D*)htmp->Clone(h->GetName());
+		delete htmp;
+			
+	}
+	return h;
+
+}
+

@@ -9,12 +9,14 @@
 #include "TObject.h"
 #include "TString.h"
 #include "MyAnalysis.h"
+#include "TH2D.h"
 
 
 class TFile;	// forward declaration
 class TList;
 class TH1D;
 class TH2D;
+class TH3D;
 class TNtuple;
 class MyV0;
 class MyEvent;
@@ -35,7 +37,8 @@ namespace V0consts {
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[] = {"MB","V0M","NCharged","V0M01","NCharged01"};//,"RTTrans","RTNear","RTAway"};
 	const char* PLOTS_MULTI[] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
-	const char* SPHERO[] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1",};//,"0-1","1-2","2-3","3-4","4-5"};
+	const char* SPHERO[] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1"};//,"0-1","1-2","2-3","3-4","4-5"};
+	const char* PLOTS_SPHERO[] = {"MB","Jetty 20%","Iso 20%", "Jetty 10%","Iso 10%","Jetty 5%","Iso %5","Jetty %1","Iso %1"};//,"0-1","1-2","2-3","3-4","4-5";
 	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
 	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away"};
 	//const Int_t NPTBINS = 35;
@@ -82,8 +85,17 @@ namespace V0consts {
 		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
 		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 
 		3.6, 3.9, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
-		8.0, 10.0, 12.0 };
-*/
+		8.0, 10.0, 12.0 };/*
+
+	/*const Int_t NPTBINS = 36;		//official K0s V0M spectra
+	const Double_t XBINS[NPTBINS+1] = {
+		0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
+		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
+		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 
+		3.6, 3.9, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
+		8.0, 10.0, 12.0 };*/
+
+
 	/*const Int_t NPTBINS = 7;		//sys stability check
 	const Double_t XBINS[NPTBINS+1] = {
 		0.0, 0.1, 0.8, 
@@ -267,6 +279,12 @@ namespace V0consts {
 		"sysDCAPVneg", "sysNCluster", "sysNClusterF" 
 	};
 
+	const char* PLOTS_SYSTS[sysSizeof] = { 
+		"radius", "DCA_{d-d}", "cos PA", "fast signals",
+		"comp. mass #sigma's", "lifetime", "TPC #sigma's", "DCA_{PV-d+}",
+		"DCA_{PV-d-}", "TPC crossed rows", "TPC find. ratio" 
+	};
+
 	enum sysVars {
 		loosest, loose, deflt, tight, tightest, sysVarsSizeof
 	};
@@ -295,7 +313,7 @@ namespace V0consts {
 			{0.993, 0.994, 0.995, 0.996, 0.997},
 			{1., 1., 1., 2., 2.},
 			{2.5, 3., 4., 5., 5.5},
-			{40., 40., 30., 20., 20.},
+			{35., 35., 30., 25., 25.},
 			{6.5, 6., 5., 4., 3.5},
 			{0.05, 0.055, 0.06, 0.07, 0.08},
 			{0.05, 0.055, 0.06, 0.07, 0.08},
@@ -308,7 +326,7 @@ namespace V0consts {
 			{0.993, 0.994, 0.995, 0.996, 0.997},
 			{1., 1., 1., 2., 2.},
 			{2.5, 3., 4., 5., 5.5},
-			{40., 40., 30., 20., 20.},
+			{35., 35., 30., 25., 25.},
 			{6.5, 6., 5., 4., 3.5},
 			{0.05, 0.055, 0.06, 0.07, 0.08},
 			{0.05, 0.055, 0.06, 0.07, 0.08},
@@ -350,6 +368,7 @@ class MyAnalysisV0: public MyAnalysis {
 		void DoEfficiency();
 		void DoEfficiencyFromTrees();
 		void DoLambdaFeeddown();
+		TH2D* RebinTH2(TH2D* h);
 
 		ClassDef(MyAnalysisV0,2);
 
@@ -433,9 +452,9 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TH1D* hV0Feeddown[V0consts::NSPECIES];
 		TH1D* hV0FeeddownPDG[V0consts::NSPECIES];
-		TH2D* hV0FeeddownMatrix[V0consts::NSPECIES];
+		TH3D* hV0FeeddownMatrix[V0consts::NSPECIES];
 		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
-		TH2D* hV0FeeddownMatrixXi0[V0consts::NSPECIES];
+		TH3D* hV0FeeddownMatrixXi0[V0consts::NSPECIES];
 		TH1D* hV0FeeddownMotherPtXi0[V0consts::NSPECIES];
 
 		TH2D* hParticlePrimaryvPDG;
