@@ -1760,13 +1760,19 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 
 	// FEED-DOWN STUDY HISTOGRAMS
+
+	int NBINS_FDMASS = 1000;
+	double XBINS_FDMASS[NBINS_FDMASS+1] = {};
+	double binStep = (0.2 + 0.2)/(double)NBINS_FDMASS;
+	for (int i=0; i <= NBINS_FDMASS; i++) XBINS_FDMASS[i] = -0.2 + (double)i*binStep;
+
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
 		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
 		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
-		hV0FeeddownMatrix[iSp]	= new TH3D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS,1000,-0.2,0.2);
+		hV0FeeddownMatrix[iSp]	= new TH3D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
 		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
-		hV0FeeddownMatrixXi0[iSp]	= new TH3D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS1000,-0.2,0.2);
+		hV0FeeddownMatrixXi0[iSp]	= new TH3D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
 		hV0FeeddownMotherPtXi0[iSp] 	= new TH1D(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
 		
 	}
