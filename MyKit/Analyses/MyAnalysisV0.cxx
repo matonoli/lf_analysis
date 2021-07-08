@@ -1761,8 +1761,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// FEED-DOWN STUDY HISTOGRAMS
 
-	int NBINS_FDMASS = 1000;
-	double XBINS_FDMASS[NBINS_FDMASS+1] = {};
+	const int NBINS_FDMASS = 1000;
+	double XBINS_FDMASS[NBINS_FDMASS+1];// = {};
 	double binStep = (0.2 + 0.2)/(double)NBINS_FDMASS;
 	for (int i=0; i <= NBINS_FDMASS; i++) XBINS_FDMASS[i] = -0.2 + (double)i*binStep;
 
