@@ -36,6 +36,7 @@ namespace V0consts {
 	const Float_t XIMASS = 1.32171;
 	const char* TYPE[NTYPE] = {"D","RC","MC"};
 	const char* MULTI[] = {"MB","V0M","NCharged","V0M01","NCharged01"};//,"RTTrans","RTNear","RTAway"};
+	//const char* MULTI[] = {"MB","V0M","NCharged","V0M","NCharged"};//temporary
 	const char* PLOTS_MULTI[] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
 	const char* SPHERO[] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1"};//,"0-1","1-2","2-3","3-4","4-5"};
 	const char* PLOTS_SPHERO[] = {"MB","Jetty 20%","Iso 20%", "Jetty 10%","Iso 10%","Jetty 5%","Iso %5","Jetty %1","Iso %1"};//,"0-1","1-2","2-3","3-4","4-5";
@@ -85,7 +86,7 @@ namespace V0consts {
 		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
 		1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 
 		3.6, 3.9, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
-		8.0, 10.0, 12.0 };/*
+		8.0, 10.0, 12.0 };*/
 
 	/*const Int_t NPTBINS = 36;		//official K0s V0M spectra
 	const Double_t XBINS[NPTBINS+1] = {
@@ -117,6 +118,13 @@ namespace V0consts {
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.5, 2.9, 3.4, 4.0, 5.0, 
+		6.5, 8.0 };*/
+
+	/*const Int_t NPTBINS = 16;
+	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
+		0.4, 0.6, 0.8, 1.0, 1.2, 
+		1.4, 1.6, 1.8, 2.0, 2.2, 
+		2.6, 3.0, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };*/
 
 	/*const Int_t NPTBINS = 18;

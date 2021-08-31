@@ -1015,12 +1015,27 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			// SYSTEMATIC CUT VARIATIONS
 			if (!mFlagMC) {
-				if (isEventFHM01) ProcessV0SystVar(v0,iSp,D,V0M01,sphMB);
-				if (isEventFHM01 && isEventSphero[D][V0M01][Jetty10]) ProcessV0SystVar(v0,iSp,D,V0M01,Jetty10);
-				if (isEventFHM01 && isEventSphero[D][V0M01][Iso10]) ProcessV0SystVar(v0,iSp,D,V0M01,Iso10);	
-				if (isEventMHM01) ProcessV0SystVar(v0,iSp,D,NCharged01,sphMB);
-				if (isEventMHM01 && isEventSphero[D][NCharged01][Jetty10]) ProcessV0SystVar(v0,iSp,D,NCharged01,Jetty10);
-				if (isEventMHM01 && isEventSphero[D][NCharged01][Iso10]) ProcessV0SystVar(v0,iSp,D,NCharged01,Iso10);
+
+				if (isEventFHM) {
+					ProcessV0SystVar(v0,iSp,D,V0M,sphMB);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessV0SystVar(v0,iSp,D,V0M,iSph);
+				}
+
+				if (isEventMHM) {
+					ProcessV0SystVar(v0,iSp,D,NCharged,sphMB);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged,iSph);
+				}
+
+
+				if (isEventFHM01) {
+					ProcessV0SystVar(v0,iSp,D,V0M01,sphMB);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessV0SystVar(v0,iSp,D,V0M01,iSph);
+				}
+
+				if (isEventMHM01) {
+					ProcessV0SystVar(v0,iSp,D,NCharged01,sphMB);
+					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged01,iSph);
+				}
 			} 
 
 			if (IsV0(v0,iSp,D)) {
@@ -1876,8 +1891,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
 
 
-		if (!mFlagMC) if (iMu!=3 && iMu!=4) continue;
-		if (!mFlagMC) if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+		if (!mFlagMC) if (iMu==0 && iSph>0) continue;
 		if (mFlagMC) if (iMu!=0) continue;		// efficiency is varied only in MB
 		if (mFlagMC) if (iSph!=0) continue;
 
