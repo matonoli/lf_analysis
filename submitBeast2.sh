@@ -1,7 +1,7 @@
 #!/bin/bash
 
 nev=1234567890
-date=210831
+date=220207
 pid=1
 
 #u can force threads by replacing aliroot with 'taskset --cpu-list ${pid} aliroot'
