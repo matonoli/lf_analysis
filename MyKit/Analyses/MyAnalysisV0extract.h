@@ -45,9 +45,11 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Bool_t BorrowHistograms();
 		Bool_t CreateHistograms();
 		Double_t* ExtractYieldSB(TH1D* hist = 0);
+		Double_t* ExtractYieldSBVarySigma(Double_t nsig = 6., TH1D* hist = 0);
 		Double_t* ExtractYieldFit(TH1D* hist = 0, Int_t Type = 0, Int_t MB = 0);
 		Double_t* ExtractYieldFitRt(TTree* tree = 0, Int_t Type = 0);
 		Double_t* ExtractYieldFitPtTree(TTree* tree = 0, Int_t Type = 0);
+		void MakeExclusiveS0Bins();
 
 		void DrawConstraints();
 		void DefineSidebands();

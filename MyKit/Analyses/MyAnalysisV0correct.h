@@ -15,6 +15,7 @@ class TFile;	// forward declaration
 class TList;
 class TH1D;
 class TH2D;
+class TH3D;
 class TNTuple;
 class MyV0;
 class MyEvent;
@@ -56,7 +57,7 @@ TF1 *
 LevyTsallis(const Char_t *name, Double_t mass, Double_t n = 5., Double_t C = 0.1, Double_t norm = 1.)
 {
   
-  TF1 *fLevyTsallis = new TF1(name, LevyTsallis_Func, 0., 10., 4);
+  TF1 *fLevyTsallis = new TF1(name, LevyTsallis_Func, 0., 15., 4);
   fLevyTsallis->SetParameters(mass, n, C, norm);
   fLevyTsallis->SetParNames("mass", "n", "C", "norm");
   fLevyTsallis->FixParameter(0, mass);
@@ -91,6 +92,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void DoClosureTest(Int_t opt = 0);
 		void DoXCheckV0M();
 		void CreateOutputFile(const Char_t *name, Int_t Sp);
+		void MakeExclusiveS0Bins();
 
 		//Double_t rap_correction(Double_t* x, Double_t* par);
 
@@ -131,8 +133,10 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TNtuple* tV0PtMCRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TNtuple* tV0massRt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
-		TH2D* hV0FeeddownMatrix[V0consts::NSPECIES];
+		TH3D* hV0FeeddownMatrix[V0consts::NSPECIES];
 		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
+		TH3D* hV0FeeddownMatrixXi0[V0consts::NSPECIES];
+		TH1D* hV0FeeddownMotherPtXi0[V0consts::NSPECIES];
 		TH1D* hV0PtNoTrigger[V0consts::NSPECIES];
 
 		//owned
@@ -141,9 +145,18 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1D* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
-		TH1D* hV0PtFeeddown[V0consts::NSPECIES][V0consts::NMULTI];
-		TH1D* hXiPt[V0consts::NSPECIES][V0consts::NMULTI];
+		TH1D* hV0PtFeeddown[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtFeeddownContr[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtFeeddownXi0[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtFeeddownXiErr[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hXiPt[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSignalLoss[V0consts::NSPECIES];
+
+		TH1D* hClosureTestFDvSec[V0consts::NSPECIES];
+		TH1D* hClosureTestFDvSecPDG[V0consts::NSPECIES];
+		TH1D* hClosureTestEffi[V0consts::NSPECIES];
+		TH1D* hClosureTestEffiPDG[V0consts::NSPECIES];
+		TH1D* hClosureTestPDG[V0consts::NSPECIES];
 
 };
 #endif

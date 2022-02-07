@@ -90,21 +90,9 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 		
 		cout << "ccc " << iSph << iMu << iType << iSp << " " << hV0IMvPt[iSp][iType][iMu][iSph] << endl;
 		
-		if (hV0IMvPt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS) {
-			
-			TH2D *htmp = new TH2D("htmp",
-			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-			TAxis *xaxis = hV0IMvPt[iSp][iType][iMu][iSph]->GetXaxis(); 
-			TAxis *yaxis = hV0IMvPt[iSp][iType][iMu][iSph]->GetYaxis(); 
-			for (int j=1; j<=yaxis->GetNbins();j++)	{ 
-			for (int i=1; i<=xaxis->GetNbins();i++)	{ 
-				htmp->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),hV0IMvPt[iSp][iType][iMu][iSph]->GetBinContent(i,j)); 
-			}	}	
-			
-			hV0IMvPt[iSp][iType][iMu][iSph] = (TH2D*)htmp->Clone(hV0IMvPt[iSp][iType][iMu][iSph]->GetName());
-			delete htmp;
-			
-		}
+		cout << "HISTO IS " << hV0IMvPt[iSp][iType][iMu][iSph]->GetNbinsX() << endl;
+		hV0IMvPt[iSp][iType][iMu][iSph] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPt[iSp][iType][iMu][iSph]);
+		cout << "HISTO IS " << hV0IMvPt[iSp][iType][iMu][iSph]->GetNbinsX() << endl;
 
 	} } } }
 
@@ -129,6 +117,14 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 		hV0IMvPtSecondaryPDG[iSp]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtSecondaryPDG_%s",SPECIES[iSp]));
 		hV0IMvPtSecondaryXi[iSp]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtSecondaryXi_%s",SPECIES[iSp]));
 		hV0IMvPtBackground[iSp]		= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtBackground_%s",SPECIES[iSp]));
+
+		hV0IMvPtPrimary[iSp]		= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPtPrimary[iSp]);
+		hV0IMvPtPrimaryPDG[iSp]		= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPtPrimaryPDG[iSp]);
+		hV0IMvPtSecondary[iSp]		= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPtSecondary[iSp]);
+		hV0IMvPtSecondaryPDG[iSp]	= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPtSecondaryPDG[iSp]);
+		hV0IMvPtSecondaryXi[iSp]	= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPtSecondaryXi[iSp]);
+		hV0IMvPtBackground[iSp]		= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0IMvPtBackground[iSp]);		
+
 
 	}	}
 
@@ -177,6 +173,9 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 		}
 
 	} } } }
+
+	cout << "N OF BINS IS -------------------------" << endl;
+	cout << NPTBINS << endl;
 
 	if (mHandler->GetFlagMC()) {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -246,6 +245,7 @@ Int_t MyAnalysisV0extract::Finish() {
 	//DefineSidebands();
 	TakeoverSidebands();
 	ProducePtSpectraFromHists();
+	if (MAKE_EXCLUSIVE) MakeExclusiveS0Bins();
 	//ProducePtSpectraFromTrees();
 	//ProduceRtSpectraFromTrees();
 
@@ -1231,7 +1231,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	nBins 	= (mHandler->IsRebinPt()) ? NPTBINS2 : NPTBINS;
 	xBins	= (mHandler->IsRebinPt()) ? XBINS2 : XBINS;
-	Int_t binSize = -1 + TMath::Nint((Double_t)NPTBINS/nBins);	// this is buggy actually
+	Int_t binSize = 0;//-1 + TMath::Nint((Double_t)NPTBINS/nBins);	// this is buggy actually
 	nPads = TMath::FloorNint(TMath::Sqrt(nBins));
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
@@ -1291,7 +1291,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 				hV0PtFitSecondaryXi[iSp]->SetBinError(binCounter,*(yield+1));
 				
 				yield = ExtractYieldSB((TH1D*)hV0IMvPtBackground[iSp]->ProjectionY(
-					Form("iSp%i_iBin%i", iSp, binCounter), iBin,iBin+binSize));
+					Form("iSp%i_iBin%i_Background", iSp, binCounter), iBin,iBin+binSize));
 				hV0PtFitBackground[iSp]->SetBinContent(binCounter,*(yield+0));
 				hV0PtFitBackground[iSp]->SetBinError(binCounter,*(yield+1));
 				
@@ -1305,6 +1305,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 			hV0PtFit[iSp][iType][iMu][iSph]->SetBinContent(binCounter,*(yield+0));
 			hV0PtFit[iSp][iType][iMu][iSph]->SetBinError(binCounter,*(yield+1));
 			binCounter++;
+
 		}
 
 		//if (iType==0&&iMu==0&&iSph==0) cFits[iCan]->SaveAs(Form("tmp/%s.png",cFits[iCan]->GetName()));
@@ -1341,6 +1342,33 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 
 	mHandler->root()->SetBatch(kFALSE);
+}
+
+
+void MyAnalysisV0extract::MakeExclusiveS0Bins() { 
+
+	// creates exclusive spherocity bins, i.e 0-1, 1-5, instead of 0-1, 0-5
+
+	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
+	enum { sphMB, Jetty20, Iso20, Jetty10, Iso10, Jetty5, Iso5, Jetty1, Iso1};
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iMu = 1; iMu < NMULTI; ++iMu)		{
+
+		hV0PtFit[iSp][iType][iMu][sphMB]->Add(hV0PtFit[iSp][iType][iMu][Jetty20],-1.);
+		hV0PtFit[iSp][iType][iMu][sphMB]->Add(hV0PtFit[iSp][iType][iMu][Iso20],-1.);
+		hV0PtFit[iSp][iType][iMu][Jetty20]->Add(hV0PtFit[iSp][iType][iMu][Jetty10],-1.);
+		hV0PtFit[iSp][iType][iMu][Jetty10]->Add(hV0PtFit[iSp][iType][iMu][Jetty5],-1.); 
+		hV0PtFit[iSp][iType][iMu][Jetty5]->Add(hV0PtFit[iSp][iType][iMu][Jetty1],-1.); 
+		hV0PtFit[iSp][iType][iMu][Iso20]->Add(hV0PtFit[iSp][iType][iMu][Iso10],-1.);
+		hV0PtFit[iSp][iType][iMu][Iso10]->Add(hV0PtFit[iSp][iType][iMu][Iso5],-1.); 
+		hV0PtFit[iSp][iType][iMu][Iso5]->Add(hV0PtFit[iSp][iType][iMu][Iso1],-1.); 
+
+	}	}	}
+
+
 }
 
 void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
@@ -1420,6 +1448,8 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 
 	mHandler->root()->SetBatch(kFALSE);
 }
+
+
 
 void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
@@ -1551,7 +1581,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	}
 	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, xBins[binNumber-1], xBins[binNumber]);
 
-	Double_t NSig = 6;
+	Double_t NSig = 6; //6;
 	hist->Rebin(8);
 	
 	TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
@@ -1644,6 +1674,8 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	val[0] = N - Bg;
 	val[1] = TMath::Sqrt(TMath::Abs(N + Bg));
 
+	if (histName.Contains("Sys")) return val;
+
 	/*std::cout << " ib " << binNumber << std::endl;
 	std::cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
 	" p " << canCounter%nBins << std::endl;*/
@@ -1693,7 +1725,140 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
 	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
 	leg1->Draw();
 	
-	if (histName.Contains("hV0IMvPt_")) canCounter++;
+	if (histName.Contains("_iType")) canCounter++;
+	return val;
+}
+
+Double_t* MyAnalysisV0extract::ExtractYieldSBVarySigma(Double_t nsig, TH1D* hist) {
+
+
+	static Double_t val[2];
+	val[0] = 0; val[1] = 0;
+	Float_t fitMin = -0.1, fitMax = 0.1;
+
+	for (int ib = 1; ib < hist->GetNbinsX()+1; ib++) hist->SetBinError(ib,TMath::Sqrt(hist->GetBinContent(ib)));
+
+	TString histName(hist->GetName());
+	TString binName(histName(histName.Index("iBin")+4,2));
+	Int_t binNumber = binName.Atoi();
+	TString spName(histName(histName.Index("iSp")+3,1));
+	Int_t spNumber = spName.Atoi();
+
+	Bool_t isTree = histName.Contains("tree");
+
+	/*TString muName(histName(histName.Index("iMu")+3,1));
+	Int_t muNumber = muName.Atoi();*/
+
+	Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
+
+	Double_t Mean, Sigma, SF;
+	
+	if (mParMuK0s) {
+		Mean	= (spNumber==1) ? mParMuK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParMuL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		Sigma	= (spNumber==1) ? mParSigK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParSigL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		SF = 1;
+	} else {
+
+		Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(xBins[binNumber-1]));
+		Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*xBins[binNumber-1]+0.4*xBins[binNumber]));
+
+	}
+	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, xBins[binNumber-1], xBins[binNumber]);
+
+	Double_t NSig = nsig;
+	hist->Rebin(8);
+	
+	TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
+	fbg->SetParameters(1.,0.,0.);
+	//fit only the linear background excluding the signal area
+	gFReject = kTRUE;
+	//because ROOT is poorly designed we have to use globals now, careful (!)
+	gFLeft = Mean-1.*NSig*Sigma; gFRight = Mean+1.*NSig*Sigma;
+	//hist->Fit(fbg,"0");
+	gFReject = kFALSE;
+	//store 2 separate functions for visualization
+   	/*TF1 *fleft = new TF1("fleft",fbg,Double_t(Mean-3.*NSig*Sigma),Double_t(Mean-1.*NSig*Sigma),3);
+	fleft->SetParameters(fbg->GetParameters());
+	hist->GetListOfFunctions()->Add(fleft);
+	mHandler->root()->GetListOfFunctions()->Remove(fleft);
+	TF1 *fright = new TF1("fright",fbg,Double_t(Mean+1.*NSig*Sigma),Double_t(Mean+3.*NSig*Sigma),3);
+	fright->SetParameters(fbg->GetParameters());
+	hist->GetListOfFunctions()->Add(fright);
+	mHandler->root()->GetListOfFunctions()->Remove(fright);*/
+	
+
+
+
+
+
+	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",Mean-3*NSig*Sigma,Mean+3*NSig*Sigma);
+	RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
+
+	RooRealVar pPolBgA("pPolBgA","Pol. par. A",1.,-800.,800.);
+	RooRealVar pPolBgB("pPolBgB","Pol. par. B",1.,-80,80);
+	RooRealVar pPolBgC("pPolBgC","Pol. par. C",0,-80,80);
+	RooPolynomial fPolBg = RooPolynomial("fPolBg","fPolBg",MassDT,RooArgSet(pPolBgA,pPolBgB,pPolBgC));
+	//RooUniform fPolBg = RooUniform("fPolBg","fPolBg",MassDT);//,RooArgSet(pPolBgA));
+	RooRealVar nPolBg("nPolBg","N_{PolBg}",1,0,9e08);
+	MassDT.setRange("lowR",Mean-3*NSig*Sigma, Mean-NSig*Sigma);		//fitting B
+	MassDT.setRange("highR",Mean+NSig*Sigma, Mean+3.*NSig*Sigma);
+	MassDT.setRange("fullR",Mean-3*NSig*Sigma, Mean+3.*NSig*Sigma);
+	MassDT.setRange("sigR",Mean-NSig*Sigma, Mean+NSig*Sigma);
+	MassDT.setRange("lowBR",Mean-2*NSig*Sigma, Mean-NSig*Sigma);	// SB region
+	MassDT.setRange("highBR",Mean+NSig*Sigma, Mean+2.*NSig*Sigma);
+
+	RooAddPdf fTotal = RooAddPdf("fTotal","fTotal",RooArgList(fPolBg),RooArgList(nPolBg));
+
+	RooFitResult* fR = 0; 
+	//if (empty>3) fR = fTotal.chi2FitTo(DT_set,Range("lowR,highR"),Save(),PrintLevel(-1));
+	//fTotal.getParameters(DT_set)->Print("V");
+	//if (empty>3) fR = fTotal.fitTo(*blindedData,Save(),PrintLevel(-1));
+	RooAbsReal* fInt = fTotal.createIntegral(MassDT,NormSet(MassDT),Range("sigR"));
+	RooAbsReal* fIntTot = fTotal.createIntegral(MassDT,NormSet(MassDT),Range("lowBR,highBR"));
+	RooAbsReal* fIntTot2 = fTotal.createIntegral(MassDT,NormSet(MassDT),Range("fullR"));
+	RooAbsReal* fIntTot3 = fTotal.createIntegral(MassDT);
+
+
+	Double_t N 	= hist->Integral(hist->FindBin(Mean-NSig*Sigma),hist->FindBin(Mean+NSig*Sigma));
+	//cout << "N 1 " << N << endl;
+	N = DT_set.sumEntries(0,"sigR");
+	//cout << "N 2 " << N << endl;
+	//Double_t Bg = hist->Integral(hist->FindBin(Mean-2*NSig*Sigma),hist->FindBin(Mean-NSig*Sigma));
+	//		Bg += hist->Integral(hist->FindBin(Mean+NSig*Sigma),hist->FindBin(Mean+2*NSig*Sigma));
+
+	Double_t Bg = DT_set.sumEntries(0,"lowBR");
+	//cout << Bg << endl;
+	Bg += DT_set.sumEntries(0,"highBR");
+	//cout << "sb bg " << Bg << endl;
+
+	double a = Mean-NSig*Sigma;
+	double b = Mean+NSig*Sigma;
+	double c = Mean-2.*NSig*Sigma;
+	double d = Mean+2.*NSig*Sigma;
+	Double_t SBscale = fbg->Integral(a,b);
+	//cout << "sb scale is " << SBscale << endl;
+	SBscale /= (fbg->Integral(c,a)+fbg->Integral(b,d)) > 0 ? (fbg->Integral(c,a)+fbg->Integral(b,d)) : 1;
+	//cout << "sb scale is " << SBscale << endl;
+	//SBscale = 1.;
+	//if (hSidebandSF[spNumber]->GetBinContent(binNumber)==0) {
+	//		hSidebandSF[spNumber]->SetBinContent(binNumber,SBscale);
+//			hSidebandSF[spNumber]->SetBinError(binNumber,0.1*SBscale);
+//	}
+	//Bg *= SBscale;
+	//Bg *= fInt->getVal();
+	//cout << fInt->getVal() << endl;
+	//Bg /= fIntTot->getVal();
+	//cout << fIntTot->getVal() << endl;
+	//cout << fIntTot2->getVal() << endl;
+	//cout << fIntTot3->getVal() << endl;
+	
+	//cout << "bg val " << Bg << " compared to " << hist->Integral(hist->FindBin(Mean-2.*NSig*Sigma),hist->FindBin(Mean-NSig*Sigma)) + hist->Integral(hist->FindBin(Mean+NSig*Sigma),hist->FindBin(Mean+2.*NSig*Sigma)) << endl;
+	//cout << "SF " << SF << endl;
+	Bg *= SF;
+	val[0] = N - Bg;
+	val[1] = TMath::Sqrt(TMath::Abs(N + Bg));
+
 	return val;
 }
 
@@ -2235,6 +2400,39 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 
 		
 	}
+
+	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
+		Int_t iMu = 0; Int_t iSph = 0;	
+		hClosureTest[iSp]	= (TH1D*)hV0PtFitSecondaryPDG[iSp]->Clone(Form("hClosureTestSigvPrSe_%s",SPECIES[iSp]));
+		//hClosureTest[iSp]->Add(hV0PtFitSecondaryPDG[iSp],1.);
+		TH1D* hDenPr = (TH1D*)hV0IMvPtSecondaryPDG[iSp]->ProjectionX(Form("hDenPr_%s",SPECIES[iSp]),0,-1);
+		//TH1D* hDenSe = (TH1D*)hV0IMvPtSecondaryPDG[iSp]->ProjectionX(Form("hDenSe_%s",SPECIES[iSp]),0,-1);
+		//hDenPr->Add(hDenSe);
+		hDenPr->Scale(1,"width");
+
+		mHandler->MakeNiceHistogram(hClosureTest[iSp],kBlack);
+		//hClosureTest[iSp]->GetYaxis()->SetTitle("blind sig. ex. / PrimaryPDG + SecondaryPDG");
+		hClosureTest[iSp]->GetYaxis()->SetTitle("SecondaryPDG signal ex. efficiency");
+		hClosureTest[iSp]->GetYaxis()->SetRangeUser(0.7,1.3);
+		hClosureTest[iSp]->Divide(hDenPr);
+		TCanvas* cClosure = new TCanvas("cClosureSigvPrSe","",900,900);
+		hClosureTest[iSp]->Draw();
+		if (iSp == 3) hClosureTest[3]->SetMarkerStyle(24);
+		hClosureTest[iSp]->Draw();
+		if (iSp == 3) hClosureTest[2]->Draw("same");
+		TLegend* leg1 = new TLegend(0.171,0.67,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
+		mHandler->MakeNiceLegend(leg1, 0.05, 1.);
+		if (iSp == 3) leg1->AddEntry(hClosureTest[2],Form("%s",SPECNAMES[2]),"pl");
+		leg1->AddEntry(hClosureTest[iSp],Form("%s",SPECNAMES[iSp]),"pl");
+		leg1->Draw();
+		cClosure->SaveAs(Form("plots/closureSigvPrSe_%s.png",SPECIES[iSp]));
+		
+		//delete hDen;
+
+
+		
+	}
+
 	mHandler->root()->SetBatch(kFALSE);
 }
 

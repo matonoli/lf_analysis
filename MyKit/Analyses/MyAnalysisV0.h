@@ -26,6 +26,9 @@ class TransverseSpherocity;
 
 // Defining a namespace with constants
 namespace V0consts {
+
+	const bool MAKE_EXCLUSIVE = false;
+
 	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
 	const Int_t NMULTI = 5;//5;

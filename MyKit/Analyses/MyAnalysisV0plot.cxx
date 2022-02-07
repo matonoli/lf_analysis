@@ -239,7 +239,7 @@ Int_t MyAnalysisV0plot::Finish() {
 	BorrowHistograms();
 	CloneHistograms();
 	MakeFinalFiguresRatios();
-	MakeFinalFiguresSpherocity();
+	//MakeFinalFiguresSpherocity();
 	//MakeFinalFiguresEvent();
 	//MakeFinalFiguresRt();
 
@@ -289,14 +289,16 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 	hOffiV0M10->Draw("same");
 
 	cOffiK0->cd();
-	TLegend* legPt = new TLegend(0.49,0.61,0.85,0.88);
-			mHandler->MakeNiceLegend(legPt,0.04,1);
+	TLegend* legPt = new TLegend(0.39,0.63,0.88,0.88);
+			mHandler->MakeNiceLegend(legPt,0.04,2);
 			
 			legPt->AddEntry((TObject*)0,Form("|#eta| < 0.8"),"");
 			legPt->AddEntry((TObject*)0,"pp #sqrt{s} = 13 TeV","");
-			legPt->AddEntry((TObject*)0,"","");
-			legPt->AddEntry(hMB,"minimum bias (V0M 0-100%)","pl");
+			//legPt->AddEntry((TObject*)0,"","");
+			legPt->AddEntry(hMB,"MB (V0M 0-100%)","pl");
+			legPt->AddEntry(hOffiMB,"LHC15f (offi.)","pl");
 			legPt->AddEntry(hV0M1,"V0M I","pl");
+			legPt->AddEntry(hOffiV0M1,"LHC15f (offi.)","pl");
 			legPt->AddEntry(hV0M10,"V0M I-III","pl");
 			legPt->AddEntry(hOffiV0M10,"LHC15f (offi.)","pl");
 			legPt->Draw();
@@ -304,9 +306,9 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 	hOffiMB->SetTitle("");
 
 	mDirFile->cd();
-	mHandler->MakeRatioPlot(hMB,(TH1D*)hOffiMB,cOffiK0,0.7,1.3,0.2,10.);
-	mHandler->MakeRatioPlot(hV0M1,(TH1D*)hOffiV0M1,cOffiK0,0.7,1.3,0.2,10.);
-	mHandler->MakeRatioPlot(hV0M10,(TH1D*)hOffiV0M10,cOffiK0,0.7,1.3,0.2,10.);
+	mHandler->MakeRatioPlot(hMB,(TH1D*)hOffiMB,cOffiK0,0.75,1.25,0.2,10.);
+	mHandler->MakeRatioPlot(hV0M1,(TH1D*)hOffiV0M1,cOffiK0,0.75,1.25,0.2,10.);
+	mHandler->MakeRatioPlot(hV0M10,(TH1D*)hOffiV0M10,cOffiK0,0.75,1.25,0.2,10.);
 
 	/*mHandler->MakeZoomPlot(hMB,cOffiK0,0.2,1.501,0.599,1.401);
 	hMB->DrawCopy();
@@ -321,6 +323,7 @@ void MyAnalysisV0plot::MakeFinalFiguresRatios() {
 
 	}
 
+	return;
 	{	// period ratios
 
 	//files
