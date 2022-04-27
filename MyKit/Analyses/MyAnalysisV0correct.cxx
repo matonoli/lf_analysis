@@ -238,7 +238,7 @@ Int_t MyAnalysisV0correct::Finish() {
 
 	//if (!mHandler->GetFlagMC()) StudyCuts();
 
-	DoXCheckV0M();
+	if (NMULTI>2) DoXCheckV0M();
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
 
 	CreateOutputFile("k0s_spherocity.root",1);
@@ -553,24 +553,28 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		"hXi_Jetty5_Spectra_stat", "hXi_Iso5_Spectra_stat", "hXi_Jetty1_Spectra_stat", "hXi_Iso1_Spectra_stat"};
 
 		for (int iS = 0; iS < NSPHERO; iS++) {
+			if (NMULTI<2) continue;
 			hXiPt[2][1][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 			hXiPt[3][1][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 		}
 
 		mFileXi = new TFile("../official/xi_results_So_CL1_aug_6.root","READ");
 		for (int iS = 0; iS < NSPHERO; iS++) {
+			if (NMULTI<3) continue;
 			hXiPt[2][2][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 			hXiPt[3][2][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 		}
 
 		mFileXi = new TFile("../official/xi_results_So_V0M_top1_aug_6.root","READ");
 		for (int iS = 0; iS < NSPHERO; iS++) {
+			if (NMULTI<4) continue;
 			hXiPt[2][3][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 			hXiPt[3][3][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 		}
 
 		mFileXi = new TFile("../official/xi_results_So_CL1_top1_aug_6.root","READ");
 		for (int iS = 0; iS < NSPHERO; iS++) {
+			if (NMULTI<5) continue;
 			hXiPt[2][4][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 			hXiPt[3][4][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
 		}
@@ -645,9 +649,10 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 	
 		if (!hXiPt[iSp][iMu][iSph]) continue;
 
-		cout << iSp << " " << iMu << " " << hXiPt[iSp][iMu][iSph] << endl;
+		cout << iSp << " " << iMu << " " << iSph << " " << hXiPt[iSp][iMu][iSph] << endl;
 		//if (mFileXi) hXiPt[iSp][iMu]->Scale(0.5);
 		hXiPt[iSp][iMu][iSph]->Fit(funcLT,"");
+		cout << hXiPt[iSp][iMu][iSph]->GetName() << " successfully fitted" << endl;
 		funcLThi->SetParameter(3,funcLT->GetParameter(3)+funcLT->GetParError(3));
 		funcLThi->SetParameter(1,funcLT->GetParameter(1)-funcLT->GetParError(1));
 		funcLThi->SetParameter(2,funcLT->GetParameter(2)-funcLT->GetParError(2));

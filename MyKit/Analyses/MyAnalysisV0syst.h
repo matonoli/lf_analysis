@@ -64,7 +64,7 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TFile* mFileMC;
 		TList* mList;
 
-		Double_t nRBsigmas = 1.;
+		Double_t nRBsigmas = 2.;
 
 		// V0 HISTOGRAMS
 		//borrowed
@@ -126,7 +126,9 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TH1D* hMCV0YieldvNClusterF[V0consts::NSPECIES];
 
 		TH1D* hV0PtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
+		TH1D* hV0PtSysRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 		TH1D* hV0PtSysMaxD[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof];
+		TH1D* hV0PtSysMaxDRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof];
 		TH1D* hV0EfficiencySys[V0consts::NSPECIES][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 		TH1D* hV0PtSysSum[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysSumUnc[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
@@ -134,19 +136,37 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TH1D* hV0PtSysSigExLoose[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysSigExTight[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysMaxDSigEx[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysSigExLooseRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysSigExTightRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysMaxDSigExRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysBudget;
 		TH1D* hV0PtSysEffi;
+		TH1D* hV0PtSysExpBiasJetty;
+		TH1D* hV0PtSysExpBiasIso;
 		TH1D* hV0PtSysFeeddown[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysMaxDFeeddown[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysFeeddownXiErr[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysMaxDFeeddownXiErr[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hV0PtSysMaxDFeeddownTotal[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysFeeddownRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysMaxDFeeddownRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysFeeddownXiErrRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysMaxDFeeddownXiErrRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0PtSysMaxDFeeddownTotalRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+
 
 		TH1D* hFracBudget[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hFracEffi[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hFracExpBias[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hFracCuts[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hFracSigEx[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1D* hFracFD[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+
+		TH1D* hFracEffiRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hFracExpBiasRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hFracCutsRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hFracSigExRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hFracFDRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 
 
 		TH1D* hRBcheck[V0consts::NSPECIES][V0consts::sysSizeof][V0consts::sysVarsSizeof];

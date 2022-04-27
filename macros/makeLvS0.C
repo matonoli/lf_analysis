@@ -5,10 +5,10 @@ using namespace std;
 
 
 
-TString mult("V0M01"); int multInt = 0; int multOmar = 0; TString multPlot("V0M 0-1%");
+//TString mult("V0M01"); int multInt = 0; int multOmar = 0; TString multPlot("V0M 0-1%");
 //TString mult("NCharged01"); int multInt = 1; int multOmar = 0; TString multPlot("CL1 0-1%");
 //TString mult("V0M"); int multInt = 2; int multOmar = 1; TString multPlot("V0M 0-10%");
-//TString mult("NCharged"); int multInt = 3; int multOmar = 1; TString multPlot("CL1 0-10%");
+TString mult("NCharged"); int multInt = 3; int multOmar = 1; TString multPlot("CL1 0-10%");
 
 Double_t calcError(Double_t valA, Double_t valB, Double_t errA, Double_t errB) {
 
@@ -31,7 +31,7 @@ void makeLvS0() {
   TH1D* hL_Syst;
 
   // integration range
-  double low = 4;
+  double low = 1.;
   double high = 99.;
 
   // S0 unbiased
@@ -39,12 +39,12 @@ void makeLvS0() {
   double mberr_Stat = 0;
   double mberr_Syst = 0;
   TFile* fin = new TFile(Form("k0s_l_spectra_%s_spher10.root",mult.Data()),"READ");
-  hL_Stat = (TH1D*)fin->Get("hK0s_Ref_Stat");
-  hL_Syst = (TH1D*)fin->Get("hK0s_Ref_SystUnc");
+  hL_Stat = (TH1D*)fin->Get("hLLbar_Ref_Stat");
+  hL_Syst = (TH1D*)fin->Get("hLLbar_Ref_SystUnc");
 
-  mb_Stat = hL_Stat->IntegralAndError(low,high,mberr_Stat,"");
+  mb_Stat = hL_Stat->IntegralAndError(low,high,mberr_Stat,"width");
   for (int iB=1; iB<hL_Syst->GetNbinsX()+1; iB++) hL_Syst->SetBinContent(iB,hL_Syst->GetBinContent(iB)+hL_Syst->GetBinError(iB));
-  mberr_Syst = hL_Syst->Integral(low,high) - mb_Stat;
+  mberr_Syst = hL_Syst->Integral(low,high,"width") - mb_Stat;
 
 
   double s_Stat = 0;
@@ -69,18 +69,18 @@ void makeLvS0() {
   for (int iS = 1; iS < 10; iS++) {
 
     fin = new TFile(fileN[iS-1],"READ");
-    hL_Stat = (TH1D*)fin->Get(Form("hK0s_%s_Stat",sphN[iS-1]));
-    hL_Syst = (TH1D*)fin->Get(Form("hK0s_%s_SystUnc",sphN[iS-1]));
-    s_Stat = hL_Stat->IntegralAndError(low,high,serr_Stat,"");
+    hL_Stat = (TH1D*)fin->Get(Form("hLLbar_%s_Stat",sphN[iS-1]));
+    hL_Syst = (TH1D*)fin->Get(Form("hLLbar_%s_SystUnc",sphN[iS-1]));
+    s_Stat = hL_Stat->IntegralAndError(low,high,serr_Stat,"width");
     for (int iB=1; iB<hL_Syst->GetNbinsX()+1; iB++) hL_Syst->SetBinContent(iB,hL_Syst->GetBinContent(iB)+hL_Syst->GetBinError(iB));
-    serr_Syst = hL_Syst->Integral(low,high) - s_Stat;
+    serr_Syst = (hL_Syst->Integral(low,high,"width") - s_Stat)/s_Stat;
     
     hLLbarvS0_Stat->SetBinContent(iS,s_Stat/mb_Stat);
     hLLbarvS0_Syst->SetBinContent(iS,s_Stat/mb_Stat);
     hLLbarvS0_Stat->SetBinError(iS,calcError(s_Stat,mb_Stat,serr_Stat,mberr_Stat));
-    hLLbarvS0_Syst->SetBinError(iS,calcError(s_Stat,mb_Stat,serr_Syst,mberr_Syst));
+    hLLbarvS0_Syst->SetBinError(iS,serr_Syst*s_Stat/mb_Stat);
 
-    cout << "S0 bin " << iS << ": #Lambda = " << s_Stat/mb_Stat << " +- " << calcError(s_Stat,mb_Stat,serr_Stat,mberr_Stat) << endl;
+    cout << "S0 bin " << iS << ": #Lambda = " << s_Stat << endl;//" +- " << calcError(s_Stat,mb_Stat,serr_Stat,mberr_Stat) << endl;
   
   }
 

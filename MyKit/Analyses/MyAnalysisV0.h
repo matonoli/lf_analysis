@@ -27,7 +27,7 @@ class TransverseSpherocity;
 // Defining a namespace with constants
 namespace V0consts {
 
-	const bool MAKE_EXCLUSIVE = false;
+	const bool MAKE_EXCLUSIVE = false; // RUN TRUE ONLY IF NSPHERO==9
 
 	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
@@ -126,6 +126,13 @@ namespace V0consts {
 	/*const Int_t NPTBINS = 16;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
 		0.4, 0.6, 0.8, 1.0, 1.2, 
+		1.4, 1.6, 1.8, 2.0, 2.2, 
+		2.6, 3.0, 3.4, 4.0, 5.0, 
+		6.5, 8.0 };*/
+
+	/*const Int_t NPTBINS = 13;
+	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions, 1gev cut
+		1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };*/

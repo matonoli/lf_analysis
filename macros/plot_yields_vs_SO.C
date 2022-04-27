@@ -71,9 +71,9 @@ void draw_results(Bool_t isV0M, Bool_t isVHM, Bool_t includeMC=kFALSE, Bool_t us
 
 	figName = "_V0M_01";
 	
-	hPi_stat = (TH1D*)filePikp->Get("hYieldSO_Kaon_V0M_binMult_0_sta");
-	hPi_syst = (TH1D*)filePikp->Get("hYieldSO_Kaon_V0M_binMult_0_sys");
-	hHelp = (TH1D*)filePikp->Get("hYieldHM_Kaon_V0M_binMult_0_sta");
+	hPi_stat = (TH1D*)filePikp->Get("hYieldSO_Pion_V0M_binMult_0_sta");
+	hPi_syst = (TH1D*)filePikp->Get("hYieldSO_Pion_V0M_binMult_0_sys");
+	hHelp = (TH1D*)filePikp->Get("hYieldHM_Pion_V0M_binMult_0_sta");
 	
 	hPoverPi_stat = (TH1D*)filePikp->Get("hProton2Pion_DoubleRatio_V0M_binMult_0_sta");
 	hPoverPi_syst = (TH1D*)filePikp->Get("hProton2Pion_DoubleRatio_V0M_binMult_0_sys");
@@ -105,9 +105,9 @@ void draw_results(Bool_t isV0M, Bool_t isVHM, Bool_t includeMC=kFALSE, Bool_t us
 	
 	figName = "_CL1_01";
 
-	hPi_stat = (TH1D*)filePikp->Get("hYieldSO_Kaon_CL1_binMult_0_sta");
-	hPi_syst = (TH1D*)filePikp->Get("hYieldSO_Kaon_CL1_binMult_0_sys");
-	hHelp = (TH1D*)filePikp->Get("hYieldHM_Kaon_CL1_binMult_0_sta");
+	hPi_stat = (TH1D*)filePikp->Get("hYieldSO_Pion_CL1_binMult_0_sta");
+	hPi_syst = (TH1D*)filePikp->Get("hYieldSO_Pion_CL1_binMult_0_sys");
+	hHelp = (TH1D*)filePikp->Get("hYieldHM_Pion_CL1_binMult_0_sta");
 	
 	hPoverPi_stat = (TH1D*)filePikp->Get("hProton2Pion_DoubleRatio_Trks_binMult_0_sta");
 	hPoverPi_syst = (TH1D*)filePikp->Get("hProton2Pion_DoubleRatio_Trks_binMult_0_sys");
@@ -322,8 +322,7 @@ void draw_results(Bool_t isV0M, Bool_t isVHM, Bool_t includeMC=kFALSE, Bool_t us
   latex.SetTextSize(0.03);
   latex.DrawLatex(0.65, 0.30, "N_{#pi}: 0.3 < #it{p}_{T} < 20 GeV/#it{c}");
   latex.DrawLatex(0.65, 0.26, "N_{p}: 0.45 < #it{p}_{T} < 20 GeV/#it{c}");
-  //latex.DrawLatex(0.65, 0.22, "N_{#Lambda}: 1.0 < #it{p}_{T} < 8 GeV/#it{c}");
-  latex.DrawLatex(0.65, 0.22, "N_{K^{0}_{S}}: 1.0 < #it{p}_{T} < 8 GeV/#it{c}");
+  latex.DrawLatex(0.65, 0.22, "N_{#Lambda}: 1.0 < #it{p}_{T} < 8 GeV/#it{c}");
   latex.DrawLatex(0.65, 0.18, "N_{#Xi}: 0.6 < #it{p}_{T} < 6.5 GeV/#it{c}");
 
   
@@ -331,8 +330,7 @@ void draw_results(Bool_t isV0M, Bool_t isVHM, Bool_t includeMC=kFALSE, Bool_t us
   l->SetBorderSize(0.);
   l->SetTextFont(42);
   l->AddEntry(hPoverPi_stat, "N_{p} / N_{#pi}", "PL");
-  //l->AddEntry(hLoverPi_stat, "N_{#Lambda} / N_{#pi}", "PL");
-  l->AddEntry(hLoverPi_stat, "N_{K^{0}_{S}} / N_{K^{#pm}}", "PL");
+  l->AddEntry(hLoverPi_stat, "N_{#Lambda} / N_{#pi}", "PL");
   l->AddEntry(hXIoverPi_stat, "N_{#Xi} / N_{#pi}", "PL");
   l->Draw();
 

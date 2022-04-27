@@ -45,7 +45,18 @@ void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, 
   hr->SetMinimum(low);
   hr->SetMaximum(high);
   hr->GetXaxis()->SetRangeUser(lowx,highx);
+  
+
   hr->Divide(hd);
+
+  // for ratios of S0 to HM, use the unc. uncertainties as systematics
+  TString hrname(hr->GetName());
+  if (hrname.Contains("Unc")) {
+  for (int iBin = 1; iBin < hn->GetNbinsX()+1; iBin++) {
+    double nerr = (double)hn->GetBinError(iBin)/hn->GetBinContent(iBin);
+    hr->SetBinError(iBin,(double)hr->GetBinContent(iBin)*nerr);
+  } }
+
 
   hr->GetYaxis()->SetTitle("ratio to ref.");
   hr->GetYaxis()->CenterTitle();
@@ -67,7 +78,6 @@ void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, 
 
   if (!hasRatio)  hr->Draw(strOpt.Data());
   else      hr->Draw(Form("same %s", strOpt.Data()));
-  TString hrname(hr->GetName());
   if (! hrname.Contains("hBlank")) hr->Write();
 
   //c->SetCanvasSize()
@@ -212,15 +222,23 @@ TString spher("10"); int sphInt = 2;
 //TString spher("5"); int sphInt = 1;
 //TString spher("1"); int sphInt = 0;
 
-Bool_t IS_EXCLUSIVE = 1;
+Bool_t IS_EXCLUSIVE = 0;
 
 
-const Int_t NPTBINS = 16;
+const Int_t NPTBINS = 13;
+  const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
+    1.0, 1.2, 
+    1.4, 1.6, 1.8, 2.0, 2.2, 
+    2.6, 3.0, 3.4, 4.0, 5.0, 
+    6.5, 8.0 };
+
+
+/*const Int_t NPTBINS = 16;
   const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
     0.4, 0.6, 0.8, 1.0, 1.2, 
     1.4, 1.6, 1.8, 2.0, 2.2, 
     2.6, 3.0, 3.4, 4.0, 5.0, 
-    6.5, 8.0 };
+    6.5, 8.0 };*/
 
 const Int_t NPIONBINS = 51;   //Omar pi+- spectra
   const Double_t PIONBINS[NPIONBINS+1] = {
@@ -239,8 +257,9 @@ void plotFinal() {
   TH1::SetDefaultSumw2(1);
 
 	TFile* fin = new TFile("output210826all.root", "READ");
+  //fin = (IS_EXCLUSIVE) ? new TFile("output211114all_excl.root", "READ") : new TFile("output210826all.root", "READ");
+  fin = (IS_EXCLUSIVE) ? new TFile("output220223_ex.root", "READ") : new TFile("output220223.root", "READ");
   TDirectoryFile* dirSyst = (TDirectoryFile*)fin->Get("MyAnalysisV0syst_3");
-  fin = (IS_EXCLUSIVE) ? new TFile("output211114all_excl.root", "READ") : new TFile("output210826all.root", "READ");
   TDirectoryFile* dirCorr = (TDirectoryFile*)fin->Get("MyAnalysisV0correct_2"); 
 
   TFile* fpion = new TFile("../official/pi_k_p_spectra.root","READ");

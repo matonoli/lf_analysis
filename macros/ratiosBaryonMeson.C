@@ -372,9 +372,9 @@ void ratiosBaryonMeson() {
   hK0s[Ref][Syst]       = (TH1D*)fK0s->Get("hK0s_Ref_Syst");
   hK0s[Jetty][Syst]     = (TH1D*)fK0s->Get("hK0s_Jet_Syst");
   hK0s[Iso][Syst]       = (TH1D*)fK0s->Get("hK0s_Iso_Syst");
-  hK0s[Ref][SystUnc]    = (TH1D*)fK0s->Get("hK0s_Ref_Syst");    // needs changing to unc.
-  hK0s[Jetty][SystUnc]  = (TH1D*)fK0s->Get("hK0s_Jet_Syst");
-  hK0s[Iso][SystUnc]    = (TH1D*)fK0s->Get("hK0s_Iso_Syst");
+  hK0s[Ref][SystUnc]    = (TH1D*)fK0s->Get("hK0s_Ref_SystUnc");    // needs changing to unc.
+  hK0s[Jetty][SystUnc]  = (TH1D*)fK0s->Get("hK0s_Jet_SystUnc");
+  hK0s[Iso][SystUnc]    = (TH1D*)fK0s->Get("hK0s_Iso_SystUnc");
 
   // lambdas
   hL[Ref][Stat]       = (TH1D*)fK0s->Get("hLLbar_Ref_Stat");
@@ -383,9 +383,9 @@ void ratiosBaryonMeson() {
   hL[Ref][Syst]       = (TH1D*)fK0s->Get("hLLbar_Ref_Syst");
   hL[Jetty][Syst]     = (TH1D*)fK0s->Get("hLLbar_Jet_Syst");
   hL[Iso][Syst]       = (TH1D*)fK0s->Get("hLLbar_Iso_Syst");
-  hL[Ref][SystUnc]    = (TH1D*)fK0s->Get("hLLbar_Ref_Syst");    // needs changing to unc.
-  hL[Jetty][SystUnc]  = (TH1D*)fK0s->Get("hLLbar_Jet_Syst");
-  hL[Iso][SystUnc]    = (TH1D*)fK0s->Get("hLLbar_Iso_Syst");
+  hL[Ref][SystUnc]    = (TH1D*)fK0s->Get("hLLbar_Ref_SystUnc");    // needs changing to unc.
+  hL[Jetty][SystUnc]  = (TH1D*)fK0s->Get("hLLbar_Jet_SystUnc");
+  hL[Iso][SystUnc]    = (TH1D*)fK0s->Get("hLLbar_Iso_SystUnc");
 
   // l to k0s we can get directly
   /*hLoverK0s[Ref][Stat]      = (TH1D*)fK0s->Get("hLLbarToK0s_Ref_Stat");
@@ -516,14 +516,14 @@ void ratiosBaryonMeson() {
   const double minYratio = 0.67;
   const double maxYratio = 1.62;
 
-  const double minXleft = 0.28;
+  const double minXleft = 0.24;
   const double maxXleft = 29.;
 
-  const double minXmiddle = 0.23;
-  const double maxXmiddle = 15.;
+  const double minXmiddle = 0.24;
+  const double maxXmiddle = 29.;
 
-  const double minXright = 0.41;
-  const double maxXright = 8.;
+  const double minXright = 0.24;
+  const double maxXright = 29.;
 
 
   // Left frames
@@ -640,8 +640,8 @@ void ratiosBaryonMeson() {
   DrawHistograms(hLoverK0s[Jetty],NHIST,colors[Jetty]);
 
 
-  latexSp->DrawLatex(0.1,0.75,"#Lambda/K^{0}_{S}");
-  latexSystem->DrawLatex(0.38,0.75,"#times#frac{1}{3}");
+  latexSp->DrawLatex(0.16,0.75,"#Lambda/K^{0}_{S}");
+  latexSystem->DrawLatex(0.08,0.75,"#frac{1}{3}#times");
   
   C->cd(0);
   pad[2][1]->Draw();
@@ -650,8 +650,8 @@ void ratiosBaryonMeson() {
   DrawHistograms(hXioverPhi[Iso],NHIST,colors[Iso]);
   DrawHistograms(hXioverPhi[Jetty],NHIST,colors[Jetty]);
 
-  latexSp->DrawLatex(0.1,0.75,"#Xi/#phi");
-  latexSystem->DrawLatex(0.28,0.75,"#times#frac{1}{2}");
+  latexSp->DrawLatex(0.16,0.75,"#Xi/#phi");
+  latexSystem->DrawLatex(0.08,0.75,"#frac{1}{2}#times");
 
   C->cd(0);
   pad[0][0]->Draw();

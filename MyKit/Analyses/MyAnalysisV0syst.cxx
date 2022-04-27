@@ -107,11 +107,10 @@ Bool_t MyAnalysisV0syst::BorrowHistograms() {
 	
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iMu = 1; iMu < NMULTI; ++iMu)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iMu!=3 && iMu!=4) continue;
-		if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+		if (iMu == 0 && iSph > 0) continue;
 	
 		hV0IMvPtSys[iSp][iMu][iSph][sysRadiusL][iVar]
 			= (TH2D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysRadiusL],SYSTVAR[iVar]));
@@ -197,8 +196,7 @@ Bool_t MyAnalysisV0syst::BorrowHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iMu!=0) continue;
-		if (iSph!=0) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		hMCV0IMvPtSys[iSp][iMu][iSph][sysRadiusL][iVar]
 			= (TH2D*)dirFile1->Get(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysRadiusL],SYSTVAR[iVar]));
@@ -280,14 +278,14 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iSp==1 && iSo==sysLifetime) continue;
-		if (iMu!=3 && iMu!=4) continue;
-		if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		TH1D* hpt = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
 		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1D*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
 		cout << "aaaawraw " << hpt << endl;
 		hV0PtSys[iSp][iMu][iSph][iSo][iVar] = (TH1D*)hpt->Clone(Form("hV0PtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo],SYSTVAR[iVar]));
+		hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar] = (TH1D*)hpt->Clone(Form("hV0PtSysRatioToHM_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo],SYSTVAR[iVar]));
 
 	}	}	}	}	}
 
@@ -295,14 +293,17 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-		if (iMu!=3 && iMu!=4) continue;
-		if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		TH1D* hpt = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
 		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1D*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
 		hV0PtSysSigExLoose[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysSigExLoose_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hV0PtSysSigExTight[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysSigExTight_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hV0PtSysMaxDSigEx[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDSigEx_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
+		hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysSigExLooseRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysSigExTightRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDSigExRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 
 		hV0PtSysFeeddown[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysFeeddown_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hV0PtSysMaxDFeeddown[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDFeeddown_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
@@ -311,11 +312,25 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 
 		hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDFeeddownTotal_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 
+		hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysFeeddownRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hV0PtSysMaxDFeeddownRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDFeeddownRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hV0PtSysFeeddownXiErrRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysFeeddownXiErrRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hV0PtSysMaxDFeeddownXiErrRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDFeeddownXiErrRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
+		hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hV0PtSysMaxDFeeddownTotalRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
 		hFracBudget[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracBudget_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hFracEffi[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracEffi_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hFracExpBias[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracExpBias_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hFracCuts[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracCuts_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hFracSigEx[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracSigEx_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		hFracFD[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracFD_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
+		hFracEffiRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracEffiRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hFracExpBiasRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracExpBiasRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hFracCutsRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracCutsRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hFracSigExRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracSigExRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hFracFDRatioToHM[iSp][iMu][iSph]	= (TH1D*)hpt->Clone(Form("hFracFDRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 
 	}	}	}
 
@@ -328,20 +343,26 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 
 		hV0PtSysEffi = (TH1D*)hpt->Clone(Form("hV0PtSysEffi"));
 		for (int i=1; i<hV0PtSysEffi->GetNbinsX()+1; i++) hV0PtSysEffi->SetBinContent(i,0.02);
+
+		hV0PtSysExpBiasJetty = (TH1D*)hpt->Clone(Form("hV0PtSysExpBiasJetty"));
+		for (int i=1; i<hV0PtSysExpBiasJetty->GetNbinsX()+1; i++) hV0PtSysExpBiasJetty->SetBinContent(i, (XBINS[i-1]<1.)? 0.: 0.04);	
+
+		hV0PtSysExpBiasIso = (TH1D*)hpt->Clone(Form("hV0PtSysExpBiasIso"));
+		for (int i=1; i<hV0PtSysExpBiasIso->GetNbinsX()+1; i++) hV0PtSysExpBiasIso->SetBinContent(i, (XBINS[i-1]<1.)? 0.: 0.01);	
 	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
-		if (iSp==1 && iSo==sysLifetime) continue;
-		if (iMu!=3 && iMu!=4) continue;
-		if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		TH1D* hpt = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
 		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1D*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
 		cout << "aaaawraw " << hpt << endl;
 		hV0PtSysMaxD[iSp][iMu][iSph][iSo] = (TH1D*)hpt->Clone(Form("hV0PtSysMaxD_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo]));
+		hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo] = (TH1D*)hpt->Clone(Form("hV0PtSysMaxDRatioToHM_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo]));
 
 	}	}	}	}
 
@@ -349,7 +370,7 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iVar!=loosest && iVar!=tightest) continue;
+	if (iVar!=loosest && iVar!=tightest) continue;
 
 		hRBcheck[iSp][iSo][iVar] = new TH1D(Form("hRBcheck_%s_%s_%s",SPECIES[iSp],SYSTS[iSo],SYSTVAR[iVar]), 
 			Form("%s;#Delta/#sigma_{cc};Entries",SYSTS[iSo]), 120,-6.,6.);
@@ -392,9 +413,7 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-	//if (iMu!=3 && iMu!=4) continue;
-	//if (iSph!=0 && iSph!=3 && iSph!=4) continue;
-	if (!iMu && iSph) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		TH1D* hpt = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
 		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1D*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
@@ -667,11 +686,11 @@ void MyAnalysisV0syst::MakeCorrectedYields() {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iSp==1 && iSo==sysLifetime) continue;
-		if (iMu!=3 && iMu!=4) continue;
-		if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		Double_t* yield = 0;
+		cout << "Extracting histogram " << hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar] << " " << hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar]->GetName() << endl;
 		for (int iBin = 0; iBin < NPTBINS+1; ++iBin)	{
 			cout << "Extracting pt bin " << iBin << " of " << hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar]->GetName() << endl;
 			yield = ((MyAnalysisV0extract*)mHandler->analysis(1))->ExtractYieldSB((TH1D*)hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar]->ProjectionY(
@@ -706,7 +725,6 @@ void MyAnalysisV0syst::MakeBarlowChecks() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{	
 		if (iVar!=loosest && iVar!=tightest) continue;
 		if (iSp==1 && iSo==sysLifetime) continue;
-		if (iMu!=3 && iMu!=4) continue;
 		Int_t iSph = 0;
 
 		//cout << hV0PtSys[iSp][iMu][iSo][iVar] << " a " << hV0PtSys[iSp][iMu][iSo][deflt] << " a " << hRBcheck[iSp][iSo][iVar] << endl;
@@ -770,7 +788,6 @@ void MyAnalysisV0syst::MakeBarlowChecksPt() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{	
 		if (iVar!=loosest && iVar!=tightest) continue;
 		if (iSp==1 && iSo==sysLifetime) continue;
-		if (iMu!=3 && iMu!=4) continue;
 		Int_t iSph = 0;
 
 		//cout << hV0PtSys[iSp][iMu][iSo][iVar] << " a " << hV0PtSys[iSp][iMu][iSo][deflt] << " a " << hRBcheck[iSp][iSo][iVar] << endl;
@@ -804,7 +821,7 @@ void MyAnalysisV0syst::MakeBarlowChecksPt() {
 			hRBcheck[iSp][iSo][iVar]->SetLineWidth(1);
 			//hRBcheck[iSp][iSo][iVar]->Draw("hist");
 
-			mHandler->MakeNiceHistogram(hRBcheckPt[iSp][3][iSo][iVar],kBlack);
+			//mHandler->MakeNiceHistogram(hRBcheckPt[iSp][3][iSo][iVar],kBlack);
 
 			cRB->Update();
 			//DrawVariation(0., kBlack, 1, cRB->GetPad(padC));
@@ -904,10 +921,9 @@ void MyAnalysisV0syst::MakeDeviations() {
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{	
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-		if (iVar==deflt) continue;
-		if (iSp==1 && iSo==sysLifetime) continue;
-		if (iMu!=3 && iMu!=4) continue;
-		if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iVar==deflt) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		Double_t lSigmaDelta[100]; 
   		for( Int_t i=1; i<hV0PtSys[iSp][iMu][iSph][iSo][iVar]->GetNbinsX()+1; i++){ 
@@ -928,61 +944,101 @@ void MyAnalysisV0syst::MakeDeviations() {
 
 	}	}	}	}	}
 
-		Int_t colors[] = { kBlue, kGreen+3, kBlack, kCyan+1, kMagenta};
 
-		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		for (int iMu = 0; iMu < NMULTI; ++iMu)	{
-		for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-			if (iMu!=3 && iMu!=4) continue;
-			if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	// Make double-ratios to study correlations of syst. between HM_S0 and HM_minbias
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{	
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	if (iVar==deflt) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
-			TCanvas* cDev = new TCanvas(Form("cDev_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),"",2500,1250);
-			cDev->Divide(4,3,5e-5,5e-5); 
-			Int_t padC = 1;
 
-			TCanvas* cDevMax = new TCanvas(Form("cDevMax_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),"",2800,2000);
-			cDevMax->Divide(4,3,5e-5,5e-5); 
+		hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->Divide(hV0PtSys[iSp][iMu][iSph][iSo][iVar],hV0PtSys[iSp][iMu][0][iSo][iVar],1,1,"");
+		
+		// and calculate uncertainties
+		for( Int_t i=1; i<hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->GetNbinsX()+1; i++){ 
+			Double_t errS0 = hV0PtSys[iSp][iMu][iSph][iSo][iVar]->GetBinError(i);
+			Double_t errHM = hV0PtSys[iSp][iMu][0][iSo][iVar]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(errS0*errS0 - errHM*errHM));
+			errR = (hV0PtSys[iSp][iMu][0][iSo][iVar]->GetBinContent(i) > 0) ? errR / hV0PtSys[iSp][iMu][0][iSo][iVar]->GetBinContent(i) : 0;
+			hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->SetBinError(i,errR);
+		}
 
-			double lowrange = 0.849;
+	}	}	}	}	}
 
-			for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
-				if (iSp==1 && iSo==sysLifetime) continue;
-				cDev->cd(padC);//->SetLogx(kTRUE);
+
+	Int_t colors[] = { kBlue, kGreen+3, kBlack, kCyan+1, kMagenta};
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	if (iMu == 0 && iSph > 0) continue;
+
+		//creating canvases for each species and hm and s0 configuration
+		TCanvas* cDev = new TCanvas(Form("cDev_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),"",2500,1250);
+		cDev->Divide(4,3,5e-5,5e-5); 
+		Int_t padC = 1;
+
+		TCanvas* cDevRatioToHM = new TCanvas(Form("cDevRatioToHM_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]),"",2500,1250);
+		cDevRatioToHM->Divide(4,3,5e-5,5e-5);
+
+
+		double lowrange = 0.849;
+
+		//each pad shows different sources
+		for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+			if (iSp==1 && iSo==sysLifetime) continue;
+			//cDev->cd(padC);//->SetLogx(kTRUE);
 				
-				TLegend* leg1;
-				for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
-					if (iVar==deflt) continue;
+			TLegend* leg1; TLegend* leg2;
+			hV0PtSys[iSp][iMu][iSph][iSo][0]->GetYaxis()->SetRangeUser(lowrange,1.0701);
+			hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][0]->GetYaxis()->SetRangeUser(lowrange,1.0701);
+			leg1 = new TLegend(0.21,0.69,0.46,0.88);
+			mHandler->MakeNiceLegend(leg1, 0.052, 1.);
+			leg1->AddEntry((TObject*)0,Form("%s %s %s,  %s",SPECNAMES[iSp],PLOTS_MULTI[iMu],PLOTS_SPHERO[iSph],PLOTS_SYSTS[iSo])," ");
 
-					if (!iVar) {
-						hV0PtSys[iSp][iMu][iSph][iSo][iVar]->GetYaxis()->SetRangeUser(lowrange,1.0701);
-						
-						leg1 = new TLegend(0.26,0.69,0.46,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
-						mHandler->MakeNiceLegend(leg1, 0.052, 1.);
-						//leg1->AddEntry((TObject*)0,"blaaaa","");
-						leg1->AddEntry((TObject*)0,Form("%s %s %s,  %s",SPECNAMES[iSp],PLOTS_MULTI[iMu],PLOTS_SPHERO[iSph],PLOTS_SYSTS[iSo])," ");
-						
-						cout << "drawing legend " << Form("%s %s %s",SPECIES[iSp],MULTI[iMu],SYSTS[iSo]) << leg1 << endl;
-				}
+			// plot different deviations
+			cDev->cd(padC);
+			for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+			if (iVar==deflt) continue;
 
 				mHandler->MakeNiceHistogram(hV0PtSys[iSp][iMu][iSph][iSo][iVar],colors[iVar]);
 				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->SetMarkerSize(1.0);
 				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->SetLineColor(colors[iVar]);
 				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->GetYaxis()->SetTitleSize(0.035);
 				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->GetYaxis()->SetTitle("Rel. deviation");
-				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->Draw((iVar)?"h same":"h ");
-				if (!iVar) leg1->Draw();
-
-				if (iSo == 1) {
-					TLegend* leg2 = new TLegend(0.49,0.3,0.88,0.50);
-					mHandler->MakeNiceLegend(leg2, 0.045, 2.);
-					leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][0],"loosest","pl");
-					leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][1],"loose","pl");
-					leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][3],"tight","pl");
-					leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][4],"tightest","pl");
-					leg2->Draw();
-				}
+				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->Draw((iVar)?"h same":"h ");		
+			}
+			leg1->Draw();
+			if (iSo == 1) {
+				leg2 = new TLegend(0.49,0.3,0.88,0.50);
+				mHandler->MakeNiceLegend(leg2, 0.045, 2.);
+				leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][0],"loosest","pl");
+				leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][1],"loose","pl");
+				leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][3],"tight","pl");
+				leg2->AddEntry(hV0PtSys[iSp][iMu][iSph][2][4],"tightest","pl");
+				leg2->Draw();
 			}
 
+			// and the same for correlations to HM
+			cDevRatioToHM->cd(padC);
+			for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+			if (iVar==deflt) continue;
+
+				mHandler->MakeNiceHistogram(hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar],colors[iVar]);
+				hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->SetMarkerSize(1.0);
+				hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->SetLineColor(colors[iVar]);
+				hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->GetYaxis()->SetTitleSize(0.035);
+				hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->GetYaxis()->SetTitle("Rel. deviation, ratio to HM");
+				hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->Draw((iVar)?"h same":"h ");		
+			}
+			leg1->Draw();
+			if (iSo == 1)	leg2->Draw();
+
+			// calculate max deviations
 			for (int iBin = 1; iBin<hV0PtSys[iSp][iMu][iSph][iSo][deflt]->GetNbinsX()+1;iBin++) {
 				Double_t maxD = 0;
 				for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
@@ -994,37 +1050,78 @@ void MyAnalysisV0syst::MakeDeviations() {
 				if (hV0PtSys[iSp][iMu][iSph][iSo][deflt]->GetBinContent(iBin)>0) hV0PtSysMaxD[iSp][iMu][iSph][iSo]->SetBinContent(iBin,maxD);
 			}
 
-			// to-do: also study deviations between ratio (hV0ptsys[hm][jet][var]/? and ?)
+			// and for correlations
+			for (int iBin = 1; iBin<hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][deflt]->GetNbinsX()+1;iBin++) {
+				Double_t maxD = 0;
+				for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+				if (iVar==deflt) continue;
+					Double_t varD = TMath::Abs(hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->GetBinContent(iBin)-1.);
+					if (varD>maxD && varD>nRBsigmas*hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar]->GetBinError(iBin)) maxD=varD;
+					//applying only if dev larger than 1 RB sigma
+				}
+				if (hV0PtSys[iSp][iMu][iSph][iSo][deflt]->GetBinContent(iBin)>0) hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->SetBinContent(iBin,maxD);
+			}
 
-
+			
+			//now superimpose max deviations in the same pads
 			mHandler->MakeNiceHistogram(hV0PtSysMaxD[iSp][iMu][iSph][iSo],kRed);
 			hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetYaxis()->SetRangeUser(-0.0005,3.*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetMaximum());
 			hV0PtSysMaxD[iSp][iMu][iSph][iSo]->SetFillColor(kRed);
 			hV0PtSysMaxD[iSp][iMu][iSph][iSo]->SetLineColor(kRed);
 			hV0PtSysMaxD[iSp][iMu][iSph][iSo]->SetLineWidth(2);
 			hV0PtSysMaxD[iSp][iMu][iSph][iSo]->SetFillStyle(3005);
-
-			cDev->cd(padC)->Update();
 						
-			   //scale hint1 to the pad coordinates
-			   Float_t rightmax = 2.0*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetMaximum();
-			   Float_t scale = (gPad->GetUymax()-gPad->GetUymin())/rightmax;
-			   TH1D* htmpMax = (TH1D*)hV0PtSysMaxD[iSp][iMu][iSph][iSo]->Clone("tmpMax");
-			   htmpMax->Scale(scale);
-			   for (int i=1; i < htmpMax->GetNbinsX()+1; i++) htmpMax->SetBinContent(i,lowrange+htmpMax->GetBinContent(i));	
-			   htmpMax->Draw("same");
+			//scale hint1 to the pad coordinates
+			cDev->cd(padC)->Update();
+			Float_t rightmax = 2.0*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetMaximum();
+			Float_t scale = (rightmax>0) ? (gPad->GetUymax()-gPad->GetUymin())/rightmax : 1.;
+			TH1D* htmpMax = (TH1D*)hV0PtSysMaxD[iSp][iMu][iSph][iSo]->Clone("tmpMax");
+			htmpMax->Scale(scale);
+			for (int i=1; i < htmpMax->GetNbinsX()+1; i++) htmpMax->SetBinContent(i,lowrange+htmpMax->GetBinContent(i));	
+			htmpMax->Draw("same");
 			 
-			   //draw an axis on the right side
-			   TGaxis *axis = new TGaxis(gPad->GetUxmax(),gPad->GetUymin(),
-			         gPad->GetUxmax(), gPad->GetUymax(),0,rightmax,510,"+L");
-			   axis->SetLineColor(kRed);
-			   axis->SetLabelColor(kRed);
-			   axis->SetVertical(1);
-			   axis->SetTitleSize(0.035);
-			   axis->SetTitleOffset(1.5);
-			   axis->SetTitleColor(kRed);
-			   axis->SetTitle("Max. deviation");
-			   axis->Draw();
+			//draw an axis on the right side
+			TGaxis *axis = new TGaxis(gPad->GetUxmax(),gPad->GetUymin(),
+	    	gPad->GetUxmax(), gPad->GetUymax(),0,rightmax,510,"+L");
+			axis->SetLineColor(kRed);
+			axis->SetLabelColor(kRed);
+			axis->SetVertical(1);
+			axis->SetTitleSize(0.035);
+			axis->SetTitleOffset(1.5);
+			axis->SetTitleColor(kRed);
+			axis->SetTitle("Max. deviation");
+			axis->Draw();
+
+
+			// and the same for correlations to HM
+			mHandler->MakeNiceHistogram(hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo],kRed);
+			hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetYaxis()->SetRangeUser(-0.0005,3.*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetMaximum());
+			hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->SetFillColor(kRed);
+			hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->SetLineColor(kRed);
+			hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->SetLineWidth(2);
+			hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->SetFillStyle(3005);
+
+						
+			//scale hint1 to the pad coordinates
+			cDevRatioToHM->cd(padC)->Update();
+			rightmax = 2.0*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetMaximum();
+			scale = (rightmax>0) ? (gPad->GetUymax()-gPad->GetUymin())/rightmax : 1.;
+			TH1D* htmpMax2 = (TH1D*)hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->Clone("tmpMax2");
+			htmpMax2->Scale(scale);
+			for (int i=1; i < htmpMax2->GetNbinsX()+1; i++) htmpMax2->SetBinContent(i,lowrange+htmpMax2->GetBinContent(i));	
+			htmpMax2->Draw("same");
+			 
+			//draw an axis on the right side
+			TGaxis *axis2 = new TGaxis(gPad->GetUxmax(),gPad->GetUymin(),
+	    	gPad->GetUxmax(), gPad->GetUymax(),0,rightmax,510,"+L");
+			axis2->SetLineColor(kRed);
+			axis2->SetLabelColor(kRed);
+			axis2->SetVertical(1);
+			axis2->SetTitleSize(0.035);
+			axis2->SetTitleOffset(1.5);
+			axis2->SetTitleColor(kRed);
+			axis2->SetTitle("Max. deviation");
+			axis2->Draw();
 
 
 			//cDevMax->cd(padC)->SetLogx(kTRUE);
@@ -1077,6 +1174,9 @@ void MyAnalysisV0syst::MakeDeviations() {
 
 		cDev->Write();
 		cDev->SaveAs(Form("plotsys/cDev_%s_%s_%s.png",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
+		cDevRatioToHM->Write();
+		cDevRatioToHM->SaveAs(Form("plotsys/cDevRatioToHM_%s_%s_%s.png",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		//cDevMax->Write();
 		//cDevMax->SaveAs(Form("plotsys/cDevMax_%s_%s_%s.png",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 
@@ -1092,8 +1192,7 @@ void MyAnalysisV0syst::AddDeviations() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-	if (iMu!=3 && iMu!=4) continue;
-	if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		cout << "Calculating relative systematic uncertainties from cut variations for " << hV0PtSysSum[iSp][iMu][iSph] << " " << hV0PtSysSum[iSp][iMu][iSph]->GetName() << endl;
 		for (int iBin = 1; iBin < hV0PtSysSum[iSp][iMu][iSph]->GetNbinsX()+1; iBin++) {
@@ -1101,28 +1200,56 @@ void MyAnalysisV0syst::AddDeviations() {
 			Double_t sum = 0;
 			Double_t sumCuts = 0;
 			Double_t sumUnc = 0;
+			Double_t sumCutsUnc = 0;
+
+			// sources from cut variations
 			for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 			if (iSp==1 && iSo==sysLifetime) continue;
-			cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo] << endl;
-			cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetName() << endl;
-				
-				sum += hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+				cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo] << endl;
+				cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetName() << endl;
+					
+				sum 	+= hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
 				sumCuts += hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
 
+				sumUnc 	+= hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+				sumCutsUnc 	+= hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+				// sum unc denote the uncorrelated uncertainty on ratios to HM, e.g unc of f = S0-biased/HM
 			}
 
-			//if (sum>0) 
+			// from material budget, fully correlated between s0
 			sum += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
-			if (sum>0) sum += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+			
+			// from using MB efficiency
+			if (sum>0) {
+				sum += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				sumUnc += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				// factor 2. comes from propagation on ratios
+				// for f = A/B, (s_f/f)^2 = (s_A/A)^2 + (s_B/B)^2
+				// but (s_A/A) == (s_B/B)
+				//// decided to use more liberal 1.0 similarly to other ALICE analyses
+			}
 
+			// from experimental bias due to not unfolding s0 distribution
+			TH1D* hexpbias = (iSph%2) ? hV0PtSysExpBiasJetty : hV0PtSysExpBiasIso;
+			if (sum>0 && iSph>0) {
+				sum += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+				sumUnc += 1.*hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+			}	
+
+			// from signal extraction
 			if (sum>0) {
 				sum += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
-				sumUnc += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
+				sumUnc += hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
 			}
+
+			// from feeddown correction
 			if (iSp>1 && sum>0) {
 				sum += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
-				sumUnc += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
+				sumUnc += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
 			}
+
+			
+
 
 			hV0PtSysSum[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(sum));
 			hV0PtSysSum[iSp][iMu][iSph]->SetFillStyle(3005);
@@ -1142,28 +1269,68 @@ void MyAnalysisV0syst::AddDeviations() {
 			if (sum>0) {
 				part += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
 				hFracBudget[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				
 				part += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
 				hFracEffi[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				
+				if (iSph>0) part += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+				hFracExpBias[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				
 				part += sumCuts;
 				hFracCuts[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+
 				part += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
 				hFracSigEx[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+
 				if (iSp>1) {
 					part += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
 					hFracFD[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
 				}
 			}
-			hFracBudget[iSp][iMu][iSph]->SetLineColor(kMagenta); hFracBudget[iSp][iMu][iSph]->SetLineWidth(3);
-			hFracEffi[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffi[iSp][iMu][iSph]->SetLineWidth(3);
-			hFracCuts[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCuts[iSp][iMu][iSph]->SetLineWidth(3);
-			hFracSigEx[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigEx[iSp][iMu][iSph]->SetLineWidth(3);
-			hFracFD[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFD[iSp][iMu][iSph]->SetLineWidth(3);
 
+			// and ratios
+			Double_t partR = 0;
+			if (sumUnc>0) {
+				
+				partR += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				hFracEffiRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+				
+				if (iSph>0) partR += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+				hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+				
+				partR += sumCutsUnc;
+				hFracCutsRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+
+				partR += hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+				hFracSigExRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+
+				if (iSp>1) {
+					partR += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+					hFracFDRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+				}
+			}
+			
 		}
+
+		hFracBudget[iSp][iMu][iSph]->SetLineColor(kMagenta); hFracBudget[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracEffi[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffi[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracExpBias[iSp][iMu][iSph]->SetLineColor(kCyan+1); hFracExpBias[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracCuts[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCuts[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracSigEx[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigEx[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracFD[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFD[iSp][iMu][iSph]->SetLineWidth(3);
+
+		hFracEffiRatioToHM[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffiRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetLineColor(kCyan+1); hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracCutsRatioToHM[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCutsRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracSigExRatioToHM[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigExRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracFDRatioToHM[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFDRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+
 
 	}	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		if (NMULTI<4) continue;
+		if (NSPHERO<5) continue;
 		TCanvas* cTot = new TCanvas(Form("cTot_%s",SPECIES[iSp]),"",1400,1000);
 		cTot->Divide(3,2,5e-5,5e-5); 
 		Int_t padC = 1;
@@ -1172,6 +1339,7 @@ void MyAnalysisV0syst::AddDeviations() {
 		mHandler->MakeNiceLegend(leg,0.027,2);	
 		leg->AddEntry(hFracBudget[iSp][3][0],"mat. budget","l");
 		leg->AddEntry(hFracEffi[iSp][3][0],"+ MB effi.","l");
+		leg->AddEntry(hFracExpBias[iSp][3][0],"+ exp. bias","l");
 		leg->AddEntry(hFracCuts[iSp][3][0],"+ cuts var.","l");
 		leg->AddEntry(hFracSigEx[iSp][3][0],"+ signal extr.","l");
 		if (iSp>1) leg->AddEntry(hFracFD[iSp][3][0],"+ feeddown corr.","l");
@@ -1184,21 +1352,53 @@ void MyAnalysisV0syst::AddDeviations() {
 
 
 		cTot->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][3]);
-		DrawMirrored(hFracBudget[iSp][3][3],"same ][");DrawMirrored(hFracEffi[iSp][3][3],"same ][");DrawMirrored(hFracCuts[iSp][3][3],"same ][");DrawMirrored(hFracSigEx[iSp][3][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][3],"same ][");
+		DrawMirrored(hFracBudget[iSp][3][3],"same ][");DrawMirrored(hFracEffi[iSp][3][3],"same ][");DrawMirrored(hFracExpBias[iSp][3][3],"same ][");DrawMirrored(hFracCuts[iSp][3][3],"same ][");DrawMirrored(hFracSigEx[iSp][3][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][3],"same ][");
 		cTot->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][4]);
-		DrawMirrored(hFracBudget[iSp][3][4],"same ][");DrawMirrored(hFracEffi[iSp][3][4],"same ][");DrawMirrored(hFracCuts[iSp][3][4],"same ][");DrawMirrored(hFracSigEx[iSp][3][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][4],"same ][");
+		DrawMirrored(hFracBudget[iSp][3][4],"same ][");DrawMirrored(hFracEffi[iSp][3][4],"same ][");DrawMirrored(hFracExpBias[iSp][3][4],"same ][");DrawMirrored(hFracCuts[iSp][3][4],"same ][");DrawMirrored(hFracSigEx[iSp][3][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][4],"same ][");
 		cTot->cd(4)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][0]);
 		DrawMirrored(hFracBudget[iSp][4][0],"same ][");DrawMirrored(hFracEffi[iSp][4][0],"same ][");DrawMirrored(hFracCuts[iSp][4][0],"same ][");DrawMirrored(hFracSigEx[iSp][4][0],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][0],"same ][");
 		cTot->cd(5)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][3]);
-		DrawMirrored(hFracBudget[iSp][4][3],"same ][");DrawMirrored(hFracEffi[iSp][4][3],"same ][");DrawMirrored(hFracCuts[iSp][4][3],"same ][");DrawMirrored(hFracSigEx[iSp][4][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][3],"same ][");
+		DrawMirrored(hFracBudget[iSp][4][3],"same ][");DrawMirrored(hFracEffi[iSp][4][3],"same ][");DrawMirrored(hFracExpBias[iSp][4][3],"same ][");DrawMirrored(hFracCuts[iSp][4][3],"same ][");DrawMirrored(hFracSigEx[iSp][4][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][3],"same ][");
 		cTot->cd(6)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][4]);
-		DrawMirrored(hFracBudget[iSp][4][4],"same ][");DrawMirrored(hFracEffi[iSp][4][4],"same ][");DrawMirrored(hFracCuts[iSp][4][4],"same ][");DrawMirrored(hFracSigEx[iSp][4][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][4],"same ][");
+		DrawMirrored(hFracBudget[iSp][4][4],"same ][");DrawMirrored(hFracEffi[iSp][4][4],"same ][");DrawMirrored(hFracExpBias[iSp][4][4],"same ][");DrawMirrored(hFracCuts[iSp][4][4],"same ][");DrawMirrored(hFracSigEx[iSp][4][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][4],"same ][");
 		cTot->Write();
 		cTot->SaveAs(Form("plotsys/cTot_%s.png",SPECIES[iSp]));
 	}
 
-
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		if (NMULTI<2) continue;
+		if (NSPHERO<3) continue;
+		TCanvas* cTotRatioToHM = new TCanvas(Form("cTotRatioToHM_%s",SPECIES[iSp]),"",1500,450);
+		cTotRatioToHM->Divide(3,1,5e-5,5e-5); 
+		Int_t padC = 1;
+
+		TLegend* leg = new TLegend(0.13,.68,0.88,0.88);
+		mHandler->MakeNiceLegend(leg,0.027,2);	
+		
+		leg->AddEntry(hFracEffiRatioToHM[iSp][1][0],"MB effi.","l");
+		leg->AddEntry(hFracExpBiasRatioToHM[iSp][1][0],"+ exp. bias","l");
+		leg->AddEntry(hFracCutsRatioToHM[iSp][1][0],"+ cuts var.","l");
+		leg->AddEntry(hFracSigExRatioToHM[iSp][1][0],"+ signal extr.","l");
+		if (iSp>1) leg->AddEntry(hFracFDRatioToHM[iSp][1][0],"+ feeddown corr.","l");
+
+
+		cTotRatioToHM->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][0]);
+		DrawMirrored(hFracEffiRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][0],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][0],"same ][");
+		
+		leg->Draw();
+
+		cTotRatioToHM->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][1]);
+		DrawMirrored(hFracEffiRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][1],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][1],"same ][");
+
+		cTotRatioToHM->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][2]);
+		DrawMirrored(hFracEffiRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][2],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][2],"same ][");
+		
+		cTotRatioToHM->Write();
+		cTotRatioToHM->SaveAs(Form("plotsys/cTotRatioToHM_%s.png",SPECIES[iSp]));
+	}
+
+	// IF NOT DOING FULL 4(HM)x8(S0) SYSTEMATIC STUDY, USE HM_01 S0_10 AS REFERENCES
+	/*for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		Int_t iMu = 0; Int_t iSph = 0;
 		iMu=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1D*)hV0PtSysSum[iSp][3][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1D*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
@@ -1266,13 +1466,14 @@ void MyAnalysisV0syst::AddDeviations() {
 		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1D*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1D*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1D*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-	}
+	}*/
 }
 
 void MyAnalysisV0syst::DrawMirrored(TH1D* hist, const char* opt)	{
 
 	TString hname(hist->GetName());
 	double range = (hname.Contains("K0s") ? 0.15 : 0.25);
+	if (hname.Contains("Unc") || hname.Contains("Ratio") ) range = 0.1; 
 	//hist->GetYaxis()->SetRangeUser(-1.5*hist->GetMaximum(),1.5*hist->GetMaximum());
 	hist->GetYaxis()->SetRangeUser(-1.*range,range);
 	hist->Draw(opt);
@@ -1286,8 +1487,7 @@ void MyAnalysisV0syst::CalculateSignalExSys() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-	if (iMu!=3 && iMu!=4) continue;
-	if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		// CALCULATE YIELDS WITH DIFFERENT SB SIGMAS
 		Double_t* yield = 0;
@@ -1374,8 +1574,65 @@ void MyAnalysisV0syst::CalculateSignalExSys() {
 
 	}	}	}
 
+	// and study the effect on ratio S0/HM
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	if (iMu == 0 && iSph > 0) continue;
+
+		hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->Divide(hV0PtSysSigExTight[iSp][iMu][iSph],hV0PtSysSigExTight[iSp][iMu][0],1,1,"");
+		hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->Divide(hV0PtSysSigExLoose[iSp][iMu][iSph],hV0PtSysSigExLoose[iSp][iMu][0],1,1,"");
+		
+		// and calculate uncertainties
+		for( Int_t i=1; i<hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->GetNbinsX()+1; i++){ 
+			Double_t errS0 = hV0PtSysSigExTight[iSp][iMu][iSph]->GetBinError(i);
+			Double_t errHM = hV0PtSysSigExTight[iSp][iMu][0]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(errS0*errS0 - errHM*errHM));
+			errR = (hV0PtSysSigExTight[iSp][iMu][0]->GetBinContent(i) > 0) ? errR / hV0PtSysSigExTight[iSp][iMu][0]->GetBinContent(i) : 0;
+			hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->SetBinError(i,errR);
+		}
+		for( Int_t i=1; i<hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->GetNbinsX()+1; i++){ 
+			Double_t errS0 = hV0PtSysSigExLoose[iSp][iMu][iSph]->GetBinError(i);
+			Double_t errHM = hV0PtSysSigExLoose[iSp][iMu][0]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(errS0*errS0 - errHM*errHM));
+			errR = (hV0PtSysSigExLoose[iSp][iMu][0]->GetBinContent(i) > 0) ? errR / hV0PtSysSigExLoose[iSp][iMu][0]->GetBinContent(i) : 0;
+			hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->SetBinError(i,errR);
+		}
+
+		// calculate max deviations
+  		for (int iBin = 1; iBin<hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->GetNbinsX()+1;iBin++) {
+				Double_t maxD = 0;
+				Double_t varD = TMath::Abs(hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)-1.);
+				if (varD>maxD && varD>nRBsigmas*hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->GetBinError(iBin)) maxD=varD;
+					//applying only if dev larger than 1 RB sigma
+
+				varD = TMath::Abs(hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)-1.);
+				if (varD>maxD && varD>nRBsigmas*hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->GetBinError(iBin)) maxD=varD;
+				
+				if (hV0PtSys[iSp][iMu][iSph][0][deflt]->GetBinContent(iBin)>0) hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,maxD);
+		}
+
+		Int_t colors[] = { kBlue, kGreen+2, kBlack, kRed, kMagenta};
+		mHandler->MakeNiceHistogram(hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph],colors[loose]);
+		hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->SetMarkerSize(0.8);
+		hV0PtSysSigExLooseRatioToHM[iSp][iMu][iSph]->SetLineColor(colors[loose]);
+		mHandler->MakeNiceHistogram(hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph],colors[tight]);
+		hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->SetMarkerSize(0.8);
+		hV0PtSysSigExTightRatioToHM[iSp][iMu][iSph]->SetLineColor(colors[tight]);
+
+		mHandler->MakeNiceHistogram(hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph],kBlack);
+		hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->SetFillStyle(3002);
+		hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->SetFillColor(kBlack);
+		hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetYaxis()->SetRangeUser(-0.0005,0.2);
+		hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->SetTitle(Form("%s %s %s; V0 p_{T} (GeV/#it{c}); Relative syst. uncertainty",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
+
+	}	}	}	
+
 	mHandler->root()->SetBatch(kTRUE);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	if (NMULTI<5) continue;
+	if (NSPHERO<5) continue;
 		TCanvas* cSig = new TCanvas(Form("cSig_%s",SPECIES[iSp]),"",1400,1000);
 		cSig->Divide(3,2,5e-5,5e-5); 
 		Int_t padC = 1;
@@ -1395,6 +1652,19 @@ void MyAnalysisV0syst::CalculateSignalExSys() {
 		cSig->Write();
 		cSig->SaveAs(Form("plotsys/cSig_%s.png",SPECIES[iSp]));
 	}
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	if (NMULTI<2) continue;
+	if (NSPHERO<3) continue;
+		TCanvas* cSigRatioToHM = new TCanvas(Form("cSigRatioToHM_%s",SPECIES[iSp]),"",1500,450);
+		cSigRatioToHM->Divide(3,1,5e-5,5e-5); 
+		Int_t padC = 1;
+
+		cSigRatioToHM->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDSigExRatioToHM[iSp][1][0]);	
+		cSigRatioToHM->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDSigExRatioToHM[iSp][1][1]);
+		cSigRatioToHM->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDSigExRatioToHM[iSp][1][2]);
+		cSigRatioToHM->Write();
+		cSigRatioToHM->SaveAs(Form("plotsys/cSigRatioToHM_%s.png",SPECIES[iSp]));
+	}
 	mHandler->root()->SetBatch(kFALSE);
 
 }
@@ -1405,8 +1675,7 @@ void MyAnalysisV0syst::CalculateFeeddownSys() {
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-	if (iMu!=3 && iMu!=4) continue;
-	if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 		hV0PtFeeddown[iSp][iMu][iSph]			
 			= (TH1D*)mHandler->analysis(2)->dirFile()->Get(Form("hV0PtFeeddown_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
@@ -1427,8 +1696,7 @@ void MyAnalysisV0syst::CalculateFeeddownSys() {
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-	if (iMu!=3 && iMu!=4) continue;
-	if (iSph!=0 && iSph!=3 && iSph!=4) continue;
+	if (iMu == 0 && iSph > 0) continue;
 
 	cout << "Doing FD systematics for " << iMu << " " << iSph << endl;
 
@@ -1486,7 +1754,7 @@ void MyAnalysisV0syst::CalculateFeeddownSys() {
 					
 			if (hV0PtSysFeeddownXiErr[iSp][iMu][iSph]->GetBinContent(iBin)>0) hV0PtSysMaxDFeeddownXiErr[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(maxD*maxD));
 
-			hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(0.02*0.02 +
+			hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(0.006*0.006 +
 				hV0PtSysMaxDFeeddown[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddown[iSp][iMu][iSph]->GetBinContent(iBin) +
 				hV0PtSysMaxDFeeddownXiErr[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownXiErr[iSp][iMu][iSph]->GetBinContent(iBin) ));			
 			
@@ -1502,10 +1770,68 @@ void MyAnalysisV0syst::CalculateFeeddownSys() {
 
 	}	}	}
 
-	cout << "gggggothere" << endl;
+
+	// and now study the effect on s0/hm ratio
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	if (iMu == 0 && iSph > 0) continue;
+
+		// FROM METHOD
+		hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]->Divide(hV0PtSysFeeddown[iSp][iMu][iSph],hV0PtSysFeeddown[iSp][iMu][0],1,1,"");
+		
+		// and calculate uncertainties
+		for( Int_t i=1; i<hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]->GetNbinsX()+1; i++){ 
+			Double_t errS0 = hV0PtSysFeeddown[iSp][iMu][iSph]->GetBinError(i);
+			Double_t errHM = hV0PtSysFeeddown[iSp][iMu][0]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(errS0*errS0 - errHM*errHM));
+			errR = (hV0PtSysFeeddown[iSp][iMu][0]->GetBinContent(i) > 0) ? errR / hV0PtSysFeeddown[iSp][iMu][0]->GetBinContent(i) : 0;
+			hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]->SetBinError(i,errR);
+		}
+
+  		// FROM XI FIT VARIATION
+  		hV0PtSysFeeddownXiErrRatioToHM[iSp][iMu][iSph]->Divide(hV0PtSysFeeddownXiErr[iSp][iMu][iSph],hV0PtSysFeeddownXiErr[iSp][iMu][0],1,1,"");
+		for( Int_t i=1; i<hV0PtSysFeeddownXiErrRatioToHM[iSp][iMu][iSph]->GetNbinsX()+1; i++){ 
+			Double_t errS0 = hV0PtSysFeeddownXiErr[iSp][iMu][iSph]->GetBinError(i);
+			Double_t errHM = hV0PtSysFeeddownXiErr[iSp][iMu][0]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(errS0*errS0 - errHM*errHM));
+			errR = (hV0PtSysFeeddownXiErr[iSp][iMu][0]->GetBinContent(i) > 0) ? errR / hV0PtSysFeeddownXiErr[iSp][iMu][0]->GetBinContent(i) : 0;
+			hV0PtSysFeeddownXiErrRatioToHM[iSp][iMu][iSph]->SetBinError(i,errR);
+		}  		
+  	
+  		// CALCULATE MAX DEVIATIONS
+  		for (int iBin = 1; iBin<hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]->GetNbinsX()+1;iBin++) {
+			Double_t maxD = 0;
+			Double_t varD = TMath::Abs(hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)-1.);
+			if (varD>maxD && varD>nRBsigmas*hV0PtSysFeeddownRatioToHM[iSp][iMu][iSph]->GetBinError(iBin)) maxD=varD;
+					
+			if (hV0PtSysFeeddown[iSp][iMu][iSph]->GetBinContent(iBin)>0) hV0PtSysMaxDFeeddownRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(maxD*maxD));
+			
+			maxD = 0;
+			varD = TMath::Abs(hV0PtSysFeeddownXiErrRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)-1.);
+			if (varD>maxD && varD>nRBsigmas*hV0PtSysFeeddownXiErrRatioToHM[iSp][iMu][iSph]->GetBinError(iBin)) maxD=varD;
+					
+			if (hV0PtSysFeeddownXiErr[iSp][iMu][iSph]->GetBinContent(iBin)>0) hV0PtSysMaxDFeeddownXiErrRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(maxD*maxD));
+
+			hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(1.*0.006*0.006 +
+				hV0PtSysMaxDFeeddownRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin) +
+				hV0PtSysMaxDFeeddownXiErrRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownXiErrRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin) ));			
+			// factor 2.0 comes from error propagation on ratios
+			// decided to use more liberal 1.0 similarly to other ALICE analyses
+		}
+
+		mHandler->MakeNiceHistogram(hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph],kBlack);
+		hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->SetFillStyle(3002);
+		hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->SetFillColor(kBlack);
+		hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetYaxis()->SetRangeUser(-0.0005,0.2);
+		hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->SetTitle(Form("%s %s %s; V0 p_{T} (GeV/#it{c}); Relative syst. uncertainty",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));	
+
+	}	}	}
 
 	mHandler->root()->SetBatch(kTRUE);
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+	if (NMULTI<5) continue;
+	if (NSPHERO<5) continue;
 		TCanvas* cFD = new TCanvas(Form("cFD_%s",SPECIES[iSp]),"",1600,700);
 		cFD->Divide(2,1,5e-5,5e-5); 
 		Int_t padC = 1;
@@ -1517,6 +1843,24 @@ void MyAnalysisV0syst::CalculateFeeddownSys() {
 		//cSig->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDSigEx[iSp][3][3]);
 		cFD->Write();
 		cFD->SaveAs(Form("plotsys/cFD_%s.png",SPECIES[iSp]));
+	}
+	mHandler->root()->SetBatch(kFALSE);
+
+
+	mHandler->root()->SetBatch(kTRUE);
+	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
+	if (NMULTI<2) continue;
+	if (NSPHERO<3) continue;
+		TCanvas* cFDRatioToHM = new TCanvas(Form("cFDRatioToHM_%s",SPECIES[iSp]),"",1500,450);
+		cFDRatioToHM->Divide(3,1,5e-5,5e-5); 
+		Int_t padC = 1;
+
+		cFDRatioToHM->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][1][0]);
+		cFDRatioToHM->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][1][1]);
+		cFDRatioToHM->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][1][2]);
+		//cSig->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysMaxDSigEx[iSp][3][3]);
+		cFDRatioToHM->Write();
+		cFDRatioToHM->SaveAs(Form("plotsys/cFDRatioToHM_%s.png",SPECIES[iSp]));
 	}
 	mHandler->root()->SetBatch(kFALSE);
 
