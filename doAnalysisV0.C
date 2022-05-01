@@ -181,7 +181,6 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		handler->SetOutputName(outputFile);
 		handler->SetDirectory(gDirectory);
 		handler->SetROOT(gROOT);
-		handler->RebinPt(false);
 
 		// CHECK INPUTFILE
 		TString inputFileStr(inputFile);

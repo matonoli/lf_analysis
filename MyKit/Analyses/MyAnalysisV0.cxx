@@ -35,7 +35,7 @@
 #include "TransverseSpherocity.h"
 
 
-using namespace std;
+using namespace std;		// Don't cringe.
 using namespace V0consts;
 using namespace RooFit;
 
@@ -63,11 +63,11 @@ Int_t MyAnalysisV0::Init() {
 	if (mFlagHist)	BorrowHistograms();
 	else 			CreateHistograms();
 
-	// initialising treebug checker
+	// Initialising treebug checker
 	bugR = 0;
 	bugPt = 0;
 
-	// spherocities
+	// Initialize spherocities
 	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
 	for (Int_t iMu = 0; iMu < NMULTI; ++iMu)	{
 		mTS[iType][iMu] = new TransverseSpherocity();
@@ -76,7 +76,7 @@ Int_t MyAnalysisV0::Init() {
 		mTSNorm[iType][iMu]->SetMinMulti(10);
 	}	}
 
-	// inv.mass sigmas for competing mass rejection
+	// Initialize inv.mass sigmas for competing mass rejection
 	mParSigK0s	= new TF1("funcSigK0s","[0]+[1]*x+[2]/x",1e-4+XBINS[0],XBINS[NPTBINS]);
 	mParSigK0s->SetParameters(cuts::K0S_PARSIG[0],cuts::K0S_PARSIG[1],cuts::K0S_PARSIG[2]);
 	mParMuK0s	= new TF1("funcMuK0s","(x<=1.6)*([0]+[1]*x+[2]*x*x)+(x>1.6)*[3]",1e-4+XBINS[0],XBINS[NPTBINS]);
@@ -95,7 +95,7 @@ Int_t MyAnalysisV0::Init() {
 	//mParMuL		= cuts::L_PARMU;
 
 
-	// SET CUT DEFAULT VALUES FOR SYST. STUDIES
+	// SET CUT DEFAULT VALUES AND CUT DIRECTIONS FOR SYST. STUDIES
 	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
 	for (Int_t iSp = 1; iSp < NSPECIES; ++iSp)	{
 	
@@ -172,9 +172,6 @@ Int_t MyAnalysisV0::Init() {
 
 	}	}
 
-	cout << "cuuut is " << mCutsVal[1][16] << endl;
-	cout << "cuuut is " << mCutsVal[1][NSigmaTPCposPiL] << endl;
-
 	return 0;
 }
 
@@ -201,7 +198,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	// SIGNAL LOSS STUDY
 	if (mFlagMC) {
-
 		Bool_t isINEL = false;
 		for (int iP = 0; iP < mHandler->getNparticles(); ++iP)		{
 			
@@ -263,10 +259,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	hEventV0MCentrality->Fill(event.GetV0MCentrality());
 	hEventRefMult->Fill(event.GetRefMult());
 	hEventV0MCentvRefMult->Fill(event.GetRefMult(),event.GetV0MCentrality());
-	Bool_t isEventFHM 	= IsCentral(event,V0M);				// forward-rapidity high-multiplicity 0-10
-	Bool_t isEventMHM 	= IsCentral(event,NCharged);		// mid-rapidity high-multiplicity 0-10
-	Bool_t isEventFHM01 = IsCentral(event,V0M01);			// forward-rapidity high-multiplicity 0-1
-	Bool_t isEventMHM01 = IsCentral(event,NCharged01);		// mid-rapidity high-multiplicity 0-1
+	Bool_t isEventFHM 	= (NMULTI>1) && IsCentral(event,V0M);				// forward-rapidity high-multiplicity 0-10
+	Bool_t isEventMHM 	= (NMULTI>2) && IsCentral(event,NCharged);		// mid-rapidity high-multiplicity 0-10
+	Bool_t isEventFHM01 = (NMULTI>3) && IsCentral(event,V0M01);			// forward-rapidity high-multiplicity 0-1
+	Bool_t isEventMHM01 = (NMULTI>4) && IsCentral(event,NCharged01);		// mid-rapidity high-multiplicity 0-1
 	if (isEventFHM)		hEventType->Fill(EVENTTYPES[6],1);
 	if (isEventMHM)		hEventType->Fill(EVENTTYPES[7],1);
 	if (isEventFHM01)	hEventType->Fill(EVENTTYPES[8],1);
@@ -279,13 +275,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Double_t eventTS[NTYPE][sizeofMult];
 	Bool_t isEventSphero[NTYPE][sizeofMult][NSPHERO] = {};
 	for (Int_t iType = 0; iType < NTYPE; ++iType)	{
-	for (Int_t iMu = 0; iMu < sizeofMult; ++iMu)	{
+	for (Int_t iMu = 0; iMu < NMULTI; ++iMu)	{
 		mTS[iType][iMu]->Reset();			// pT-weighted sphero
 		mTSNorm[iType][iMu]->Reset();		// pT=1 sphero
 		eventTS[iType][iMu] = -1.;
 		for (Int_t iSph = 0; iSph < NSPHERO; iSph++) isEventSphero[iType][iMu][iSph] = (iSph==0) ? 1 : 0;
 	}	}
-
 
 
 	// TRACK LOOP TO CONSTRUCT SPHEROCITY AND FIND LEADING
@@ -316,6 +311,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			mTSNorm[D][multMB]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt());
 			// fill event counting tree here too 
 		}
+
 		if (isEventFHM) {
 			mTS[D][V0M]->AddTrack(t.GetPx(), t.GetPy());
 			mTSNorm[D][V0M]->AddTrack(t.GetPx()/t.GetPt(), t.GetPy()/t.GetPt()); 
@@ -334,6 +330,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		}
 	}
 	hLeadPhivPt->Fill(ptLead,phiLead);
+
 
 	// SPHERO CALCULATION ON PARTICLE LEVEL IN MC
 	if (mFlagMC && isEventCentral) {
@@ -373,7 +370,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 									cuts::EV_SPH_V0M01_ISO, cuts::EV_SPH_NCharged01_ISO};
 
 		for (Int_t iType = 0; iType < NTYPE; ++iType)	{		// if MC, also do MC and RC
-		for (Int_t iMu = 1; iMu < sizeofMult; ++iMu)	{
+		for (Int_t iMu = 1; iMu < NMULTI; ++iMu)	{
 			
 			// CHOOSE PT=1 SPHEROCITY AS DEFAULT
 			eventTS[iType][iMu] = mTSNorm[iType][iMu]->GetTransverseSpherocityTracks();
@@ -384,14 +381,16 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		}	}
 
 		// FILLING HISTOGRAMS
-		if (isEventFHM)		hEventSpherocityV0M->Fill(eventTS[D][V0M]);
-		if (isEventMHM)		hEventSpherocityNCharged->Fill(eventTS[D][NCharged]);
-		if (isEventFHM01)	hEventSpherocityV0M01->Fill(eventTS[D][V0M01]);
-		if (isEventMHM01)	hEventSpherocityNCharged01->Fill(eventTS[D][NCharged01]);
-		hEventTSMCvRC->Fill(mTS[MC][V0M]->GetTransverseSpherocityTracks(),mTS[D][V0M]->GetTransverseSpherocityTracks());
-		hEventTSNormMCvRC->Fill(eventTS[MC][V0M],eventTS[D][V0M]);
-		hEventTSMCvNorm->Fill(mTS[MC][V0M]->GetTransverseSpherocityTracks(),eventTS[MC][V0M]);
-		hEventTSRCvNorm->Fill(mTS[D][V0M]->GetTransverseSpherocityTracks(),eventTS[D][V0M]);
+		if (NMULTI>4) {
+			if (isEventFHM)		hEventSpherocityV0M->Fill(eventTS[D][V0M]);
+			if (isEventMHM)		hEventSpherocityNCharged->Fill(eventTS[D][NCharged]);
+			if (isEventFHM01)	hEventSpherocityV0M01->Fill(eventTS[D][V0M01]);
+			if (isEventMHM01)	hEventSpherocityNCharged01->Fill(eventTS[D][NCharged01]);
+			hEventTSMCvRC->Fill(mTS[MC][V0M]->GetTransverseSpherocityTracks(),mTS[D][V0M]->GetTransverseSpherocityTracks());
+			hEventTSNormMCvRC->Fill(eventTS[MC][V0M],eventTS[D][V0M]);
+			hEventTSMCvNorm->Fill(mTS[MC][V0M]->GetTransverseSpherocityTracks(),eventTS[MC][V0M]);
+			hEventTSRCvNorm->Fill(mTS[D][V0M]->GetTransverseSpherocityTracks(),eventTS[D][V0M]);
+		}
 	}
 
 	// COUNT EVENT CLASS IN EVENT COUNTERS FOR NORMALIZATIONS
@@ -403,47 +402,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	}	}
 
-
-
-
-	/*for (Int_t iSph = 0; iSph < NSPHERO; ++iSph) {
-		if (isEventFHM && isEventSphero[D][V0M][iSph])				hEventType->Fill(EVENTTYPES[10+iSph],1);
-		if (isEventMHM && isEventSphero[D][NCharged][iSph])			hEventType->Fill(EVENTTYPES[19+iSph],1);
-		if (isEventFHM01 && isEventSphero[D][V0M01][iSph])			hEventType->Fill(EVENTTYPES[28+iSph],1);
-		if (isEventMHM01 && isEventSphero[D][NCharged01][iSph])		hEventType->Fill(EVENTTYPES[37+iSph],1);
-
-		if (!mFlagMC) continue;
-		if (isEventFHM && isEventSphero[MC][V0M][iSph])				hEventType->Fill(EVENTTYPES[46+iSph],1);
-		if (isEventMHM && isEventSphero[MC][NCharged][iSph])		hEventType->Fill(EVENTTYPES[55+iSph],1);
-		if (isEventFHM01 && isEventSphero[MC][V0M01][iSph])			hEventType->Fill(EVENTTYPES[64+iSph],1);
-		if (isEventMHM01 && isEventSphero[MC][NCharged01][iSph])	hEventType->Fill(EVENTTYPES[73+iSph],1);
-	}	*/	//enum { sphMB, Jetty20, Iso20, Jetty10, Iso10, Jetty5, Iso5, Jetty1, Iso1};
-
-
-
-	/*
-	if (isEventFHM && isEventIso[V0M])			hEventType->Fill(EVENTTYPES[6],1);
-	if (isEventFHM && isEventJetty[V0M])		hEventType->Fill(EVENTTYPES[7],1);
-	if (isEventMHM && isEventIso[NCharged])		hEventType->Fill(EVENTTYPES[8],1);
-	if (isEventMHM && isEventJetty[NCharged])	hEventType->Fill(EVENTTYPES[9],1);
-	if (isEventFHM && isEventIsoMC[V0M])		hEventType->Fill(EVENTTYPES[16],1);
-	if (isEventFHM && isEventJettyMC[V0M])		hEventType->Fill(EVENTTYPES[17],1);
-	if (isEventMHM && isEventIsoMC[NCharged])	hEventType->Fill(EVENTTYPES[18],1);
-	if (isEventMHM && isEventJettyMC[NCharged])	hEventType->Fill(EVENTTYPES[19],1);
-
-	if (isEventFHM01 && isEventIso[V0M01])			hEventType->Fill(EVENTTYPES[26],1);
-	if (isEventFHM01 && isEventJetty[V0M01])		hEventType->Fill(EVENTTYPES[27],1);
-	if (isEventMHM01 && isEventIso[NCharged01])		hEventType->Fill(EVENTTYPES[28],1);
-	if (isEventMHM01 && isEventJetty[NCharged01])	hEventType->Fill(EVENTTYPES[29],1);
-	if (isEventFHM01 && isEventIsoMC[V0M01])		hEventType->Fill(EVENTTYPES[30],1);
-	if (isEventFHM01 && isEventJettyMC[V0M01])		hEventType->Fill(EVENTTYPES[31],1);
-	if (isEventMHM01 && isEventIsoMC[NCharged01])	hEventType->Fill(EVENTTYPES[32],1);
-	if (isEventMHM01 && isEventJettyMC[NCharged01])	hEventType->Fill(EVENTTYPES[33],1);
-	*/
-
 	// TRACK DEPENDENCE ON SPHEROCITY STUDY LOOP
-	nChTrans = 0;
-	Int_t nChTrans0 = 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr));	t.SetHandler(mHandler);
@@ -487,7 +446,15 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	}
 
+
 	// RT NCH CALCULATION
+	nChTrans = 0;
+	Int_t nChTrans0 = 0;	// NT in events also wo leading
+	Int_t nChTransA = 0;	// NT in the first transverse region
+	Int_t nChTransB = 0;	// NT in the other transverse region
+	Double_t meanPtTrans0 = 0;
+	Double_t meanPtTransA = 0;
+	Double_t meanPtTransB = 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr)); t.SetHandler(mHandler);
@@ -501,40 +468,72 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		
 		hNchvLeadPt->Fill(ptLead);
 		nChTrans0++;
+		meanPtTrans0 += t.GetPt();
+		if (WhatRegionSide(t.GetPhi(),phiLead)==1) {
+			nChTransA++;
+			meanPtTransA += t.GetPt(); }
+		if (WhatRegionSide(t.GetPhi(),phiLead)==2) {
+			nChTransB++;
+			meanPtTransB += t.GetPt(); }
+
 		if (ptLead < 5.) continue;
 		if (ptLead > 40.) continue;
-		nChTrans++;		// increment only if a leading particle was found
+		nChTrans++;		// increment only if a leading particle was found	
 	}
 
+	
+	// DETERMINE NT_MIN AND NT_MAX
+	Bool_t isSideAMin = 0;			// We need to keep track for also classifying the regions for spectra.
+	Int_t nChTransMin = nChTransB;	// NT in the min transverse region
+	Int_t nChTransMax = nChTransA;	// NT in the max transverse region
+	Double_t meanPtTransMin = meanPtTransB;	// NT in the min transverse region
+	Double_t meanPtTransMax = meanPtTransA;	// NT in the max transverse region
+	if (nChTransA < nChTransB) {
+		isSideAMin = 1;
+		nChTransMin = nChTransA;
+		nChTransMax = nChTransB;	
+		meanPtTransMin = meanPtTransA;
+		meanPtTransMax = meanPtTransB;
+	}
+
+	meanPtTrans0 = (nChTrans0>0) ? meanPtTrans0/nChTrans0 : 0;
+	meanPtTransMin = (nChTransMin>0) ? meanPtTransMin/nChTransMin : 0;
+	meanPtTransMax = (nChTransMax>0) ? meanPtTransMax/nChTransMax : 0;
+
 	hNchvLeadPt2->Fill(ptLead,nChTrans0);
+	hNchMinvLeadPt2->Fill(ptLead,nChTransMin);
+	hNchMaxvLeadPt2->Fill(ptLead,nChTransMax);
+	if (meanPtTrans0>0) hMeanPtvLeadPt2->Fill(ptLead,meanPtTrans0);
+	if (meanPtTransMin>0) hMeanPtMinvLeadPt2->Fill(ptLead,meanPtTransMin);
+	if (meanPtTransMax>0) hMeanPtMaxvLeadPt2->Fill(ptLead,meanPtTransMax);
 	eventRt = 0;
 	if (ptLead>5. && ptLead < 40.) {
 		hNchTrans->Fill(nChTrans);
 		eventRt = (double)nChTrans/RT_DEN;
 		hRt->Fill(eventRt);		}
 
-	// CLASSIFYING EVENT IN RT BINS DURING RUNTIME (optional)
+	// CLASSIFYING EVENT FOR RT ANALYSIS
 	Bool_t isEventRT = false;		
-	enum { rt, rtsizeof }; //rt01, rt12, rt23, rt34, rt45, rtsizeof };
-	Bool_t isRT[rtsizeof] = {false}; //, false, false, false, false};
 	if (ptLead>5. && ptLead<40.) {
 		isEventRT = true;
-		//for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
-		//	isRT[iRt] = (eventRt > (Double_t)iRt 
-		//		&& eventRt < (Double_t)(iRt+1));	}
-		isRT[0] = isEventRT;
 	}
 
-	//if (isEventRT) hEventType->Fill(EVENTTYPES[10],1);
-	//for (int iRt = 0; iRt < rtsizeof; ++iRt)	{
-	//	if (isRT[iRt]) hEventType->Fill(EVENTTYPES[11+iRt],1); }
+	if (isEventRT) {
+		hNtvNtMin->Fill(nChTransMin,nChTrans);
+		hNtvNtMax->Fill(nChTransMax,nChTrans);
+		hNtMaxvNtMin->Fill(nChTransMin,nChTransMax);
+	}
+
 
 	// <pT> vs RT
 	hLeadPtvNchTrans0->Fill(nChTrans0,ptLead);
+	hLeadPtvNchTransMin->Fill(nChTransMin,ptLead);
+	hLeadPtvNchTransMax->Fill(nChTransMax,ptLead);
 	if (isEventRT) hLeadPtvNchTrans->Fill(nChTrans,ptLead);
-	if (isEventRT && isEventFHM) hNchTransvSpherocityV0M->Fill(eventTS[D][V0M],nChTrans);
-	if (isEventRT && isEventMHM) hNchTransvSpherocityNCharged->Fill(eventTS[D][NCharged],nChTrans);
-
+	if (NMULTI>2) {
+		if (isEventRT && isEventFHM) hNchTransvSpherocityV0M->Fill(eventTS[D][V0M],nChTrans);
+		if (isEventRT && isEventMHM) hNchTransvSpherocityNCharged->Fill(eventTS[D][NCharged],nChTrans);
+	}
 	// STUDY DPHI DISTRIBUTION IN RT EVENTS
 	if (isEventRT) for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		if (!mHandler->track(iTr)) continue;
@@ -546,9 +545,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (!t.IsTPCOnlyRefit()) continue;
 		if (t.GetPt()<0.15) continue;
 		
-		if (TMath::Abs(t.GetPt()-ptLead)>1E-5) hTrackDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,t.GetPhi())); //TMath::Abs(phiLead-t.GetPhi()));
+		if (TMath::Abs(t.GetPt()-ptLead)>1E-5) {
+			hTrackDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,t.GetPhi())); //TMath::Abs(phiLead-t.GetPhi()));
+			hTrackDPhivNchTransMin->Fill(nChTransMin,mHandler->DeltaPhi(phiLead,t.GetPhi())); //TMath::Abs(phiLead-t.GetPhi()));
+		}
 
 	}
+
 
 
 
@@ -556,6 +559,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	// MC RT CALCULATION
 	//////////////////////////////////////////////////////////////////
 	Double_t ptLeadMC = -99., phiLeadMC = -99.;
+	Double_t eventRtMC = 0;
+	Int_t nChTransMC = 0;
+	Int_t nChTransAMC = 0;
+	Int_t nChTransBMC = 0;
+	Bool_t isSideAMinMC = 0;			// We need to keep track for also classifying the regions for spectra.
+	Int_t nChTransMinMC = nChTransBMC;	// NT in the min transverse region
+	Int_t nChTransMaxMC = nChTransAMC;	// NT in the max transverse region
+
 	if (mFlagMC) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
@@ -573,8 +584,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		}
 
 		// RT
-		Int_t nChTransMC = 0;
-		Double_t eventRtMC = 0;
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
 			if (!mHandler->particle(iP)) continue;
@@ -584,12 +593,22 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.IsPrimary())	{
 
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
+				nChTransMC++;
+
+				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==1) nChTransAMC++;
+				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==2) nChTransBMC++;
+
+
 				if (ptLeadMC<5.0) continue;
 				if (ptLeadMC>40.0) continue;
 
-				nChTransMC++;
 			}
 		}
+
+		if (nChTransAMC < nChTransBMC) {
+			isSideAMinMC = 1;
+			nChTransMinMC = nChTransAMC;
+			nChTransMaxMC = nChTransBMC;	}
 
 		if ( (ptLeadMC > 5. && ptLeadMC < 40.) && (ptLead > 5. && ptLead < 40.) )	{   // or ||
 			hNchTransMC->Fill(nChTransMC);
@@ -657,14 +676,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged01][iSph]) hTrackPt[MC][NCharged01][iSph]->Fill(p.GetPt());
 				}
 
-
-				if (isEventRT && IsTrans(p.GetPhi(),phiLead)) {
-					hTrackPt[MC][RT][sphMB]->Fill(p.GetPt());
-					for (int iRt = 0; iRt < rtsizeof; ++iRt) {
-						//if (isRT[iRt])	hTrackPt[MC][RT][3+iRt]->Fill(p.GetPt());	
-					}
-				}
-
 			}
 
 			//if (p.GetPdgCode() == 310) cout << "eta " << p.GetEta() << " y " << p.GetY() << endl;
@@ -691,6 +702,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 					tV0PtMCMB[iSp]->Fill(p.GetPt());
 
+					if (isEventRT && iSp==1) hK0sDPhivNchTransMC->Fill(nChTransMC,mHandler->DeltaPhi(phiLead,p.GetPhi()));
+					if (isEventRT && iSp==2) hLDPhivNchTransMC->Fill(nChTransMC,mHandler->DeltaPhi(phiLead,p.GetPhi()));
+					if (isEventRT && iSp==3) hLbarDPhivNchTransMC->Fill(nChTransMC,mHandler->DeltaPhi(phiLead,p.GetPhi()));
+
+
 					if (isEventFHM) {
 						hV0Pt[iSp][MC][V0M][sphMB]->Fill(p.GetPt());
 						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M][iSph]) hV0Pt[iSp][MC][V0M][iSph]->Fill(p.GetPt());
@@ -711,25 +727,22 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged01][iSph]) hV0Pt[iSp][MC][NCharged01][iSph]->Fill(p.GetPt());
 					}
 
-
 					if (isEventRT)	{
-							Int_t region = WhatRegion(p.GetPhi(),phiLead);
-
-							if (iSp>0) tV0PtMCRt[iSp][region]->Fill(p.GetPt());
+						Int_t region = WhatRegion(p.GetPhi(),phiLead);
+						hV0PtNt[iSp][MC][region]->Fill(p.GetPt(),nChTransMC);
+						hV0PtNtMin[iSp][MC][region]->Fill(p.GetPt(),nChTransMinMC);
+						
+						Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLead);
+						if (!region) {
+							hV0PtNt[iSp][MC][IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMC);
+							hV0PtNtMin[iSp][MC][IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 						}
-
-					if (isEventRT && IsTrans(p.GetPhi(),phiLead)) {
-						hV0Pt[iSp][MC][RT][sphMB]->Fill(p.GetPt());
-						for (int iRt = 0; iRt < rtsizeof; ++iRt) {
-							if (isRT[iRt])	hV0Pt[iSp][MC][RT][3+iRt]->Fill(p.GetPt());	}
 					}
-
 				}
 			}
-
 		}
-
 	}
+
 
 	// V0 DATA ANALYSIS: V0 CANDIDATES LOOP
 	hEventMonitor->Fill(6);
@@ -929,209 +942,186 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged01][iSph]) ProcessV0toHist(v0,iSp,RC,NCharged01,iSph);
 					}
 
-					if (isEventRT)	{
+					if (isEventRT) {
 						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
-						if (iSp>0) ProcessV0toTree(v0,iSp,RC,RT+region);
+						ProcessV0toHistRT(v0,iSp,RC,region,nChTrans,nChTransMin);
+						Int_t regionSide = WhatRegionSide(v0.GetPhi(),phiLead);
+						if (!region) ProcessV0toHistRT(v0,iSp,RC,IsMinOrMax(isSideAMin,regionSide),nChTrans,nChTransMin);
 					}
-
-					if (isEventRT && IsTrans(v0.GetPhi(),phiLead)) {
-						ProcessV0toHist(v0,iSp,RC,RT,sphMB);
-						for (int iRt = 0; iRt < rtsizeof; ++iRt) {
-							//if (isRT[iRt])	ProcessV0toHist(v0,iSp,RC,RT,3+iRt);
-								}
-					}
-
 				}
 			}
-		}
-		
+		}	
+
+		// in MC this part is only analyzed if RC selection was successful ?
 		hV0Radius->Fill(v0.GetRadius());
 		hV0ProperT->Fill(v0.GetIML()*v0.GetRadius()/v0.GetPt());
-		
-		// STUDY OF V0s IN DATA
-		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+			
+			// STUDY OF V0s IN DATA
+			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
-			//printf("isV0 %i isV0vary %i \n", IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,RadiusL,cuts::V0_R[0]));
-			if (IsV0(v0,iSp,D) != IsV0VaryCut(v0,iSp,D,NClusterpos,70.)) {
-				printf("Houston we got a problem %i lt %f \n", iSp, v0.GetRadius());
-				printf("%i and %i \n", IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,NClusterpos,70.));
-			}
-			Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
-			if (1) {
-				for (Int_t iBin = 1; iBin < hV0IMvRadiusL[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,RadiusL,hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvRadiusL[iSp]->Fill(hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				for (Int_t iBin = 1; iBin < hV0IMvDCAdd[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,DCAdd,hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAdd[iSp]->Fill(hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				for (Int_t iBin = 1; iBin < hV0IMvCPA[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,CPA,hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvCPA[iSp]->Fill(hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				for (Int_t iBin = 1; iBin < hV0IMvFastSignal[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,FastSignal,hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin))) hV0IMvFastSignal[iSp]->Fill(hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
-				
-				for (Int_t iBin = 1; iBin < hV0IMvCompMass[iSp]->GetNbinsX()+1; iBin++)
-					if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,CompMassL,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,CompMassLbar,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) )
-					|| (iSp>1 && IsV0VaryCut(v0,iSp,D,CompMassK0s,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) ) )
-					 hV0IMvCompMass[iSp]->Fill(hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				
-				if (iSp>1) for (Int_t iBin = 1; iBin < hV0IMvLifetime[iSp]->GetNbinsX()+1; iBin++)
-					if ( (iSp==2 && IsV0VaryCut(v0,iSp,D,LifetimeL,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)))
-					|| (iSp==3 && IsV0VaryCut(v0,iSp,D,LifetimeLbar,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)) ) ) 
-					 hV0IMvLifetime[iSp]->Fill(hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				
-				for (Int_t iBin = 1; iBin < hV0IMvNSigmaTPC[iSp]->GetNbinsX()+1; iBin++)
-					if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
-					|| (iSp==2 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
-					|| (iSp==3 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
-								&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )	)
-					 hV0IMvNSigmaTPC[iSp]->Fill(hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-
-				for (Int_t iBin = 1; iBin < hV0IMvDCAPVpos[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,DCAPVpos,hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVpos[iSp]->Fill(hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				for (Int_t iBin = 1; iBin < hV0IMvDCAPVneg[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,DCAPVneg,hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVneg[iSp]->Fill(hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-				
-				for (Int_t iBin = 1; iBin < hV0IMvNCluster[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,NClusterpos,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin))
-					&& IsV0VaryCut(v0,iSp,D,NClusterneg,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin)) ) 
-						hV0IMvNCluster[iSp]->Fill(hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
-				
-				for (Int_t iBin = 1; iBin < hV0IMvNClusterF[iSp]->GetNbinsX()+1; iBin++)
-					if (IsV0VaryCut(v0,iSp,D,NClusterFpos,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin))
-					&& IsV0VaryCut(v0,iSp,D,NClusterFneg,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin)) ) 
-						hV0IMvNClusterF[iSp]->Fill(hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
-			}
-
-			//if (IsV0(v0,iSp,D) != IsV0VaryCut(v0,iSp,D,DCAPVpos,sysVar[iSp-1][sysDCAPVpos][deflt]))
-			//printf("iSp %i isV0 %i isV0vary %i w cut %f and dca %f VS cut %f and dca %f \n", iSp, IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,DCAPVpos,sysVar[iSp-1][sysDCAPVpos][deflt]),
-			//		sysVar[iSp-1][sysDCAPVpos][deflt], v0.GetCut(DCAPVpos), cuts::V0_D_DCAPVXY, TMath::Abs(v0.GetPosTrack()->GetImpactParameter(0)));
-
-			// SYSTEMATIC CUT VARIATIONS
-			if (!mFlagMC) {
-
-				if (isEventFHM) {
-					ProcessV0SystVar(v0,iSp,D,V0M,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessV0SystVar(v0,iSp,D,V0M,iSph);
+				//printf("isV0 %i isV0vary %i \n", IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,RadiusL,cuts::V0_R[0]));
+				if (IsV0(v0,iSp,D) != IsV0VaryCut(v0,iSp,D,NClusterpos,70.)) {
+					printf("Houston we got a problem %i lt %f \n", iSp, v0.GetRadius());
+					printf("%i and %i \n", IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,NClusterpos,70.));
 				}
-
-				if (isEventMHM) {
-					ProcessV0SystVar(v0,iSp,D,NCharged,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged,iSph);
-				}
-
-
-				if (isEventFHM01) {
-					ProcessV0SystVar(v0,iSp,D,V0M01,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessV0SystVar(v0,iSp,D,V0M01,iSph);
-				}
-
-				if (isEventMHM01) {
-					ProcessV0SystVar(v0,iSp,D,NCharged01,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged01,iSph);
-				}
-			} 
-
-			if (IsV0(v0,iSp,D)) {
-
-				//if (iSp == 1) if (v0.GetMCPdgCode() == 310) continue;
-				//if (iSp > 1) if (!v0.IsMCPrimary()) continue;
-				ProcessV0toHist(v0,iSp,D,multMB,sphMB);
-				if (mFlagMC) {
-					if (v0.IsMCPrimary())
-						hV0IMvPtPrimary[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
-					if (v0.IsMCPrimary() && v0.GetMCPdgCode() == PDG_IDS[iSp])
-						hV0IMvPtPrimaryPDG[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
-					if (!v0.IsMCPrimary())
-						hV0IMvPtSecondary[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
-					if (!v0.IsMCPrimary() && v0.GetMCPdgCode() == PDG_IDS[iSp])
-						hV0IMvPtSecondaryPDG[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
-					if (!v0.IsMCPrimary() && TMath::Abs(v0.GetMCPrimaryPdgCode()) == 3312)
-						hV0IMvPtSecondaryXi[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
-					if (v0.GetMCPdgCode() != PDG_IDS[iSp])
-						hV0IMvPtBackground[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
-
-					if (iSp == 1 && v0.GetPt() < 0.6 && v0.GetMCPdgCode() != PDG_IDS[iSp]) {
-						if (TMath::Abs(v0mass[iSp])<0.01) hK0sLowDaughtersPDG->Fill(v0.GetPosTrackPdg(),v0.GetNegTrackPdg());
-						hK0sLowIMvPDG->Fill(v0.GetMCPdgCode(),v0mass[iSp]);
-						hK0sLowIMvDaughterPDGPos->Fill(v0.GetPosTrackPdg(),v0mass[iSp]);
-						hK0sLowIMvDaughterPDGNeg->Fill(v0.GetNegTrackPdg(),v0mass[iSp]);
-					}
-					if (iSp == 1 && v0.GetPt() > 3. && v0.GetMCPdgCode() != PDG_IDS[iSp]) {
-						if (TMath::Abs(v0mass[iSp])<0.01) hK0sHighDaughtersPDG->Fill(v0.GetPosTrackPdg(),v0.GetNegTrackPdg());
-						hK0sHighIMvPDG->Fill(v0.GetMCPdgCode(),v0mass[iSp]);
-						hK0sHighIMvDaughterPDGPos->Fill(v0.GetPosTrackPdg(),v0mass[iSp]);
-						hK0sHighIMvDaughterPDGNeg->Fill(v0.GetNegTrackPdg(),v0mass[iSp]);
-					}
-				}
-
-				if (isEventFHM) {
-					ProcessV0toHist(v0,iSp,D,V0M,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessV0toHist(v0,iSp,D,V0M,iSph);
-				}
-
-				if (isEventMHM) {
-					ProcessV0toHist(v0,iSp,D,NCharged,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessV0toHist(v0,iSp,D,NCharged,iSph);
-				}
-
-
-				if (isEventFHM01) {
-					ProcessV0toHist(v0,iSp,D,V0M01,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessV0toHist(v0,iSp,D,V0M01,iSph);
-				}
-
-				if (isEventMHM01) {
-					ProcessV0toHist(v0,iSp,D,NCharged01,sphMB);
-					for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0toHist(v0,iSp,D,NCharged01,iSph);
-				}
-				
-
-				if (isEventRT) {
+				Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+				if (1) {
+					for (Int_t iBin = 1; iBin < hV0IMvRadiusL[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,RadiusL,hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvRadiusL[iSp]->Fill(hV0IMvRadiusL[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					for (Int_t iBin = 1; iBin < hV0IMvDCAdd[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,DCAdd,hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAdd[iSp]->Fill(hV0IMvDCAdd[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					for (Int_t iBin = 1; iBin < hV0IMvCPA[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,CPA,hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvCPA[iSp]->Fill(hV0IMvCPA[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					for (Int_t iBin = 1; iBin < hV0IMvFastSignal[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,FastSignal,hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin))) hV0IMvFastSignal[iSp]->Fill(hV0IMvFastSignal[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
 					
-					Int_t region = WhatRegion(v0.GetPhi(),phiLead);
-					if (iSp>0) ProcessV0toTree(v0,iSp,D,RT+region);
+					for (Int_t iBin = 1; iBin < hV0IMvCompMass[iSp]->GetNbinsX()+1; iBin++)
+						if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,CompMassL,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,CompMassLbar,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) )
+						|| (iSp>1 && IsV0VaryCut(v0,iSp,D,CompMassK0s,hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin)) ) )
+						 hV0IMvCompMass[iSp]->Fill(hV0IMvCompMass[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					
+					if (iSp>1) for (Int_t iBin = 1; iBin < hV0IMvLifetime[iSp]->GetNbinsX()+1; iBin++)
+						if ( (iSp==2 && IsV0VaryCut(v0,iSp,D,LifetimeL,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)))
+						|| (iSp==3 && IsV0VaryCut(v0,iSp,D,LifetimeLbar,hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin)) ) ) 
+						 hV0IMvLifetime[iSp]->Fill(hV0IMvLifetime[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					
+					for (Int_t iBin = 1; iBin < hV0IMvNSigmaTPC[iSp]->GetNbinsX()+1; iBin++)
+						if ( (iSp==1 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
+						|| (iSp==2 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )
+						|| (iSp==3 && IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCposPiH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrL,-1.*hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin))
+									&& IsV0VaryCut(v0,iSp,D,NSigmaTPCnegPrH,hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin)) )	)
+						 hV0IMvNSigmaTPC[iSp]->Fill(hV0IMvNSigmaTPC[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
 
-					/*ProcessV0toHist(v0,iSp,D,RT+region,sphMB);
-					for (int iRt = 0; iRt < rtsizeof; ++iRt) {
-						if (isRT[iRt])	ProcessV0toHist(v0,iSp,D,RT+region,3+iRt);	}*/
+					for (Int_t iBin = 1; iBin < hV0IMvDCAPVpos[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,DCAPVpos,hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVpos[iSp]->Fill(hV0IMvDCAPVpos[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					for (Int_t iBin = 1; iBin < hV0IMvDCAPVneg[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,DCAPVneg,hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin))) hV0IMvDCAPVneg[iSp]->Fill(hV0IMvDCAPVneg[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
+					
+					for (Int_t iBin = 1; iBin < hV0IMvNCluster[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,NClusterpos,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin))
+						&& IsV0VaryCut(v0,iSp,D,NClusterneg,hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin)) ) 
+							hV0IMvNCluster[iSp]->Fill(hV0IMvNCluster[iSp]->GetXaxis()->GetBinLowEdge(iBin),v0mass[iSp]);
+					
+					for (Int_t iBin = 1; iBin < hV0IMvNClusterF[iSp]->GetNbinsX()+1; iBin++)
+						if (IsV0VaryCut(v0,iSp,D,NClusterFpos,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin))
+						&& IsV0VaryCut(v0,iSp,D,NClusterFneg,hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin)) ) 
+							hV0IMvNClusterF[iSp]->Fill(hV0IMvNClusterF[iSp]->GetXaxis()->GetBinCenter(iBin),v0mass[iSp]);
 				}
 
-			}
-		}		
+				//if (IsV0(v0,iSp,D) != IsV0VaryCut(v0,iSp,D,DCAPVpos,sysVar[iSp-1][sysDCAPVpos][deflt]))
+				//printf("iSp %i isV0 %i isV0vary %i w cut %f and dca %f VS cut %f and dca %f \n", iSp, IsV0(v0,iSp,D), IsV0VaryCut(v0,iSp,D,DCAPVpos,sysVar[iSp-1][sysDCAPVpos][deflt]),
+				//		sysVar[iSp-1][sysDCAPVpos][deflt], v0.GetCut(DCAPVpos), cuts::V0_D_DCAPVXY, TMath::Abs(v0.GetPosTrack()->GetImpactParameter(0)));
+
+				// SYSTEMATIC CUT VARIATIONS
+				if (!mFlagMC) {
+
+					if (isEventFHM) {
+						ProcessV0SystVar(v0,iSp,D,V0M,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessV0SystVar(v0,iSp,D,V0M,iSph);
+					}
+
+					if (isEventMHM) {
+						ProcessV0SystVar(v0,iSp,D,NCharged,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged,iSph);
+					}
+
+
+					if (isEventFHM01) {
+						ProcessV0SystVar(v0,iSp,D,V0M01,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessV0SystVar(v0,iSp,D,V0M01,iSph);
+					}
+
+					if (isEventMHM01) {
+						ProcessV0SystVar(v0,iSp,D,NCharged01,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged01,iSph);
+					}
+				} 
+
+				if (IsV0(v0,iSp,D)) {
+
+					//if (iSp == 1) if (v0.GetMCPdgCode() == 310) continue;
+					//if (iSp > 1) if (!v0.IsMCPrimary()) continue;
+					ProcessV0toHist(v0,iSp,D,multMB,sphMB);
+					if (isEventRT && iSp==1) hK0sDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
+					if (isEventRT && iSp==2) hLDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
+					if (isEventRT && iSp==3) hLbarDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
+
+					if (mFlagMC) {
+						if (v0.IsMCPrimary())
+							hV0IMvPtPrimary[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
+						if (v0.IsMCPrimary() && v0.GetMCPdgCode() == PDG_IDS[iSp])
+							hV0IMvPtPrimaryPDG[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
+						if (!v0.IsMCPrimary())
+							hV0IMvPtSecondary[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
+						if (!v0.IsMCPrimary() && v0.GetMCPdgCode() == PDG_IDS[iSp])
+							hV0IMvPtSecondaryPDG[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
+						if (!v0.IsMCPrimary() && TMath::Abs(v0.GetMCPrimaryPdgCode()) == 3312)
+							hV0IMvPtSecondaryXi[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
+						if (v0.GetMCPdgCode() != PDG_IDS[iSp])
+							hV0IMvPtBackground[iSp]->Fill(v0.GetPt(),v0mass[iSp]);
+
+						if (iSp == 1 && v0.GetPt() < 0.6 && v0.GetMCPdgCode() != PDG_IDS[iSp]) {
+							if (TMath::Abs(v0mass[iSp])<0.01) hK0sLowDaughtersPDG->Fill(v0.GetPosTrackPdg(),v0.GetNegTrackPdg());
+							hK0sLowIMvPDG->Fill(v0.GetMCPdgCode(),v0mass[iSp]);
+							hK0sLowIMvDaughterPDGPos->Fill(v0.GetPosTrackPdg(),v0mass[iSp]);
+							hK0sLowIMvDaughterPDGNeg->Fill(v0.GetNegTrackPdg(),v0mass[iSp]);
+						}
+						if (iSp == 1 && v0.GetPt() > 3. && v0.GetMCPdgCode() != PDG_IDS[iSp]) {
+							if (TMath::Abs(v0mass[iSp])<0.01) hK0sHighDaughtersPDG->Fill(v0.GetPosTrackPdg(),v0.GetNegTrackPdg());
+							hK0sHighIMvPDG->Fill(v0.GetMCPdgCode(),v0mass[iSp]);
+							hK0sHighIMvDaughterPDGPos->Fill(v0.GetPosTrackPdg(),v0mass[iSp]);
+							hK0sHighIMvDaughterPDGNeg->Fill(v0.GetNegTrackPdg(),v0mass[iSp]);
+						}
+					}
+
+					if (isEventFHM) {
+						ProcessV0toHist(v0,iSp,D,V0M,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessV0toHist(v0,iSp,D,V0M,iSph);
+					}
+
+					if (isEventMHM) {
+						ProcessV0toHist(v0,iSp,D,NCharged,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessV0toHist(v0,iSp,D,NCharged,iSph);
+					}
+
+
+					if (isEventFHM01) {
+						ProcessV0toHist(v0,iSp,D,V0M01,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessV0toHist(v0,iSp,D,V0M01,iSph);
+					}
+
+					if (isEventMHM01) {
+						ProcessV0toHist(v0,iSp,D,NCharged01,sphMB);
+						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0toHist(v0,iSp,D,NCharged01,iSph);
+					}
+					
+
+					if (isEventRT) {
+						
+						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
+						ProcessV0toHistRT(v0,iSp,D,region,nChTrans,nChTransMin);
+						
+						Int_t regionSide = WhatRegionSide(v0.GetPhi(),phiLead);
+						if (!region) ProcessV0toHistRT(v0,iSp,D,IsMinOrMax(isSideAMin,regionSide),nChTrans,nChTransMin);
+						
+					}
+
+				}
+			}		
 
 	}
 
 	hEventMonitor->Fill(7);
 	return 0;	
-}
-
-Bool_t MyAnalysisV0::SelectEvent(MyEvent &ev, Int_t flag) {
-
-	// NOT USED (CLASSIFYEVENT USED INSTEAD)
-
-	ev.SetCheckFlag(flag);
-	if (!ev.IsGoodAliEvent()) return false;
-
-	//if (!ev.IsGoodAliEvent())			return false;
-	//if(bV0s->GetEntriesFast() < 1)		return false;
-	//if(bTracks->GetEntriesFast() < 1)		return false;
-	//hEventCuts->Fill(0);
-	//if (!ev.AcceptVertex())				return false;
-	//hEventCuts->Fill(1);
-	//if (ev.IsPileupFromSPD())			return false;
-	//hEventCuts->Fill(2);
-	//if (!ev.CheckFlag())				return false;
-	//if (!ev.IsCollisionCandidate())		return false;
-	//if (ev.GetCentralityQuality() != 0)	return false;
-
-	return true;
 }
 
 Int_t MyAnalysisV0::ClassifyEvent(MyEvent &event, Int_t ntracks)
@@ -1256,16 +1246,28 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	return true;	
 }
 
+Bool_t MyAnalysisV0::ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin) {
+	
+	//printf("V0 p_{T} is %f, args are %i , %i , %i \n", v0.GetPt(), Sp, Mu, Sph);
+
+	hV0PtNt[Sp][Type][Reg]->Fill(v0.GetPt(),Nt);
+	hV0EtaNt[Sp][Type][Reg]->Fill(v0.GetEta(),Nt);
+	hV0PhiNt[Sp][Type][Reg]->Fill(v0.GetPhi(),Nt);
+	hV0PtNtMin[Sp][Type][Reg]->Fill(v0.GetPt(),NtMin);
+	
+	if (Type==2) return true;
+	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+	hV0IMvPtNt[Sp][Type][Reg]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+	hV0IMvPtNtMin[Sp][Type][Reg]->Fill(v0.GetPt(),v0mass[Sp],NtMin);
+
+	return true;	
+}
+
 Bool_t MyAnalysisV0::ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu) {
 	
 	Double_t v0mass[] = {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	Double_t v0massKF[] = {0., v0.GetKFIMK0s(), v0.GetKFIML(), v0.GetKFIMLbar()};
 	
-	if (Mu > NMULTI) {
-		Int_t Reg = Mu - (NMULTI + 1);
-		tV0massRt[Sp][Type][Reg]->Fill(v0mass[Sp],v0.GetPt(),nChTrans);
-	}
-
 	if (Mu == 0 && Type==1) {
 		tV0massRCMB[Sp]->Fill(v0mass[Sp],v0.GetPt());	
 	}
@@ -1565,12 +1567,33 @@ Bool_t MyAnalysisV0::IsTrans(Double_t phi1, Double_t phiTrig) {
 }
 
 Int_t MyAnalysisV0::WhatRegion(Double_t phi1, Double_t phiTrig) {
-
+	// 0: transverse, 1: toward, 2: away
+	
 	Double_t dphi = mHandler->DeltaPhi(phi1,phiTrig);
 	
 	if (TMath::Abs(dphi) < TMath::Pi()/3.)			return 1;
 	else if (TMath::Abs(dphi) > 2.*TMath::Pi()/3.) 	return 2;
 	else return 0;
+}
+
+Int_t MyAnalysisV0::WhatRegionSide(Double_t phi1, Double_t phiTrig) {
+
+	Double_t dphi = mHandler->DeltaPhi(phi1,phiTrig);
+	if (!IsTrans(phi1,phiTrig)) return 0;
+	
+	if (dphi>0) return 1; // region A
+	if (dphi<0) return 2; // region B
+	return 0;
+}
+
+Int_t MyAnalysisV0::IsMinOrMax(Bool_t isA, Int_t reg) {
+
+	Int_t res = 4;
+	if (isA && reg == 1)	res = 3;
+	if (!isA && reg == 1)	res = 4;
+	if (isA && reg == 2)	res = 4;
+	if (!isA && reg == 2)	res = 3;
+	return res;
 }
 
 Bool_t MyAnalysisV0::SelectV0Daughter(MyTrack &tr) {
@@ -1650,14 +1673,13 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hEventV0MCentvRefMult	= new TH2D("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"
 		,150,0,150,300,0,150);
 
+	hEventType					= new TH1D("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
+	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
+		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
 	hEventSpherocityV0M			= new TH1D("hEventSpherocityV0M","; S_{O}; Entries",400,-0.1,1.1);
 	hEventSpherocityNCharged	= new TH1D("hEventSpherocityNCharged","; S_{O}; Entries",400,-0.1,1.1);
 	hEventSpherocityV0M01		= new TH1D("hEventSpherocityV0M01","; S_{O}; Entries",400,-0.1,1.1);
 	hEventSpherocityNCharged01	= new TH1D("hEventSpherocityNCharged01","; S_{O}; Entries",400,-0.1,1.1);
-	hEventType					= new TH1D("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
-	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
-		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
-
 	hEventTSMCvRC 			= new TH2D("hEventTSMCvRC",";S_{O} with MC particles; S_{O} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
 	hEventTSNormMCvRC		= new TH2D("hEventTSNormMCvRC",";S_{O}^{p_{T}=1} with MC particles; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
 	hEventTSMCvNorm			= new TH2D("hEventTSMCvNorm",";S_{O} with MC particles; S_{O}^{p_{T}=1} with MC particles", 440, -1.1, 1.1, 440, -1.1, 1.1);
@@ -1673,20 +1695,36 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hLeadPhivPt				= new TH2D("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hNchvLeadPt				= new TH1D("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
 	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
+	hNchMinvLeadPt2			= new TH2D("hNchMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,min]", 90, 0., 30.,50,-0.5,49.5);
+	hNchMaxvLeadPt2			= new TH2D("hNchMaxvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,max]", 90, 0., 30.,50,-0.5,49.5);
+	hMeanPtvLeadPt2			= new TH2D("hMeanPtvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.]", 90, 0., 30.,50,0.,2.);
+	hMeanPtMinvLeadPt2		= new TH2D("hMeanPtMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.,min]", 90, 0., 30.,50,0.,2.);
+	hMeanPtMaxvLeadPt2		= new TH2D("hMeanPtMaxvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.,max]", 90, 0., 30.,50,0.,2.);
 	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransMC 			= new TH1D("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransRCvMC			= new TH2D("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
+	hNtvNtMin				= new TH2D("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
+	hNtvNtMax				= new TH2D("hNtvNtMax","; N_ch [trans.,max]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
+	hNtMaxvNtMin			= new TH2D("hNtMaxvNtMin","; N_ch [trans.,max]; N_ch [trans.,min]",50, -0.5, 49.5,50, -0.5, 49.5);
 	hRt						= new TH1D("hRt","; R_{T}; Entries",4000, -0.02, 5.02);//4.975);
 	hRtMC					= new TH1D("hRtMC","; MC R_{T}; Entries",4000, -0.02, 5.02);//4.975);
 	hRtRCvMC 				= new TH2D("hRtRCMC","; MC R_{T}; R_{T}", 200, -0.02, 5.02, 200, -0.02, 5.02);
  	hLeadPtvNchTrans0		= new TH2D("hLeadPtvNchTrans0","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
  	hLeadPtvNchTrans		= new TH2D("hLeadPtvNchTrans","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
-
+ 	hLeadPtvNchTransMin		= new TH2D("hLeadPtvNchTransMin","; N_{ch}^{trans,min}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+ 	hLeadPtvNchTransMax		= new TH2D("hLeadPtvNchTransMax","; N_{ch}^{trans,max}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
  	hNchTransvSpherocityV0M			= new TH2D("hNchTransvSpherocityV0M",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
  	hNchTransvSpherocityNCharged	= new TH2D("hNchTransvSpherocityNCharged",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
  	hV0DPhivNchTrans				= new TH2D("hV0DPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
  	hTrackDPhivNchTrans				= new TH2D("hTrackDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hTrackDPhivNchTransMin			= new TH2D("hTrackDPhivNchTransMin","; N_{ch}^{trans,min}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
  	hParticleDPhivNchTrans			= new TH2D("hParticleDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hK0sDPhivNchTrans				= new TH2D("hK0sDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLDPhivNchTrans					= new TH2D("hLDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLbarDPhivNchTrans				= new TH2D("hLbarDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hK0sDPhivNchTransMC				= new TH2D("hK0sDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLDPhivNchTransMC				= new TH2D("hLDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLbarDPhivNchTransMC			= new TH2D("hLbarDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -1705,10 +1743,10 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	// MC PARTICLE HISTOGRAMS
 	hParticlePrimaryvPDG				= new TH2D("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
-		hProtonNchTransvPt[iReg]		= new TH2D(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
-		hPionNchTransvPt[iReg]			= new TH2D(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
-		hLambdaNchTransvPt[iReg]		= new TH2D(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
-		hK0sNchTransvPt[iReg]			= new TH2D(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS2, XBINS2, 50, -0.5, 49.5);
+		hProtonNchTransvPt[iReg]		= new TH2D(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hPionNchTransvPt[iReg]			= new TH2D(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hLambdaNchTransvPt[iReg]		= new TH2D(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hK0sNchTransvPt[iReg]			= new TH2D(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
 	}
 
 	// V0 HISTOGRAMS
@@ -1733,7 +1771,6 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			";V0 #eta; V0 y; Entries", 										200, -1., 1., 200, -1., 1.);
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-
 
 	} } } }
 
@@ -1763,6 +1800,38 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	
 	}	}
 
+	// V0 RT HISTOGRAMS
+	const int NBINS_IM = 1000;
+	double XBINS_IM[NBINS_IM+1];// = {};
+	double binStepIM = (0.2 + 0.2)/(double)NBINS_IM;
+	for (int i=0; i <= NBINS_IM; i++) XBINS_IM[i] = -0.2 + (double)i*binStepIM;
+	const int NBINS_NT = 60;
+	double XBINS_NT[NBINS_NT+1];// = {};
+	double binStepNT = (0.5 + 59.5)/(double)NBINS_NT;
+	for (int i=0; i <= NBINS_NT; i++) XBINS_NT[i] = -0.5 + (double)i*binStepNT;
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+				
+
+		hV0PtNt[iSp][iType][iReg]			= new TH2D(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+		hV0PtNtMin[iSp][iType][iReg]			= new TH2D(Form("hV0PtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+		
+		hV0EtaNt[iSp][iType][iReg]			= new TH2D(Form("hV0EtaNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -1., 1., 60, -0.5, 59.5);
+		hV0PhiNt[iSp][iType][iReg]			= new TH2D(Form("hV0PhiNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -3.2, 3.2, 60, -0.5, 59.5);
+
+		hV0IMvPtNt[iSp][iType][iReg]		= new TH3D(Form("hV0IMvPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtMin[iSp][iType][iReg]		= new TH3D(Form("hV0IMvPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.,min]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+
+	} } } 
+
+
 	// V0 RC v MC HISTOGRAMS
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 		hV0PtRCvMC[iSp]			= new TH2D(Form("hV0PtRCvMC_%s",SPECIES[iSp]),
@@ -1775,7 +1844,6 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 
 	// FEED-DOWN STUDY HISTOGRAMS
-
 	const int NBINS_FDMASS = 1000;
 	double XBINS_FDMASS[NBINS_FDMASS+1];// = {};
 	double binStep = (0.2 + 0.2)/(double)NBINS_FDMASS;
@@ -1799,6 +1867,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0PtNoTrigger[iSp]			= new TH1D(Form("hV0PtNoTrigger_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 	}
+
+
 
 	// DETAILED MC CLOSURE STUDY
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
@@ -1839,20 +1909,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// V0 NTUPLES TO ALSO ALLOW POST-PROCESSING REBINNING
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
-	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
-	
-		tV0massRt[iSp][iType][iReg] = new TNtuple(Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),"v0 rt mass tree","MassDT:lPt:lNchTrans");
-
-	}	}	}
-
-
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 		tV0PtMCMB[iSp]		= new TNtuple(Form("tV0PtMCMB_%s",SPECIES[iSp]),"v0 MC MB pt tree","lPt");
 		tV0massRCMB[iSp]	= new TNtuple(Form("tV0massRCMB_%s",SPECIES[iSp]),"v0 RC MB mass tree","MassDT:lPt");
-		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{	
-			tV0PtMCRt[iSp][iReg]	= new TNtuple(Form("tV0PtMCMB_%s_%s",SPECIES[iSp],REGIONS[iReg]),"v0 MC Rt pt tree","lPt");
-		}
 	}
 
 
@@ -1921,6 +1979,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	}	}	}	}
 
+	printf("Histograms in analysis %s created \n", 
+		this->GetName());
 
 }
 
@@ -2008,20 +2068,10 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	}
 
 	Int_t nType = (mFlagMC) ? 2 : 1;
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
-	for (int iType = 0; iType < nType; ++iType)		{
-	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
-	
-		tV0massRt[iSp][iType][iReg] = (TNtuple*)mDirFile->Get(Form("tV0massRt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
-
-	}	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
 		tV0PtMCMB[iSp]		= (TNtuple*)mDirFile->Get(Form("tV0PtMCMB_%s",SPECIES[iSp]));
 		tV0massRCMB[iSp]	= (TNtuple*)mDirFile->Get(Form("tV0massRCMB_%s",SPECIES[iSp]));
-		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{	
-			tV0PtMCRt[iSp][iReg]	= (TNtuple*)mDirFile->Get(Form("tV0PtMCMB_%s_%s",SPECIES[iSp],REGIONS[iReg]));
-		}
 	}		
 
 }
@@ -2053,18 +2103,14 @@ Int_t MyAnalysisV0::Finish() {
 
 
 	if (mFlagMC) DoEfficiency();
-	
-	//if (mFlagMC) DoEfficiencyFromTrees();
-	//if (mFlagMC && !mFlagHist) DoLambdaFeeddown();
-	//if (mFlagMC) DoLambdaFeeddown();
+
 	if (mFlagMC) {
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{	
 			hV0PtNoTrigger[iSp]->Divide(hV0Pt[iSp][2][0][0]);
 		}
 	}
 
-	cout << "aa " << endl;
-
+	printf("Analysis %s finished.\n",this->GetName());
 	return 0;	
 }
 
@@ -2084,76 +2130,6 @@ void MyAnalysisV0::DoEfficiency() {
 
 }
 
-void MyAnalysisV0::DoEfficiencyFromTrees() {
-
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		
-		// minimum bias histos
-		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 p_{T} (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
-		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
-
-		tV0massRCMB[iSp]->Draw(Form("lPt>>hV0Efficiency_%s",SPECIES[iSp]),"","goff");
-		tV0PtMCMB[iSp]->Draw("lPt>>hDen","","goff");
-
-		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
-		hV0Efficiency[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
-
-		hV0Efficiency[iSp]->Divide(hDen);
-		delete hDen;
-
-		// rt histos
-		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
-			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 p_{T} (GeV/#it{c}); Efficiency",NPTBINS2,XBINS2);
-			TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
-
-			tV0massRt[iSp][1][iReg]->Draw(Form("lPt>>hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"","goff");
-			tV0PtMCRt[iSp][iReg]->Draw("lPt>>hDen","","goff");
-
-			hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
-			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,14.0);
-
-			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
-			delete hDen;
-		}
-	}
-
-}
-
-void MyAnalysisV0::DoLambdaFeeddown() {
-
-	/*for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		//hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
-
-		hV0Feeddown[iSp]->SetTitle("; V0 p_{T} (GeV/#it{c}); Feed-down fraction");
-		hV0Feeddown[iSp]->GetYaxis()->SetRangeUser(0.,0.30);
-		hV0Feeddown[iSp]->GetXaxis()->SetRangeUser(0.,14.0);
-
-		hV0Feeddown[iSp]->Divide(hV0Pt[iSp][1][0][0]);
-		//hV0Efficiency[iSp]->Write();
-	}*/
-
-	// NORMALIZING 
-	/*for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-
-		Int_t nCols = hV0FeeddownMatrix[iSp]->GetNbinsX();
-		Int_t nRows = hV0FeeddownMatrix[iSp]->GetNbinsY();
-		//cout << "1mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
-		//hV0FeeddownMotherPt[iSp] = hV0FeeddownMatrix[iSp]->ProjectionX(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),0,-1);
-		//cout << "2mother pt at " << hV0FeeddownMotherPt[iSp] << endl;
-		
-		//hV0FeeddownMotherPt[iSp]->Scale(1,"width");
-
-		for (int iC = 1; iC < nCols+1; ++iC)	{
-			Double_t integral = hV0FeeddownMotherPt[iSp]->Integral(iC,iC);//,1,nRows);
-			for (int iR = 1; iR < nRows+1; ++iR) {
-				
-				Double_t binContent = hV0FeeddownMatrix[iSp]->GetBinContent(iC,iR);
-				if (binContent>0) hV0FeeddownMatrix[iSp]->SetBinContent(iC,iR,binContent/integral);
-			}
-		}
-	}*/
-
-}
 
 TH2D* MyAnalysisV0::RebinTH2(TH2D* h) {
 

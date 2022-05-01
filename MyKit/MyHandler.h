@@ -56,8 +56,6 @@ class MyHandler: public TObject {
 		
 		Bool_t GetFlagMC() 				const {return mFlagMC;};
 		Bool_t GetFlagHist()			const {return mFlagHist;};
-		void RebinPt(Bool_t opt)		{ mRebinPt = opt;};
-		Bool_t IsRebinPt()				const { return mRebinPt;};
 		
 		TChain* chain() 					const {return mChain;};
 		TDirectory* directory() 			const {return mDir;};
@@ -137,7 +135,6 @@ class MyHandler: public TObject {
 
 		Bool_t mFlagMC = 0;
 		Bool_t mFlagHist = 0;
-		Bool_t mRebinPt;
 
 		AliESDtrackCuts* mTrackCuts2010 = 0;
 		AliESDtrackCuts* mTrackCuts2011 = 0;

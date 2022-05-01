@@ -31,9 +31,9 @@ namespace V0consts {
 
 	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 5;//5;
-	const Int_t NSPHERO = 9;//9;
-	const Int_t NREGIONS = 3;
+	const Int_t NMULTI = 1;//5;
+	const Int_t NSPHERO = 1;//9;
+	const Int_t NREGIONS = 5;
 	const char* SPECIES[] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
 	const Float_t XIMASS = 1.32171;
@@ -43,8 +43,8 @@ namespace V0consts {
 	const char* PLOTS_MULTI[] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
 	const char* SPHERO[] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1"};//,"0-1","1-2","2-3","3-4","4-5"};
 	const char* PLOTS_SPHERO[] = {"MB","Jetty 20%","Iso 20%", "Jetty 10%","Iso 10%","Jetty 5%","Iso %5","Jetty %1","Iso %1"};//,"0-1","1-2","2-3","3-4","4-5";
-	const char* REGIONS[NREGIONS] = {"Trans","Near","Away"};
-	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away"};
+	const char* REGIONS[NREGIONS] = {"Trans","Near","Away","TransMin","TransMax"};
+	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away","Trans.-min","Trans.-max"};
 	//const Int_t NPTBINS = 35;
 	//const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 	/*const Int_t NPTBINS = 55;
@@ -143,62 +143,6 @@ namespace V0consts {
 		0.60, 0.80, 1.00, 1.40, 1.80, 
 		2.20, 2.80, 3.40, 4.00, 5.50, 
 		7.00, 9.00,	11.00, 14.00 };*/
-
-	/*const Int_t NPTBINS2 = 28;
-	const Double_t XBINS2[NPTBINS2+1] = { 
-		0.00, 0.10, 0.14, 0.18, 0.25, 0.35, 
-		0.45, 0.55, 0.65, 0.75, 0.85,
-    	0.95, 1.10, 1.30, 1.50, 1.70, 
-		1.90, 2.20, 2.60, 3.00, 3.40, 
-		3.80, 4.50, 5.50, 6.50, 8.00, 
-		10.00, 12.00, 14.00 };*/
-
-	/*const Int_t NPTBINS2 = 28;
-	const Double_t XBINS2[NPTBINS2+1] = { 
-		0.00, 0.12, 0.16, 0.20, 0.30, 0.40, 
-		0.50, 0.60, 0.70, 0.80, 0.90,
-    	1.00, 1.20, 1.40, 1.60, 1.80, 
-		2.00, 2.40, 2.80, 3.20, 3.60, 
-		4.00, 5.00, 6.00, 7.00, 8.00, 
-		10.00, 12.00, 14.00 };*/
-
-	/*const Int_t NPTBINS2 = 18;
-	const Double_t XBINS2[NPTBINS2+1] = { 
-		0.00, 0.10, 0.20, 0.30, 0.40, 
-		0.60, 0.80, 1.00, 1.40, 1.80, 
-		2.20, 2.80, 3.40, 4.00, 5.50, 
-		7.00, 9.00,	11.00, 15.00 };*/
-
-	const Int_t NPTBINS2 = 18;
-	const Double_t XBINS2[NPTBINS2+1] = { 
-		0.00, 0.10, 0.20, 0.30, 0.40, 
-		0.60, 0.80, 1.00, 1.40, 1.80, 
-		2.20, 2.80, 3.40, 4.00, 5.00, 
-		7.00, 9.00,	11.00, 15.00 };
-
-
-	/*const Int_t NPTBINS2 = 44;		//official MB spectra
-	const Double_t XBINS2[NPTBINS2+1] = {
-		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
-		1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
-		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.3, 3.6, 3.9, 4.2, 
-		4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 7.5, 8.0, 8.5, 9.2, 
-		10.0, 11.0, 12.0, 13.5, 15.0 };*/
-
-	/*const Int_t NPTBINS2 = 55; 
-	const Double_t XBINS2[NPTBINS2+1] = { 
-		0.00, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35, 
-		0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85,
-    	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
-		1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40, 
-		3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00, 
-		9.00, 10.00, 11.00, 12.00, 13.00, 14.00 };*/
-
-	//const Int_t NRTBINS = 26;
-	//const Double_t RTBINS[NRTBINS+1] = {
-	//	-0.1, 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 1.7,
-	//	1.9, 2.1, 2.3, 2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.7,
-	//	3.9, 4.1, 4.3, 4.5, 4.7, 4.9, 5.1	};
 
 	const Int_t NRTBINS = 13;
 	const Double_t RTBINS[NRTBINS+1] = {
@@ -368,15 +312,17 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t BorrowHistograms();
 
 		Bool_t ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
+		Bool_t ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin);
 		Bool_t ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
-		Bool_t SelectEvent(MyEvent &ev, Int_t flag);
 		Int_t ClassifyEvent(MyEvent &event, Int_t ntracks);
 		Bool_t IsCentral(MyEvent &ev, Int_t Mu);
 		Bool_t IsV0(MyV0 &v0, Int_t Sp, Int_t Type);
 		Bool_t IsV0VaryCut(MyV0 &v0, Int_t Sp, Int_t Type, Int_t VarCut, Float_t VarVal);
 		Bool_t IsTrans(Double_t phi1, Double_t phiTrig);
+		Int_t IsMinOrMax(Bool_t isA, Int_t reg);
 		Int_t  WhatRegion(Double_t phi1, Double_t phiTrig);
+		Int_t  WhatRegionSide(Double_t phi1, Double_t phiTrig);
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
@@ -384,8 +330,6 @@ class MyAnalysisV0: public MyAnalysis {
 
 
 		void DoEfficiency();
-		void DoEfficiencyFromTrees();
-		void DoLambdaFeeddown();
 		TH2D* RebinTH2(TH2D* h);
 
 		ClassDef(MyAnalysisV0,2);
@@ -443,9 +387,17 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hLeadPhivPt;
 		TH1D* hNchvLeadPt;
 		TH2D* hNchvLeadPt2;
+		TH2D* hNchMinvLeadPt2;
+		TH2D* hNchMaxvLeadPt2;
+		TH2D* hMeanPtvLeadPt2;
+		TH2D* hMeanPtMinvLeadPt2;
+		TH2D* hMeanPtMaxvLeadPt2;
 		TH1D* hNchTrans;
 		TH1D* hNchTransMC;
 		TH2D* hNchTransRCvMC;
+		TH2D* hNtvNtMin;
+		TH2D* hNtvNtMax;
+		TH2D* hNtMaxvNtMin;
 		TH1D* hRt;
 		TH1D* hRtMC;
 		TH2D* hRtRCvMC;
@@ -454,11 +406,20 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hRt2RCvMC;
 		TH2D* hLeadPtvNchTrans0;
 		TH2D* hLeadPtvNchTrans;
+		TH2D* hLeadPtvNchTransMin;
+		TH2D* hLeadPtvNchTransMax;
 		TH2D* hNchTransvSpherocityV0M;
 		TH2D* hNchTransvSpherocityNCharged;
-		TH2D* hTrackDPhivNchTrans;
-		TH2D* hParticleDPhivNchTrans;
 		TH2D* hV0DPhivNchTrans;
+		TH2D* hTrackDPhivNchTrans;
+		TH2D* hTrackDPhivNchTransMin;
+		TH2D* hParticleDPhivNchTrans;
+		TH2D* hK0sDPhivNchTrans;
+		TH2D* hLDPhivNchTrans;
+		TH2D* hLbarDPhivNchTrans;
+		TH2D* hK0sDPhivNchTransMC;
+		TH2D* hLDPhivNchTransMC;
+		TH2D* hLbarDPhivNchTransMC;
 
 		// TRACK HISTOGRAMS
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
@@ -497,6 +458,14 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2D* hV0FastSignalIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
 		TH2D* hV0CutIMvPt[V0consts::NSPECIES][V0consts::NTYPE][25];
 
+		// V0 RT HISTOGRAMS
+		TH2D* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2D* hV0PtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2D* hV0EtaNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2D* hV0PhiNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH3D* hV0IMvPtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH3D* hV0IMvPtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+
 		TH1D* hV0PtNoTrigger[V0consts::NSPECIES];
 
 		// DETAILED MC CLOSURE STUDY
@@ -523,8 +492,6 @@ class MyAnalysisV0: public MyAnalysis {
 		// V0 NTUPLES
 		TNtuple* tV0PtMCMB[V0consts::NSPECIES];
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
-		TNtuple* tV0PtMCRt[V0consts::NSPECIES][V0consts::NREGIONS];
-		TNtuple* tV0massRt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
 		// SYSTEMATICS STUDY
 		TH2D* hV0IMvRadiusL[V0consts::NSPECIES];

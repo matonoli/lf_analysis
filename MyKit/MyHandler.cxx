@@ -26,7 +26,6 @@ MyHandler::MyHandler() : mOutName(""), mFile(0), mDir(0), mChain(0) {
 
 	mFlagMC 	= false;
 	mFlagHist	= false;
-	mRebinPt	= false;
 	
 	for (int i = 0; i < 5; ++i)
 	{
