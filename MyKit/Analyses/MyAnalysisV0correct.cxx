@@ -1109,13 +1109,6 @@ void MyAnalysisV0correct::LoadEfficiency() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	
 		hV0Efficiency[iSp] = (TH1D*)dirFile1->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
-
-		if (hV0Efficiency[iSp] && mHandler->IsRebinPt()) {
-
-			Int_t binSize = TMath::Nint((Double_t)NPTBINS/NPTBINS2);
-			hV0Efficiency[iSp] = (TH1D*)hV0Efficiency[iSp]->Rebin(NPTBINS2,hV0Efficiency[iSp]->GetName(),XBINS2);
-			hV0Efficiency[iSp]->Scale(1./binSize);		 }
-
 		hV0Efficiency[iSp]->Write();
 	}
 
@@ -1195,21 +1188,6 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		hV0Efficiency[iSp]->Divide(hV0Efficiency[iSp],hDen,1.,1.,"B");
 		delete hDen;
 
-		
-		// rt histos
-		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{		
-			hV0EfficiencyRt[iSp][iReg] = new TH1D(Form("hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS);
-			TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
-
-			tV0massRt[iSp][1][iReg]->Draw(Form("lPt>>hV0EfficiencyRt_%s_%s",SPECIES[iSp],REGIONS[iReg]),"","goff");
-			tV0PtMCRt[iSp][iReg]->Draw("lPt>>hDen","","goff");
-
-			//hV0EfficiencyRt[iSp][iReg]->GetYaxis()->SetRangeUser(0.,0.65);
-			hV0EfficiencyRt[iSp][iReg]->GetXaxis()->SetRangeUser(0.,15.0);
-
-			hV0EfficiencyRt[iSp][iReg]->Divide(hDen);
-			delete hDen;
-		}
 	}
 	
 
@@ -1333,7 +1311,7 @@ void MyAnalysisV0correct::CorrectSpectra() {
 	printf("mb k0s spectrum after corr \n");
 	//cout << hV0PtFitCorr[2][0][1][0]->GetBinContent(30) << endl;
 
-	TF1* funcRapCorrection2 = new TF1("funcRapCorrection2",rap_correction,XBINS2[0],XBINS2[NPTBINS2],2);
+	TF1* funcRapCorrection2 = new TF1("funcRapCorrection2",rap_correction,XBINS[0],XBINS[NPTBINS],2);
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{

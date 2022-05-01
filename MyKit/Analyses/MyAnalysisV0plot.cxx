@@ -129,8 +129,6 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		//if (hV0PtFit[iSp][iType][iMu][iSph])
 		//hV0PtFit[iSp][iType][iMu][iSph]		= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFit[iSp][iType][iMu][iSph]->GetName(),XBINS2);
 		
-		if (hV0Pt[iSp][iType][iMu][iSph] && mHandler->IsRebinPt()) {
-		hV0Pt[iSp][iType][iMu][iSph]	= (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS2);	}
 		//hV0PtFit[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
 		//hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"",XBINS2);
 
@@ -145,9 +143,6 @@ Bool_t MyAnalysisV0plot::BorrowHistograms() {
 		//if (iMu < 5 && iSph > 2) continue; 
 		hTrackPt[iType][iMu][iSph] 
 			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-
-		if (hTrackPt[iType][iMu][iSph] && mHandler->IsRebinPt())
-		hTrackPt[iType][iMu][iSph]		= (TH1D*)hTrackPt[iType][iMu][iSph]->Rebin(NPTBINS2,hTrackPt[iType][iMu][iSph]->GetName(),XBINS2); 
 
 	} } }
 

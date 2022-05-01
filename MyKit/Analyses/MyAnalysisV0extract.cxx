@@ -164,13 +164,6 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 		hV0PtFit[iSp][iType][iMu][iSph]		= new TH1D(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 
-		if (hV0PtFit[iSp][iType][iMu][iSph] && mHandler->IsRebinPt()) {
-			TString tmpName = hV0PtFit[iSp][iType][iMu][iSph]->GetName();
-			TH1D* htmp = (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,"htmp",XBINS2);
-			delete hV0PtFit[iSp][iType][iMu][iSph];
-			hV0PtFit[iSp][iType][iMu][iSph] = (TH1D*)htmp->Clone(tmpName.Data());
-			delete htmp;
-		}
 
 	} } } }
 
@@ -225,7 +218,7 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 			
 		hV0PtRtFit[iSp][iType][iReg][iRtBin]		= new TH1D(Form("hV0PtRtFit_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]),
-			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS2,XBINS2);
+			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 
 	} } } }
 
@@ -1229,8 +1222,8 @@ void MyAnalysisV0extract::ProducePtSpectraFromHists() {
 
 	mHandler->root()->SetBatch(kTRUE);
 
-	nBins 	= (mHandler->IsRebinPt()) ? NPTBINS2 : NPTBINS;
-	xBins	= (mHandler->IsRebinPt()) ? XBINS2 : XBINS;
+	nBins 	= NPTBINS;
+	xBins	= XBINS;
 	Int_t binSize = 0;//-1 + TMath::Nint((Double_t)NPTBINS/nBins);	// this is buggy actually
 	nPads = TMath::FloorNint(TMath::Sqrt(nBins));
 
@@ -1373,14 +1366,14 @@ void MyAnalysisV0extract::MakeExclusiveS0Bins() {
 
 void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 
-	mHandler->root()->SetBatch(kTRUE);
+	/*mHandler->root()->SetBatch(kTRUE);
 
-	nPads = TMath::Nint(TMath::Sqrt(NPTBINS2));
+	nPads = TMath::Nint(TMath::Sqrt(NPTBINS));
 	Double_t rt_den = hNchTrans->GetMean();
 
 
-	nBins 	= NPTBINS2;
-	xBins	= XBINS2;
+	nBins 	= NPTBINS;
+	xBins	= XBINS;
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	iCan = 0;
@@ -1401,13 +1394,13 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 		printf("Extracting yield for pt spectrum from trees iSp%i_iType%i_iReg%i_iRtBin%i \n",iSp,iType,iReg,iRtBin);
 		TString treeName = tV0massRt[iSp][iType][iReg]->GetName();
 		Int_t binCounter = 1;
-		for (int iBin = 0; iBin < NPTBINS2; ++iBin)	{
+		for (int iBin = 0; iBin < NPTBINS; ++iBin)	{
 
 			tV0massRt[iSp][iType][iReg]->SetName(Form("treept_iSp%i_iBin%i",iSp,iBin+1));
 
-			/*yield = ExtractYieldFitPtTree((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
-				Form("lPt>%f && lPt<%f && lNchTrans>=%f && lNchTrans<%f",XBINS2[iBin],XBINS2[iBin+1],
-					leftrtb-1E-05,rightrtb)),     iType);*/
+			//yield = ExtractYieldFitPtTree((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
+			//	Form("lPt>%f && lPt<%f && lNchTrans>=%f && lNchTrans<%f",XBINS2[iBin],XBINS2[iBin+1],
+			//		leftrtb-1E-05,rightrtb)),     iType);
 			TH1D* tmp = new TH1D("tmp",";V0 m (GeV/#it{c}^{2}); Entries", 1000, -0.1, 0.1);
 			tV0massRt[iSp][iType][iReg]->Draw("MassDT>>tmp",Form("lPt>%f && lPt<%f && lNchTrans>=%f && lNchTrans<%f",XBINS2[iBin],XBINS2[iBin+1],
 					leftrtb-1E-05,rightrtb),"goff");
@@ -1447,13 +1440,14 @@ void MyAnalysisV0extract::ProducePtSpectraFromTrees() {
 
 
 	mHandler->root()->SetBatch(kFALSE);
+	*/
 }
 
 
 
 void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
-	mHandler->root()->SetBatch(kTRUE);
+	/*mHandler->root()->SetBatch(kTRUE);
 
 	Double_t rt_den = hNchTrans->GetMean();
 
@@ -1509,17 +1503,17 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 		}
 		hV0RtFit[iSp][iType][iReg][iPtBin]->Rebin(increm);
 
-		/*//for entire rt range
-		tV0massRt[iSp][iType][iReg]->SetName(Form("tree_iSp%i_iType%i_iReg%i_iPtBin%i_iBin%i",iSp,iType,iReg,iPtBin,nchmax));//NRTBINS));
+		//for entire rt range
+		//tV0massRt[iSp][iType][iReg]->SetName(Form("tree_iSp%i_iType%i_iReg%i_iPtBin%i_iBin%i",iSp,iType,iReg,iPtBin,nchmax));//NRTBINS));
 			
-		yield = ExtractYieldFitRt((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
-			Form("lPt>%f && lPt<%f && lNchTrans>%f && lNchTrans<%f",RT_PTRANGE[iPtBin][0],RT_PTRANGE[iPtBin][1],
-					0-1E-4, (Double_t)nchmax),			0) );
-		hRtV0Yields[iType][iReg][iPtBin]->SetBinContent(1+iSp,*(yield+0));
-		hRtV0Yields[iType][iReg][iPtBin]->SetBinError(1+iSp,*(yield+1));*/
+		//yield = ExtractYieldFitRt((TTree*)tV0massRt[iSp][iType][iReg]->CopyTree(
+		//	Form("lPt>%f && lPt<%f && lNchTrans>%f && lNchTrans<%f",RT_PTRANGE[iPtBin][0],RT_PTRANGE[iPtBin][1],
+		//			0-1E-4, (Double_t)nchmax),			0) );
+		//hRtV0Yields[iType][iReg][iPtBin]->SetBinContent(1+iSp,*(yield+0));
+		//hRtV0Yields[iType][iReg][iPtBin]->SetBinError(1+iSp,*(yield+1));
 		//
 
-		tV0massRt[iSp][iType][iReg]->SetName(treeName);
+		//tV0massRt[iSp][iType][iReg]->SetName(treeName);
 
 		
 
@@ -1541,7 +1535,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 			mDirFile->Remove(obj);	}
 		}
 
-	mHandler->root()->SetBatch(kFALSE);
+	mHandler->root()->SetBatch(kFALSE);*/
 }
 
 Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1D* hist) {
@@ -2251,7 +2245,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitRt(TTree* tree, Int_t Type) {
 
 Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 
-	static Double_t val[2];
+	/*static Double_t val[2];
 	val[0] = 0; val[1] = 0;
 	Float_t fitMin = -0.03, fitMax = 0.03;
 
@@ -2320,7 +2314,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 	//RooFormulaVar nGaus("nGaus","nGaus1+nGaus2",RooArgList(nGaus1,nGaus2));
 
 	//std::cout << "canCounter/(NPTBINS2) " << canCounter/(NPTBINS2) << " can " << cFitsPtTree[canCounter/(NPTBINS2)] << std::endl;
-	cFitsPtTree[canCounter/(NPTBINS2)]->cd(1+canCounter%(NPTBINS2));
+	cFitsPtTree[canCounter/(NPTBINS)]->cd(1+canCounter%(NPTBINS));
 	
 	RooPlot* plot1 = MassDT.frame(Title(" "));
 	DT_set.plotOn(plot1,MarkerSize(0.4));
@@ -2335,13 +2329,13 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 	plot1->GetYaxis()->SetTitleSize(0.05);
 	plot1->Draw();
 
-	/*TString histName(tree->GetName());
+	//TString histName(tree->GetName());
 	//std::cout << histName.Data() << std::endl;
-	TString binName(histName(histName.Index("iBin")+4,2));
-	Int_t binNumber = binName.Atoi();
-	TString spName(histName(histName.Index("iSp")+3,1));
-	Int_t spNumber = spName.Atoi();*/
-	Double_t chi2ndf = (!empty) ? plot1->chiSquare() : -1.;
+	//TString binName(histName(histName.Index("iBin")+4,2));
+	//Int_t binNumber = binName.Atoi();
+	//TString spName(histName(histName.Index("iSp")+3,1));
+	//Int_t spNumber = spName.Atoi();
+	//Double_t chi2ndf = (!empty) ? plot1->chiSquare() : -1.;
 
 	if (!empty) {
 		val[0] = nGaus.getVal();
@@ -2363,7 +2357,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldFitPtTree(TTree* tree, Int_t Type) {
 
 	
 	
-	return val;
+	return val;*/
 }
 
 void MyAnalysisV0extract::DoClosureTest(Int_t opt) {

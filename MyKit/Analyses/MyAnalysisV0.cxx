@@ -377,6 +377,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			for (Int_t iSph = 1; iSph < NSPHERO; ++iSph)	{
 				if (iSph%2)		isEventSphero[iType][iMu][iSph] = (eventTS[iType][iMu] < cutsJetty[iMu][(iSph-1)/2] && eventTS[iType][iMu] > 0.);
 				else 			isEventSphero[iType][iMu][iSph] = (eventTS[iType][iMu] > cutsIso[iMu][(iSph-1)/2] && eventTS[iType][iMu] < 1.);
+				isEventSphero[iType][iMu][iSph] = isEventSphero[iType][iMu][iSph] && (NSPHERO>iSph);
 			}
 		}	}
 

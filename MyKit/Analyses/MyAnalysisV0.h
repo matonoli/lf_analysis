@@ -31,7 +31,7 @@ namespace V0consts {
 
 	const Int_t NSPECIES = 4;//4;
 	const Int_t NTYPE = 3; 
-	const Int_t NMULTI = 1;//5;
+	const Int_t NMULTI = 5;//5;
 	const Int_t NSPHERO = 1;//9;
 	const Int_t NREGIONS = 5;
 	const char* SPECIES[] = {"inc","K0s","L","Lbar"};
