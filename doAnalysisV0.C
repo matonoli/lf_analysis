@@ -34,6 +34,7 @@ using namespace RooFit;
 #include "workdir/MyAnalysisV0.h"
 #include "workdir/MyAnalysisV0extract.h"
 #include "workdir/MyAnalysisV0correct.h"
+#include "workdir/MyAnalysisV0syst.h"
 #include "workdir/MyAnalysisV0plot.h"
 /*#include "../MyKit/MyHandler.h"
 #include "../MyKit/Analyses/MyAnalysisV0.h"
