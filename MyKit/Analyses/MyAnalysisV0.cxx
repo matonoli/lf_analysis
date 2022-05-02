@@ -1771,7 +1771,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		hV0EtavY[iSp][iType][iMu][iSph]			= new TH2D(Form("hV0EtavY_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; V0 y; Entries", 										200, -1., 1., 200, -1., 1.);
 		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
-			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 125, -0.2, 0.2);
 
 	} } } }
 
@@ -1802,7 +1802,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	}	}
 
 	// V0 RT HISTOGRAMS
-	const int NBINS_IM = 1000;
+	const int NBINS_IM = 125;
 	double XBINS_IM[NBINS_IM+1];// = {};
 	double binStepIM = (0.2 + 0.2)/(double)NBINS_IM;
 	for (int i=0; i <= NBINS_IM; i++) XBINS_IM[i] = -0.2 + (double)i*binStepIM;
@@ -1845,7 +1845,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 
 	// FEED-DOWN STUDY HISTOGRAMS
-	const int NBINS_FDMASS = 1000;
+	const int NBINS_FDMASS = 500;
 	double XBINS_FDMASS[NBINS_FDMASS+1];// = {};
 	double binStep = (0.2 + 0.2)/(double)NBINS_FDMASS;
 	for (int i=0; i <= NBINS_FDMASS; i++) XBINS_FDMASS[i] = -0.2 + (double)i*binStep;
