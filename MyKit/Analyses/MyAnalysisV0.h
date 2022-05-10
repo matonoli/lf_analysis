@@ -9,14 +9,14 @@
 #include "TObject.h"
 #include "TString.h"
 #include "MyAnalysis.h"
-#include "TH2D.h"
+#include "TH2F.h"
 
 
 class TFile;	// forward declaration
 class TList;
-class TH1D;
-class TH2D;
-class TH3D;
+class TH1F;
+class TH2F;
+class TH3F;
 class TNtuple;
 class MyV0;
 class MyEvent;
@@ -108,13 +108,13 @@ namespace V0consts {
 		7.0, 
 		12.0 };*/
 
-	const Int_t NPTBINS = 42;		//superset of official K0s and L V0M spectra
+	/*const Int_t NPTBINS = 42;		//superset of official K0s and L V0M spectra
 	const Double_t XBINS[NPTBINS+1] = {
 		0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
 		0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 
 		1.8, 1.9, 2.0, 2.2, 2.4, 2.5, 2.6, 2.8, 2.9, 3.0, 3.3, 
 		3.4, 3.6, 3.9, 4.0, 4.2, 4.6, 5.0, 5.4, 5.9, 6.5, 7.0, 
-		8.0, 10.0, 12.0 };
+		8.0, 10.0, 12.0 };*/
 
 	/*const Int_t NPTBINS = 16;		// offi HM L spectra
 	const Double_t XBINS[NPTBINS+1] = { 
@@ -123,12 +123,12 @@ namespace V0consts {
 		2.5, 2.9, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };*/
 
-	/*const Int_t NPTBINS = 16;
+	const Int_t NPTBINS = 16;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 5.0, 
-		6.5, 8.0 };*/
+		6.5, 8.0 };
 
 	/*const Int_t NPTBINS = 13;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions, 1gev cut
@@ -157,7 +157,7 @@ namespace V0consts {
 
 	const Int_t NRTBINS0 = 6;
 	const Double_t RTBINS0[NRTBINS0+1] = {
-		0., 5.0, 0., 0.5, 1.5, 2.5, 5.	};
+		0., 5., 0., 0.5, 1.5, 2.5, 5.	};
 
 	/*const Int_t NRTBINS0 = 4;
 	const Double_t RTBINS0[NRTBINS0+1] = {
@@ -213,7 +213,7 @@ namespace V0consts {
 	"FHM", "MHM", "FHM 0-1%", "MHM 0-1%"
 	};
 
-	const Float_t RT_DEN		= 7.449;
+	const Float_t RT_DEN		= 7.225;
 	const Float_t RT_DEN_MC		= 7.525;
 
 	enum sysCuts { NoCut,														//0
@@ -330,7 +330,8 @@ class MyAnalysisV0: public MyAnalysis {
 
 
 		void DoEfficiency();
-		TH2D* RebinTH2(TH2D* h);
+		TH2F* RebinTH2(TH2F* h);
+		TH3F* RebinTH3(TH3F* h);
 
 		ClassDef(MyAnalysisV0,2);
 
@@ -360,153 +361,161 @@ class MyAnalysisV0: public MyAnalysis {
 		Double_t mCutsVal[V0consts::NSPECIES][V0consts::cutsSizeof+1];
 
 		// MONITORS
-		TH1D* hEventMonitor;
-		TH1D* hTrackMonitor;
-		TH1D* hV0Monitor;
-		TH1D* hParticleMonitor;
+		TH1F* hEventMonitor;
+		TH1F* hTrackMonitor;
+		TH1F* hV0Monitor;
+		TH1F* hParticleMonitor;
 
 		// EVENT INFO HISTOGRAMS
-		TH1D* hEventCuts;
-		TH1D* hEventVz;
-		TH1D* hEventV0MCentrality;
-		TH1D* hEventRefMult;
-		TH2D* hEventV0MCentvRefMult;
+		TH1F* hEventCuts;
+		TH1F* hEventVz;
+		TH1F* hEventV0MCentrality;
+		TH1F* hEventRefMult;
+		TH2F* hEventV0MCentvRefMult;
 
-		TH1D* hEventType;
-		TH1D* hEventSpherocityV0M;
-		TH1D* hEventSpherocityNCharged;
-		TH1D* hEventSpherocityV0M01;
-		TH1D* hEventSpherocityNCharged01;
-		TH2D* hEventTSMCvRC;
-		TH2D* hEventTSNormMCvRC;
-		TH2D* hEventTSMCvNorm;
-		TH2D* hEventTSRCvNorm;
-		TH2D* hEventMultvSpheroD;
-		TH2D* hEventMultvSpheroMC;
+		TH1F* hEventType;
+		TH1F* hEventSpherocityV0M;
+		TH1F* hEventSpherocityNCharged;
+		TH1F* hEventSpherocityV0M01;
+		TH1F* hEventSpherocityNCharged01;
+		TH2F* hEventTSMCvRC;
+		TH2F* hEventTSNormMCvRC;
+		TH2F* hEventTSMCvNorm;
+		TH2F* hEventTSRCvNorm;
+		TH2F* hEventMultvSpheroD;
+		TH2F* hEventMultvSpheroMC;
 
-		TH2D* hLeadPhivPt;
-		TH1D* hNchvLeadPt;
-		TH2D* hNchvLeadPt2;
-		TH2D* hNchMinvLeadPt2;
-		TH2D* hNchMaxvLeadPt2;
-		TH2D* hMeanPtvLeadPt2;
-		TH2D* hMeanPtMinvLeadPt2;
-		TH2D* hMeanPtMaxvLeadPt2;
-		TH1D* hNchTrans;
-		TH1D* hNchTransMC;
-		TH2D* hNchTransRCvMC;
-		TH2D* hNtvNtMin;
-		TH2D* hNtvNtMax;
-		TH2D* hNtMaxvNtMin;
-		TH1D* hRt;
-		TH1D* hRtMC;
-		TH2D* hRtRCvMC;
-		TH1D* hRt2;
-		TH1D* hRt2MC;
-		TH2D* hRt2RCvMC;
-		TH2D* hLeadPtvNchTrans0;
-		TH2D* hLeadPtvNchTrans;
-		TH2D* hLeadPtvNchTransMin;
-		TH2D* hLeadPtvNchTransMax;
-		TH2D* hNchTransvSpherocityV0M;
-		TH2D* hNchTransvSpherocityNCharged;
-		TH2D* hV0DPhivNchTrans;
-		TH2D* hTrackDPhivNchTrans;
-		TH2D* hTrackDPhivNchTransMin;
-		TH2D* hParticleDPhivNchTrans;
-		TH2D* hK0sDPhivNchTrans;
-		TH2D* hLDPhivNchTrans;
-		TH2D* hLbarDPhivNchTrans;
-		TH2D* hK0sDPhivNchTransMC;
-		TH2D* hLDPhivNchTransMC;
-		TH2D* hLbarDPhivNchTransMC;
+		TH2F* hLeadPhivPt;
+		TH1F* hNchvLeadPt;
+		TH2F* hNchvLeadPt2;
+		TH2F* hNchMinvLeadPt2;
+		TH2F* hNchMaxvLeadPt2;
+		TH2F* hMeanPtvLeadPt2;
+		TH2F* hMeanPtMinvLeadPt2;
+		TH2F* hMeanPtMaxvLeadPt2;
+		TH1F* hNchTrans;
+		TH1F* hNchTrans2011;
+		TH1F* hNchTransHybrid;
+		TH1F* hNchTransNo2011Hybrid;
+		TH1F* hNchTrans2011OrHybrid;
+		TH1F* hTrackTransPhi2011;
+		TH1F* hTrackTransPhiHybrid;
+		TH1F* hTrackTransPhiNo2011Hybrid;
+		TH1F* hTrackTransPhi2011OrHybrid;
+		TH1F* hNchTransMC;
+		TH2F* hNchTransRCvMC;
+		TH2F* hNtvNtMin;
+		TH2F* hNtvNtMax;
+		TH2F* hNtMaxvNtMin;
+		TH1F* hRt;
+		TH1F* hRtMC;
+		TH2F* hRtRCvMC;
+		TH1F* hRt2;
+		TH1F* hRt2MC;
+		TH2F* hRt2RCvMC;
+		TH2F* hLeadPtvNchTrans0;
+		TH2F* hLeadPtvNchTrans;
+		TH2F* hLeadPtvNchTransMin;
+		TH2F* hLeadPtvNchTransMax;
+		TH2F* hNchTransvSpherocityV0M;
+		TH2F* hNchTransvSpherocityNCharged;
+		TH2F* hV0DPhivNchTrans;
+		TH2F* hTrackDPhivNchTrans;
+		TH2F* hTrackDPhivNchTransMin;
+		TH2F* hParticleDPhivNchTrans;
+		TH2F* hK0sDPhivNchTrans;
+		TH2F* hLDPhivNchTrans;
+		TH2F* hLbarDPhivNchTrans;
+		TH2F* hK0sDPhivNchTransMC;
+		TH2F* hLDPhivNchTransMC;
+		TH2F* hLbarDPhivNchTransMC;
 
 		// TRACK HISTOGRAMS
-		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH2D* hTrackEtavPhi[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2F* hTrackEtavPhi[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		// MC PARTICLE HISTOGRAMS
-		TH1D* hV0Efficiency[V0consts::NSPECIES];
-		TH1D* hV0EfficiencyEta[V0consts::NSPECIES];
-		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
-		TH1D* hV0Feeddown[V0consts::NSPECIES];
-		TH1D* hV0FeeddownPDG[V0consts::NSPECIES];
-		TH3D* hV0FeeddownMatrix[V0consts::NSPECIES];
-		TH1D* hV0FeeddownMotherPt[V0consts::NSPECIES];
-		TH3D* hV0FeeddownMatrixXi0[V0consts::NSPECIES];
-		TH1D* hV0FeeddownMotherPtXi0[V0consts::NSPECIES];
+		TH1F* hV0Efficiency[V0consts::NSPECIES];
+		TH1F* hV0EfficiencyEta[V0consts::NSPECIES];
+		TH1F* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH1F* hV0Feeddown[V0consts::NSPECIES];
+		TH1F* hV0FeeddownPDG[V0consts::NSPECIES];
+		TH3F* hV0FeeddownMatrix[V0consts::NSPECIES];
+		TH1F* hV0FeeddownMotherPt[V0consts::NSPECIES];
+		TH3F* hV0FeeddownMatrixXi0[V0consts::NSPECIES];
+		TH1F* hV0FeeddownMotherPtXi0[V0consts::NSPECIES];
 
-		TH2D* hParticlePrimaryvPDG;
-		TH2D* hProtonNchTransvPt[V0consts::NREGIONS];
-		TH2D* hPionNchTransvPt[V0consts::NREGIONS];
-		TH2D* hLambdaNchTransvPt[V0consts::NREGIONS];
-		TH2D* hK0sNchTransvPt[V0consts::NREGIONS];
+		TH2F* hParticlePrimaryvPDG;
+		TH2F* hProtonNchTransvPt[V0consts::NREGIONS];
+		TH2F* hPionNchTransvPt[V0consts::NREGIONS];
+		TH2F* hLambdaNchTransvPt[V0consts::NREGIONS];
+		TH2F* hK0sNchTransvPt[V0consts::NREGIONS];
 
 		// V0 HISTOGRAMS
-		TH1D* hV0Radius;
-		TH1D* hV0ProperT;
-		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH2D* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH2D* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH2D* hV0DpiNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
-		TH2D* hV0DprNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
-		TH2D* hV0KFIMvIM[V0consts::NSPECIES][V0consts::NTYPE];
-		TH2D* hV0DeltaIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
-		TH2D* hV0BaselineIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
-		TH2D* hV0FastSignalIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
-		TH2D* hV0CutIMvPt[V0consts::NSPECIES][V0consts::NTYPE][25];
+		TH1F* hV0Radius;
+		TH1F* hV0ProperT;
+		TH1F* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2F* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2F* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2F* hV0DpiNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2F* hV0DprNsigTPCvpt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2F* hV0KFIMvIM[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2F* hV0DeltaIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2F* hV0BaselineIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2F* hV0FastSignalIMvPt[V0consts::NSPECIES][V0consts::NTYPE];
+		TH2F* hV0CutIMvPt[V0consts::NSPECIES][V0consts::NTYPE][25];
 
 		// V0 RT HISTOGRAMS
-		TH2D* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
-		TH2D* hV0PtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
-		TH2D* hV0EtaNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
-		TH2D* hV0PhiNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
-		TH3D* hV0IMvPtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
-		TH3D* hV0IMvPtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0EtaNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PhiNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH3F* hV0IMvPtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH3F* hV0IMvPtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
-		TH1D* hV0PtNoTrigger[V0consts::NSPECIES];
+		TH1F* hV0PtNoTrigger[V0consts::NSPECIES];
 
 		// DETAILED MC CLOSURE STUDY
-		TH2D* hV0IMvPtPrimary[V0consts::NSPECIES];
-		TH2D* hV0IMvPtPrimaryPDG[V0consts::NSPECIES];
-		TH2D* hV0IMvPtSecondary[V0consts::NSPECIES];
-		TH2D* hV0IMvPtSecondaryPDG[V0consts::NSPECIES];
-		TH2D* hV0IMvPtSecondaryXi[V0consts::NSPECIES];
-		TH2D* hV0IMvPtBackground[V0consts::NSPECIES];
-		TH2D* hK0sLowDaughtersPDG;
-		TH2D* hK0sLowIMvPDG;
-		TH2D* hK0sLowIMvDaughterPDGPos;
-		TH2D* hK0sLowIMvDaughterPDGNeg;
-		TH2D* hK0sHighDaughtersPDG;
-		TH2D* hK0sHighIMvPDG;
-		TH2D* hK0sHighIMvDaughterPDGPos;
-		TH2D* hK0sHighIMvDaughterPDGNeg;
+		TH2F* hV0IMvPtPrimary[V0consts::NSPECIES];
+		TH2F* hV0IMvPtPrimaryPDG[V0consts::NSPECIES];
+		TH2F* hV0IMvPtSecondary[V0consts::NSPECIES];
+		TH2F* hV0IMvPtSecondaryPDG[V0consts::NSPECIES];
+		TH2F* hV0IMvPtSecondaryXi[V0consts::NSPECIES];
+		TH2F* hV0IMvPtBackground[V0consts::NSPECIES];
+		TH2F* hK0sLowDaughtersPDG;
+		TH2F* hK0sLowIMvPDG;
+		TH2F* hK0sLowIMvDaughterPDGPos;
+		TH2F* hK0sLowIMvDaughterPDGNeg;
+		TH2F* hK0sHighDaughtersPDG;
+		TH2F* hK0sHighIMvPDG;
+		TH2F* hK0sHighIMvDaughterPDGPos;
+		TH2F* hK0sHighIMvDaughterPDGNeg;
 
 		// V0 RC V MC HISTOGRAMS
-		TH2D* hV0PtRCvMC[V0consts::NSPECIES];
-		TH2D* hV0EtaRCvMC[V0consts::NSPECIES];
-		TH2D* hV0PhiRCvMC[V0consts::NSPECIES];
+		TH2F* hV0PtRCvMC[V0consts::NSPECIES];
+		TH2F* hV0EtaRCvMC[V0consts::NSPECIES];
+		TH2F* hV0PhiRCvMC[V0consts::NSPECIES];
 
 		// V0 NTUPLES
 		TNtuple* tV0PtMCMB[V0consts::NSPECIES];
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
 
 		// SYSTEMATICS STUDY
-		TH2D* hV0IMvRadiusL[V0consts::NSPECIES];
-		TH2D* hV0IMvDCAdd[V0consts::NSPECIES];
-		TH2D* hV0IMvCPA[V0consts::NSPECIES];
-		TH2D* hV0IMvFastSignal[V0consts::NSPECIES];
-		TH2D* hV0IMvCompMass[V0consts::NSPECIES];
-		TH2D* hV0IMvLifetime[V0consts::NSPECIES];
-		TH2D* hV0IMvNSigmaTPC[V0consts::NSPECIES];
-		TH2D* hV0IMvDCAPVpos[V0consts::NSPECIES];
-		TH2D* hV0IMvDCAPVneg[V0consts::NSPECIES];
-		TH2D* hV0IMvNCluster[V0consts::NSPECIES];
-		TH2D* hV0IMvNClusterF[V0consts::NSPECIES];
+		TH2F* hV0IMvRadiusL[V0consts::NSPECIES];
+		TH2F* hV0IMvDCAdd[V0consts::NSPECIES];
+		TH2F* hV0IMvCPA[V0consts::NSPECIES];
+		TH2F* hV0IMvFastSignal[V0consts::NSPECIES];
+		TH2F* hV0IMvCompMass[V0consts::NSPECIES];
+		TH2F* hV0IMvLifetime[V0consts::NSPECIES];
+		TH2F* hV0IMvNSigmaTPC[V0consts::NSPECIES];
+		TH2F* hV0IMvDCAPVpos[V0consts::NSPECIES];
+		TH2F* hV0IMvDCAPVneg[V0consts::NSPECIES];
+		TH2F* hV0IMvNCluster[V0consts::NSPECIES];
+		TH2F* hV0IMvNClusterF[V0consts::NSPECIES];
 
-		TH2D* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
+		TH2F* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 
 };
 #endif

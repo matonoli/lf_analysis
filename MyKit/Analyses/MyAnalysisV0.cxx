@@ -2,7 +2,7 @@
 
 #include <TH1.h>
 #include <TH2.h>
-#include <TH3D.h>
+#include <TH3F.h>
 #include <TChain.h>
 #include <TBranch.h>
 #include <TCanvas.h>
@@ -481,6 +481,48 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (ptLead > 40.) continue;
 		nChTrans++;		// increment only if a leading particle was found	
 	}
+
+	// NT TRACK CUTS STUDY
+	Int_t nChTrans2011 = 0;
+	Int_t nChTransHybrid = 0;
+	Int_t nChTransNo2011Hybrid = 0;
+	Int_t nChTrans2011OrHybrid = 0;
+	for (int iTr = 0; iTr < nTracks; ++iTr)		{
+		if (!mHandler->track(iTr)) continue;
+		MyTrack t(mHandler->track(iTr)); t.SetHandler(mHandler);
+		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
+		
+		if (!IsTrans(t.GetPhi(),phiLead))	continue;
+		if (t.GetPt()<0.15) continue;
+		if (ptLead < 5.) continue;
+		if (ptLead > 40.) continue;
+
+		Bool_t is2011Only = false;
+		Bool_t isNo2011Hybrid = false;
+		Bool_t is2011OrHybrid = false;
+		Bool_t isHybrid = false;
+		if (t.IsITSTPC2011()) 			is2011Only=true;
+		if (t.IsITSTPC2011HybridNone()) isHybrid=true;
+		if (!is2011Only && isHybrid) 	isNo2011Hybrid=true;
+		if (is2011Only || isHybrid) 	is2011OrHybrid=true;
+
+		if (is2011Only) {
+			nChTrans2011++;
+			hTrackTransPhi2011->Fill(t.GetPhi()); }
+		if (isHybrid) {
+			nChTransHybrid++;
+			hTrackTransPhiHybrid->Fill(t.GetPhi()); }
+		if (isNo2011Hybrid) {
+			nChTransNo2011Hybrid++;
+			hTrackTransPhiNo2011Hybrid->Fill(t.GetPhi()); }
+		if (is2011OrHybrid) {
+			nChTrans2011OrHybrid++;
+			hTrackTransPhi2011OrHybrid->Fill(t.GetPhi()); }	
+	}
+	hNchTrans2011->Fill(nChTrans2011);
+	hNchTransHybrid->Fill(nChTransHybrid);
+	hNchTransNo2011Hybrid->Fill(nChTransNo2011Hybrid);
+	hNchTrans2011OrHybrid->Fill(nChTrans2011OrHybrid);
 
 	
 	// DETERMINE NT_MIN AND NT_MAX
@@ -1659,73 +1701,81 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	Int_t nType = (mFlagMC) ? 2 : 1;
 
 	// MONITORS
-	hEventMonitor 			= new TH1D("hEventMonitor","; Step; Entries",10,-0.5,9.5);
-	hTrackMonitor 			= new TH1D("hTrackMonitor","; Step; Entries",10,-0.5,9.5);
-	hV0Monitor  			= new TH1D("hV0Monitor","; Step; Entries",10,-0.5,9.5);
-	hParticleMonitor 		= new TH1D("hParticleMonitor","; Step; Entries",10,-0.5,9.5);
+	hEventMonitor 			= new TH1F("hEventMonitor","; Step; Entries",10,-0.5,9.5);
+	hTrackMonitor 			= new TH1F("hTrackMonitor","; Step; Entries",10,-0.5,9.5);
+	hV0Monitor  			= new TH1F("hV0Monitor","; Step; Entries",10,-0.5,9.5);
+	hParticleMonitor 		= new TH1F("hParticleMonitor","; Step; Entries",10,-0.5,9.5);
 
 	cout << "Created " << hEventMonitor << endl;
 
 	// EVENT INFO HISTOGRAMS
-	hEventCuts	 			= new TH1D("hEventCuts","; Step; Entries",10,-0.5,9.5);
-	hEventVz				= new TH1D("hEventVz","; vz; Entries",400,-50,50);
-	hEventV0MCentrality		= new TH1D("hEventV0MCentrality","; V0M Centrality; Entries",300,0,150);
-	hEventRefMult			= new TH1D("hEventRefMult","; Reference multiplicity; Entries",150,0,150);
-	hEventV0MCentvRefMult	= new TH2D("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"
+	hEventCuts	 			= new TH1F("hEventCuts","; Step; Entries",10,-0.5,9.5);
+	hEventVz				= new TH1F("hEventVz","; vz; Entries",400,-50,50);
+	hEventV0MCentrality		= new TH1F("hEventV0MCentrality","; V0M Centrality; Entries",300,0,150);
+	hEventRefMult			= new TH1F("hEventRefMult","; Reference multiplicity; Entries",150,0,150);
+	hEventV0MCentvRefMult	= new TH2F("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"
 		,150,0,150,300,0,150);
 
-	hEventType					= new TH1D("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
+	hEventType					= new TH1F("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
 	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
 		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
-	hEventSpherocityV0M			= new TH1D("hEventSpherocityV0M","; S_{O}; Entries",400,-0.1,1.1);
-	hEventSpherocityNCharged	= new TH1D("hEventSpherocityNCharged","; S_{O}; Entries",400,-0.1,1.1);
-	hEventSpherocityV0M01		= new TH1D("hEventSpherocityV0M01","; S_{O}; Entries",400,-0.1,1.1);
-	hEventSpherocityNCharged01	= new TH1D("hEventSpherocityNCharged01","; S_{O}; Entries",400,-0.1,1.1);
-	hEventTSMCvRC 			= new TH2D("hEventTSMCvRC",";S_{O} with MC particles; S_{O} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
-	hEventTSNormMCvRC		= new TH2D("hEventTSNormMCvRC",";S_{O}^{p_{T}=1} with MC particles; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
-	hEventTSMCvNorm			= new TH2D("hEventTSMCvNorm",";S_{O} with MC particles; S_{O}^{p_{T}=1} with MC particles", 440, -1.1, 1.1, 440, -1.1, 1.1);
-	hEventTSRCvNorm			= new TH2D("hEventTSRCvNorm",";S_{O} with RC tracks; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
-	hEventMultvSpheroD		= new TH2D("hEventMultvSpheroD","", NSPHERO, 0, NSPHERO, NMULTI, 0, NMULTI);
+	hEventSpherocityV0M			= new TH1F("hEventSpherocityV0M","; S_{O}; Entries",400,-0.1,1.1);
+	hEventSpherocityNCharged	= new TH1F("hEventSpherocityNCharged","; S_{O}; Entries",400,-0.1,1.1);
+	hEventSpherocityV0M01		= new TH1F("hEventSpherocityV0M01","; S_{O}; Entries",400,-0.1,1.1);
+	hEventSpherocityNCharged01	= new TH1F("hEventSpherocityNCharged01","; S_{O}; Entries",400,-0.1,1.1);
+	hEventTSMCvRC 			= new TH2F("hEventTSMCvRC",";S_{O} with MC particles; S_{O} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventTSNormMCvRC		= new TH2F("hEventTSNormMCvRC",";S_{O}^{p_{T}=1} with MC particles; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventTSMCvNorm			= new TH2F("hEventTSMCvNorm",";S_{O} with MC particles; S_{O}^{p_{T}=1} with MC particles", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventTSRCvNorm			= new TH2F("hEventTSRCvNorm",";S_{O} with RC tracks; S_{O}^{p_{T}=1} with RC tracks", 440, -1.1, 1.1, 440, -1.1, 1.1);
+	hEventMultvSpheroD		= new TH2F("hEventMultvSpheroD","", NSPHERO, 0, NSPHERO, NMULTI, 0, NMULTI);
 	for (int iBin = 1; iBin <= NSPHERO; iBin++) hEventMultvSpheroD->GetXaxis()->SetBinLabel(iBin,SPHERO[iBin-1]);
 	for (int iBin = 1; iBin <= NMULTI; iBin++) hEventMultvSpheroD->GetYaxis()->SetBinLabel(iBin,MULTI[iBin-1]);
-	hEventMultvSpheroMC		= new TH2D("hEventMultvSpheroMC","", NSPHERO, 0, NSPHERO, NMULTI, 0, NMULTI);
+	hEventMultvSpheroMC		= new TH2F("hEventMultvSpheroMC","", NSPHERO, 0, NSPHERO, NMULTI, 0, NMULTI);
 	for (int iBin = 1; iBin <= NSPHERO; iBin++) hEventMultvSpheroMC->GetXaxis()->SetBinLabel(iBin,SPHERO[iBin-1]);
 	for (int iBin = 1; iBin <= NMULTI; iBin++) hEventMultvSpheroMC->GetYaxis()->SetBinLabel(iBin,MULTI[iBin-1]);		
 
 
-	hLeadPhivPt				= new TH2D("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
-	hNchvLeadPt				= new TH1D("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
-	hNchvLeadPt2			= new TH2D("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
-	hNchMinvLeadPt2			= new TH2D("hNchMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,min]", 90, 0., 30.,50,-0.5,49.5);
-	hNchMaxvLeadPt2			= new TH2D("hNchMaxvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,max]", 90, 0., 30.,50,-0.5,49.5);
-	hMeanPtvLeadPt2			= new TH2D("hMeanPtvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.]", 90, 0., 30.,50,0.,2.5);
-	hMeanPtMinvLeadPt2		= new TH2D("hMeanPtMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.,min]", 90, 0., 30.,50,0.,2.5);
-	hMeanPtMaxvLeadPt2		= new TH2D("hMeanPtMaxvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.,max]", 90, 0., 30.,50,0.,2.5);
-	hNchTrans				= new TH1D("hNchTrans","; N_ch [trans.]; Entries",50, -0.5, 49.5);
-	hNchTransMC 			= new TH1D("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
-	hNchTransRCvMC			= new TH2D("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
-	hNtvNtMin				= new TH2D("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
-	hNtvNtMax				= new TH2D("hNtvNtMax","; N_ch [trans.,max]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
-	hNtMaxvNtMin			= new TH2D("hNtMaxvNtMin","; N_ch [trans.,max]; N_ch [trans.,min]",50, -0.5, 49.5,50, -0.5, 49.5);
-	hRt						= new TH1D("hRt","; R_{T}; Entries",4000, -0.02, 5.02);//4.975);
-	hRtMC					= new TH1D("hRtMC","; MC R_{T}; Entries",4000, -0.02, 5.02);//4.975);
-	hRtRCvMC 				= new TH2D("hRtRCMC","; MC R_{T}; R_{T}", 200, -0.02, 5.02, 200, -0.02, 5.02);
- 	hLeadPtvNchTrans0		= new TH2D("hLeadPtvNchTrans0","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
- 	hLeadPtvNchTrans		= new TH2D("hLeadPtvNchTrans","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
- 	hLeadPtvNchTransMin		= new TH2D("hLeadPtvNchTransMin","; N_{ch}^{trans,min}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
- 	hLeadPtvNchTransMax		= new TH2D("hLeadPtvNchTransMax","; N_{ch}^{trans,max}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
- 	hNchTransvSpherocityV0M			= new TH2D("hNchTransvSpherocityV0M",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
- 	hNchTransvSpherocityNCharged	= new TH2D("hNchTransvSpherocityNCharged",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
- 	hV0DPhivNchTrans				= new TH2D("hV0DPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hTrackDPhivNchTrans				= new TH2D("hTrackDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hTrackDPhivNchTransMin			= new TH2D("hTrackDPhivNchTransMin","; N_{ch}^{trans,min}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hParticleDPhivNchTrans			= new TH2D("hParticleDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hK0sDPhivNchTrans				= new TH2D("hK0sDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hLDPhivNchTrans					= new TH2D("hLDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hLbarDPhivNchTrans				= new TH2D("hLbarDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hK0sDPhivNchTransMC				= new TH2D("hK0sDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hLDPhivNchTransMC				= new TH2D("hLDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
- 	hLbarDPhivNchTransMC			= new TH2D("hLbarDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+	hLeadPhivPt				= new TH2F("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
+	hNchvLeadPt				= new TH1F("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
+	hNchvLeadPt2			= new TH2F("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
+	hNchMinvLeadPt2			= new TH2F("hNchMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,min]", 90, 0., 30.,50,-0.5,49.5);
+	hNchMaxvLeadPt2			= new TH2F("hNchMaxvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,max]", 90, 0., 30.,50,-0.5,49.5);
+	hMeanPtvLeadPt2			= new TH2F("hMeanPtvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.]", 90, 0., 30.,50,0.,2.5);
+	hMeanPtMinvLeadPt2		= new TH2F("hMeanPtMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.,min]", 90, 0., 30.,50,0.,2.5);
+	hMeanPtMaxvLeadPt2		= new TH2F("hMeanPtMaxvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); <pT> [trans.,max]", 90, 0., 30.,50,0.,2.5);
+	hNchTrans				= new TH1F("hNchTrans","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTrans2011			= new TH1F("hNchTrans2011","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTransHybrid			= new TH1F("hNchTransHybrid","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTransNo2011Hybrid	= new TH1F("hNchTransNo2011Hybrid","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTrans2011OrHybrid	= new TH1F("hNchTrans2011OrHybrid","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hTrackTransPhi2011			= new TH1F("hTrackTransPhi2011",";#phi; Entries",	400, -0.2, 6.4);
+	hTrackTransPhiHybrid		= new TH1F("hTrackTransPhiHybrid",";#phi; Entries",	400, -0.2, 6.4);
+	hTrackTransPhiNo2011Hybrid	= new TH1F("hTrackTransPhiNo2011Hybrid",";#phi; Entries",	400, -0.2, 6.4);
+	hTrackTransPhi2011OrHybrid	= new TH1F("hTrackTransPhi2011OrHybrid",";#phi; Entries",	400, -0.2, 6.4);
+	hNchTransMC 			= new TH1F("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTransRCvMC			= new TH2F("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
+	hNtvNtMin				= new TH2F("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
+	hNtvNtMax				= new TH2F("hNtvNtMax","; N_ch [trans.,max]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
+	hNtMaxvNtMin			= new TH2F("hNtMaxvNtMin","; N_ch [trans.,max]; N_ch [trans.,min]",50, -0.5, 49.5,50, -0.5, 49.5);
+	hRt						= new TH1F("hRt","; R_{T}; Entries",4000, -0.02, 5.02);//4.975);
+	hRtMC					= new TH1F("hRtMC","; MC R_{T}; Entries",4000, -0.02, 5.02);//4.975);
+	hRtRCvMC 				= new TH2F("hRtRCMC","; MC R_{T}; R_{T}", 200, -0.02, 5.02, 200, -0.02, 5.02);
+ 	hLeadPtvNchTrans0		= new TH2F("hLeadPtvNchTrans0","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+ 	hLeadPtvNchTrans		= new TH2F("hLeadPtvNchTrans","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+ 	hLeadPtvNchTransMin		= new TH2F("hLeadPtvNchTransMin","; N_{ch}^{trans,min}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+ 	hLeadPtvNchTransMax		= new TH2F("hLeadPtvNchTransMax","; N_{ch}^{trans,max}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+ 	hNchTransvSpherocityV0M			= new TH2F("hNchTransvSpherocityV0M",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
+ 	hNchTransvSpherocityNCharged	= new TH2F("hNchTransvSpherocityNCharged",";S_{O};N_{ch}^{trans}",400,-0.1,1.1,50,-0.5,49.5);
+ 	hV0DPhivNchTrans				= new TH2F("hV0DPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hTrackDPhivNchTrans				= new TH2F("hTrackDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hTrackDPhivNchTransMin			= new TH2F("hTrackDPhivNchTransMin","; N_{ch}^{trans,min}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hParticleDPhivNchTrans			= new TH2F("hParticleDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hK0sDPhivNchTrans				= new TH2F("hK0sDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLDPhivNchTrans					= new TH2F("hLDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLbarDPhivNchTrans				= new TH2F("hLbarDPhivNchTrans","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hK0sDPhivNchTransMC				= new TH2F("hK0sDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLDPhivNchTransMC				= new TH2F("hLDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+ 	hLbarDPhivNchTransMC			= new TH2F("hLbarDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -1734,25 +1784,25 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		
 		if (iMu == 0 && iSph > 0) continue;		
 		
-		hTrackPt[iType][iMu][iSph]			= new TH1D(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hTrackPt[iType][iMu][iSph]			= new TH1F(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";track p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-		hTrackEtavPhi[iType][iMu][iSph]		= new TH2D(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hTrackEtavPhi[iType][iMu][iSph]		= new TH2F(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";track #phi; track #eta", 400, -0.2, 6.4, 400, -1., 1.);		
 
 	} } } 
 
 	// MC PARTICLE HISTOGRAMS
-	hParticlePrimaryvPDG				= new TH2D("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
+	hParticlePrimaryvPDG				= new TH2F("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
-		hProtonNchTransvPt[iReg]		= new TH2D(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
-		hPionNchTransvPt[iReg]			= new TH2D(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
-		hLambdaNchTransvPt[iReg]		= new TH2D(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
-		hK0sNchTransvPt[iReg]			= new TH2D(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hProtonNchTransvPt[iReg]		= new TH2F(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hPionNchTransvPt[iReg]			= new TH2F(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hLambdaNchTransvPt[iReg]		= new TH2F(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+		hK0sNchTransvPt[iReg]			= new TH2F(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
 	}
 
 	// V0 HISTOGRAMS
-	hV0Radius		= new TH1D("hV0Radius",";V0 radius; Entries",400,0.,150.);
-	hV0ProperT		= new TH1D("hV0ProperT",";V0 proper #tau; Entries",400,0.,150.);
+	hV0Radius		= new TH1F("hV0Radius",";V0 radius; Entries",400,0.,150.);
+	hV0ProperT		= new TH1F("hV0ProperT",";V0 proper #tau; Entries",400,0.,150.);
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)			{
@@ -1760,17 +1810,17 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 				
 		if (iMu == 0 && iSph > 0) continue;		
 
-		hV0Pt[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hV0Pt[iSp][iType][iMu][iSph]			= new TH1F(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 			//";V0 p_{T} (GeV/#it{c}); Entries",								400, 0, 20);
-		hV0Eta[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hV0Eta[iSp][iType][iMu][iSph]			= new TH1F(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; Entries", 										200, -1., 1.);
-		hV0Y[iSp][iType][iMu][iSph]				= new TH1D(Form("hV0Y_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hV0Y[iSp][iType][iMu][iSph]				= new TH1F(Form("hV0Y_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 y; Entries", 										200, -1., 1.);
 
-		hV0EtavY[iSp][iType][iMu][iSph]			= new TH2D(Form("hV0EtavY_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hV0EtavY[iSp][iType][iMu][iSph]			= new TH2F(Form("hV0EtavY_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 #eta; V0 y; Entries", 										200, -1., 1., 200, -1., 1.);
-		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2D(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hV0IMvPt[iSp][iType][iMu][iSph]		= new TH2F(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 125, -0.2, 0.2);
 
 	} } } }
@@ -1778,24 +1828,24 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < nType; ++iType)		{
 
-		hV0DpiNsigTPCvpt[iSp][iType]		= new TH2D(Form("hV0DpiNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
+		hV0DpiNsigTPCvpt[iSp][iType]		= new TH2F(Form("hV0DpiNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 daughter p_{T} (GeV/#it{c}); V0 daughter n#sigma_{TPC}^{#pi}; Entries", 										300, 0., 15., 200, -10., 10.);
-		hV0DprNsigTPCvpt[iSp][iType]		= new TH2D(Form("hV0DprNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
+		hV0DprNsigTPCvpt[iSp][iType]		= new TH2F(Form("hV0DprNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 daughter p_{T} (GeV/#it{c}); V0 daughter n#sigma_{TPC}^{p}; Entries", 										300, 0., 15., 200, -10., 10.);
 
-		hV0KFIMvIM[iSp][iType]		= new TH2D(Form("hV0KFIMvIM_%s_%s",SPECIES[iSp],TYPE[iType]),
+		hV0KFIMvIM[iSp][iType]		= new TH2F(Form("hV0KFIMvIM_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 m (GeV/#it{c}^{2}); V0 KF m (GeV/#it{c}^{2}); Entries",		400, -0.1, 0.1, 400, -0.1, 0.1);
-		hV0DeltaIMvPt[iSp][iType]	= new TH2D(Form("hV0DeltaIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
+		hV0DeltaIMvPt[iSp][iType]	= new TH2F(Form("hV0DeltaIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 p_{T} (GeV/#it{c}); V0 m-m_{KF} (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 400, -0.2, 0.2);
 
-		hV0BaselineIMvPt[iSp][iType]	= new TH2D(Form("hV0BaselineIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
+		hV0BaselineIMvPt[iSp][iType]	= new TH2F(Form("hV0BaselineIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Fraction removed",		NPTBINS, XBINS, 25, -0.05, 0.05);
-		hV0FastSignalIMvPt[iSp][iType]	= new TH2D(Form("hV0FastSignalIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
+		hV0FastSignalIMvPt[iSp][iType]	= new TH2F(Form("hV0FastSignalIMvPt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Fraction removed",		NPTBINS, XBINS, 25, -0.05, 0.05);
 
 	for (int iCut = 0; iCut < 25; ++iCut)	{
 		
-		hV0CutIMvPt[iSp][iType][iCut]			= new TH2D(Form("hV0CutIMvPt_%s_%s_%i",SPECIES[iSp],TYPE[iType],iCut),
+		hV0CutIMvPt[iSp][iType][iCut]			= new TH2F(Form("hV0CutIMvPt_%s_%s_%i",SPECIES[iSp],TYPE[iType],iCut),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Fraction removed",		NPTBINS, XBINS, 25, -0.05, 0.05);
 	}
 	
@@ -1810,24 +1860,25 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	double XBINS_NT[NBINS_NT+1];// = {};
 	double binStepNT = (0.5 + 59.5)/(double)NBINS_NT;
 	for (int i=0; i <= NBINS_NT; i++) XBINS_NT[i] = -0.5 + (double)i*binStepNT;
+		
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < NTYPE; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 				
 
-		hV0PtNt[iSp][iType][iReg]			= new TH2D(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+		hV0PtNt[iSp][iType][iReg]			= new TH2F(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
-		hV0PtNtMin[iSp][iType][iReg]			= new TH2D(Form("hV0PtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+		hV0PtNtMin[iSp][iType][iReg]			= new TH2F(Form("hV0PtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
 		
-		hV0EtaNt[iSp][iType][iReg]			= new TH2D(Form("hV0EtaNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+		hV0EtaNt[iSp][iType][iReg]			= new TH2F(Form("hV0EtaNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -1., 1., 60, -0.5, 59.5);
-		hV0PhiNt[iSp][iType][iReg]			= new TH2D(Form("hV0PhiNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+		hV0PhiNt[iSp][iType][iReg]			= new TH2F(Form("hV0PhiNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -3.2, 3.2, 60, -0.5, 59.5);
 
-		hV0IMvPtNt[iSp][iType][iReg]		= new TH3D(Form("hV0IMvPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+		hV0IMvPtNt[iSp][iType][iReg]		= new TH3F(Form("hV0IMvPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
-		hV0IMvPtNtMin[iSp][iType][iReg]		= new TH3D(Form("hV0IMvPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+		hV0IMvPtNtMin[iSp][iType][iReg]		= new TH3F(Form("hV0IMvPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.,min]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
 
 	} } } 
@@ -1835,11 +1886,11 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// V0 RC v MC HISTOGRAMS
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
-		hV0PtRCvMC[iSp]			= new TH2D(Form("hV0PtRCvMC_%s",SPECIES[iSp]),
+		hV0PtRCvMC[iSp]			= new TH2F(Form("hV0PtRCvMC_%s",SPECIES[iSp]),
 			";V0 MC p_{T} (GeV/#it{c}); V0 RC p_{T} (GeV/#it{c}); Entries",	NPTBINS,XBINS, NPTBINS,XBINS);
-		hV0EtaRCvMC[iSp]			= new TH2D(Form("hV0EtaRCvMC_%s",SPECIES[iSp]),
+		hV0EtaRCvMC[iSp]			= new TH2F(Form("hV0EtaRCvMC_%s",SPECIES[iSp]),
 			";V0 MC #eta; V0 RC #eta; Entries",	200, -1., 1., 200, -1., 1.);
-		hV0PhiRCvMC[iSp]			= new TH2D(Form("hV0PhiRCvMC_%s",SPECIES[iSp]),
+		hV0PhiRCvMC[iSp]			= new TH2F(Form("hV0PhiRCvMC_%s",SPECIES[iSp]),
 			";V0 MC #phi; V0 RC #phi; Entries",	400, -0.2, 6.4, 400, -0.2, 6.4);
 	}
 
@@ -1852,12 +1903,12 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
-		hV0Feeddown[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
-		hV0FeeddownPDG[iSp] =	new TH1D(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
-		hV0FeeddownMatrix[iSp]	= new TH3D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
-		hV0FeeddownMotherPt[iSp] 	= new TH1D(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
-		hV0FeeddownMatrixXi0[iSp]	= new TH3D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
-		hV0FeeddownMotherPtXi0[iSp] 	= new TH1D(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
+		hV0Feeddown[iSp] = (TH1F*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Feeddown_%s",SPECIES[iSp]));
+		hV0FeeddownPDG[iSp] =	new TH1F(Form("hV0FeeddownPDG_%s",SPECIES[iSp]),";PDG ID;Entries",20000,-10000,10000);
+		hV0FeeddownMatrix[iSp]	= new TH3F(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
+		hV0FeeddownMotherPt[iSp] 	= new TH1F(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
+		hV0FeeddownMatrixXi0[iSp]	= new TH3F(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; decay V0 mass", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
+		hV0FeeddownMotherPtXi0[iSp] 	= new TH1F(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; Entries", NXIPTBINS, XIXBINS);
 		
 	}
 
@@ -1865,7 +1916,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// SIGNAL LOSS STUDY
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
-		hV0PtNoTrigger[iSp]			= new TH1D(Form("hV0PtNoTrigger_%s",SPECIES[iSp]),
+		hV0PtNoTrigger[iSp]			= new TH1F(Form("hV0PtNoTrigger_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 	}
 
@@ -1873,35 +1924,35 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// DETAILED MC CLOSURE STUDY
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
-		hV0IMvPtPrimary[iSp]		= new TH2D(Form("hV0IMvPtPrimary_%s",SPECIES[iSp]),
+		hV0IMvPtPrimary[iSp]		= new TH2F(Form("hV0IMvPtPrimary_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtPrimaryPDG[iSp]		= new TH2D(Form("hV0IMvPtPrimaryPDG_%s",SPECIES[iSp]),
+		hV0IMvPtPrimaryPDG[iSp]		= new TH2F(Form("hV0IMvPtPrimaryPDG_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSecondary[iSp]		= new TH2D(Form("hV0IMvPtSecondary_%s",SPECIES[iSp]),
+		hV0IMvPtSecondary[iSp]		= new TH2F(Form("hV0IMvPtSecondary_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSecondaryPDG[iSp]		= new TH2D(Form("hV0IMvPtSecondaryPDG_%s",SPECIES[iSp]),
+		hV0IMvPtSecondaryPDG[iSp]		= new TH2F(Form("hV0IMvPtSecondaryPDG_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSecondaryXi[iSp]		= new TH2D(Form("hV0IMvPtSecondaryXi_%s",SPECIES[iSp]),
+		hV0IMvPtSecondaryXi[iSp]		= new TH2F(Form("hV0IMvPtSecondaryXi_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtBackground[iSp]		= new TH2D(Form("hV0IMvPtBackground_%s",SPECIES[iSp]),
+		hV0IMvPtBackground[iSp]		= new TH2F(Form("hV0IMvPtBackground_%s",SPECIES[iSp]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
 	}
-	hK0sLowDaughtersPDG			= new TH2D(Form("hK0sLowDaughtersPDG"),";daughter+ PDG ID; daughter- PDG ID; Entries",
+	hK0sLowDaughtersPDG			= new TH2F(Form("hK0sLowDaughtersPDG"),";daughter+ PDG ID; daughter- PDG ID; Entries",
 		6000,-3000,3000, 6000,-3000,3000);
-	hK0sLowIMvPDG 				= new TH2D(Form("hK0sLowIMvPDG"),";PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
+	hK0sLowIMvPDG 				= new TH2F(Form("hK0sLowIMvPDG"),";PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
 		20000,-10000,10000, 200, -0.1, 0.1);
-	hK0sLowIMvDaughterPDGPos	= new TH2D(Form("hK0sLowIMvDaughterPDGPos"),";daughter+ PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
+	hK0sLowIMvDaughterPDGPos	= new TH2F(Form("hK0sLowIMvDaughterPDGPos"),";daughter+ PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
 		20000,-10000,10000, 200, -0.1, 0.1);
-	hK0sLowIMvDaughterPDGNeg	= new TH2D(Form("hK0sLowIMvDaughterPDGNeg"),";daughter- PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
+	hK0sLowIMvDaughterPDGNeg	= new TH2F(Form("hK0sLowIMvDaughterPDGNeg"),";daughter- PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
 		20000,-10000,10000, 200, -0.1, 0.1);
 
-	hK0sHighDaughtersPDG		= new TH2D(Form("hK0sHighDaughtersPDG"),";daughter+ PDG ID; daughter- PDG ID; Entries",
+	hK0sHighDaughtersPDG		= new TH2F(Form("hK0sHighDaughtersPDG"),";daughter+ PDG ID; daughter- PDG ID; Entries",
 		6000,-3000,3000, 6000,-3000,3000);
-	hK0sHighIMvPDG 				= new TH2D(Form("hK0sHighIMvPDG"),";PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
+	hK0sHighIMvPDG 				= new TH2F(Form("hK0sHighIMvPDG"),";PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
 		20000,-10000,10000, 200, -0.1, 0.1);
-	hK0sHighIMvDaughterPDGPos	= new TH2D(Form("hK0sHighIMvDaughterPDGPos"),";daughter+ PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
+	hK0sHighIMvDaughterPDGPos	= new TH2F(Form("hK0sHighIMvDaughterPDGPos"),";daughter+ PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
 		20000,-10000,10000, 200, -0.1, 0.1);
-	hK0sHighIMvDaughterPDGNeg	= new TH2D(Form("hK0sHighIMvDaughterPDGNeg"),";daughter- PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
+	hK0sHighIMvDaughterPDGNeg	= new TH2F(Form("hK0sHighIMvDaughterPDGNeg"),";daughter- PDG ID; V0 m (GeV/#it{c}^{2}); Entries",
 		20000,-10000,10000, 200, -0.1, 0.1);
 
 
@@ -1917,29 +1968,29 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 	// SYSTEMATICS STUDY
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
-		hV0IMvRadiusL[iSp]	= new TH2D(Form("hV0IMvRadiusL_%s",SPECIES[iSp]),";radius (cm); V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvRadiusL[iSp]	= new TH2F(Form("hV0IMvRadiusL_%s",SPECIES[iSp]),";radius (cm); V0 m (GeV/#it{c}^{2}); Entries",
 			100, 0., 1., 1000, -0.2, 0.2);
-		hV0IMvDCAdd[iSp]	= new TH2D(Form("hV0IMvDCAdd_%s",SPECIES[iSp]),";DCA of daughters (cm); V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvDCAdd[iSp]	= new TH2F(Form("hV0IMvDCAdd_%s",SPECIES[iSp]),";DCA of daughters (cm); V0 m (GeV/#it{c}^{2}); Entries",
 			100, 0., 2., 1000, -0.2, 0.2);
-		hV0IMvCPA[iSp]	= (iSp==1) ? new TH2D(Form("hV0IMvCPA_%s",SPECIES[iSp]),";cos(PA); V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvCPA[iSp]	= (iSp==1) ? new TH2F(Form("hV0IMvCPA_%s",SPECIES[iSp]),";cos(PA); V0 m (GeV/#it{c}^{2}); Entries",
 			100, 0.95, 1., 1000, -0.2, 0.2)
-								 :	 new TH2D(Form("hV0IMvCPA_%s",SPECIES[iSp]),";cos(PA); V0 m (GeV/#it{c}^{2}); Entries",
+								 :	 new TH2F(Form("hV0IMvCPA_%s",SPECIES[iSp]),";cos(PA); V0 m (GeV/#it{c}^{2}); Entries",
 			100, 0.99, 1., 1000, -0.2, 0.2);
-		hV0IMvFastSignal[iSp]	= new TH2D(Form("hV0IMvFastSignal_%s",SPECIES[iSp]),";#daughters w. fast signal; V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvFastSignal[iSp]	= new TH2F(Form("hV0IMvFastSignal_%s",SPECIES[iSp]),";#daughters w. fast signal; V0 m (GeV/#it{c}^{2}); Entries",
 			3, 1., 4., 1000, -0.2, 0.2);
-		hV0IMvCompMass[iSp]	= new TH2D(Form("hV0IMvCompMass_%s",SPECIES[iSp]),";n#sigma for comp. mass rejection; V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvCompMass[iSp]	= new TH2F(Form("hV0IMvCompMass_%s",SPECIES[iSp]),";n#sigma for comp. mass rejection; V0 m (GeV/#it{c}^{2}); Entries",
 			100, 2., 6., 1000, -0.2, 0.2);
-		if (iSp>1) hV0IMvLifetime[iSp]	= new TH2D(Form("hV0IMvLifetime_%s",SPECIES[iSp]),";Lifetime estimate from XY plane; V0 m (GeV/#it{c}^{2}); Entries",
+		if (iSp>1) hV0IMvLifetime[iSp]	= new TH2F(Form("hV0IMvLifetime_%s",SPECIES[iSp]),";Lifetime estimate from XY plane; V0 m (GeV/#it{c}^{2}); Entries",
 			100, 10., 50., 1000, -0.2, 0.2);
-		hV0IMvNSigmaTPC[iSp]	= new TH2D(Form("hV0IMvNSigmaTPC_%s",SPECIES[iSp]),";n#sigma_{TPC} for daughters; V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvNSigmaTPC[iSp]	= new TH2F(Form("hV0IMvNSigmaTPC_%s",SPECIES[iSp]),";n#sigma_{TPC} for daughters; V0 m (GeV/#it{c}^{2}); Entries",
 			100, 1., 7., 1000, -0.2, 0.2);
-		hV0IMvDCAPVpos[iSp]	= new TH2D(Form("hV0IMvDCAPVpos_%s",SPECIES[iSp]),";DCA PV-pos.daughter (cm); V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvDCAPVpos[iSp]	= new TH2F(Form("hV0IMvDCAPVpos_%s",SPECIES[iSp]),";DCA PV-pos.daughter (cm); V0 m (GeV/#it{c}^{2}); Entries",
 			100, 0.04, 0.1, 1000, -0.2, 0.2);
-		hV0IMvDCAPVneg[iSp]	= new TH2D(Form("hV0IMvDCAPVneg_%s",SPECIES[iSp]),";DCA PV-neg.daughter (cm); V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvDCAPVneg[iSp]	= new TH2F(Form("hV0IMvDCAPVneg_%s",SPECIES[iSp]),";DCA PV-neg.daughter (cm); V0 m (GeV/#it{c}^{2}); Entries",
 			100, 0.04, 0.1, 1000, -0.2, 0.2);
-		hV0IMvNCluster[iSp]	= new TH2D(Form("hV0IMvNCluster_%s",SPECIES[iSp]),";# crossed rows; V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvNCluster[iSp]	= new TH2F(Form("hV0IMvNCluster_%s",SPECIES[iSp]),";# crossed rows; V0 m (GeV/#it{c}^{2}); Entries",
 			25, 65, 90, 1000, -0.2, 0.2);
-		hV0IMvNClusterF[iSp]	= new TH2D(Form("hV0IMvNClusterF_%s",SPECIES[iSp]),";# crossed rows / # findable; V0 m (GeV/#it{c}^{2}); Entries",
+		hV0IMvNClusterF[iSp]	= new TH2F(Form("hV0IMvNClusterF_%s",SPECIES[iSp]),";# crossed rows / # findable; V0 m (GeV/#it{c}^{2}); Entries",
 			25, 0.75, 1., 1000, -0.2, 0.2);
 
 	}
@@ -1955,27 +2006,27 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		if (mFlagMC) if (iSph!=0) continue;
 
 
-		hV0IMvPtSys[iSp][iMu][iSph][sysRadiusL][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysRadiusL],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysRadiusL][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysRadiusL],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysDCAdd][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAdd],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysDCAdd][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAdd],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysCPA][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysCPA],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysCPA][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysCPA],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysFastSignal][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysFastSignal],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysFastSignal][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysFastSignal],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysCompMass][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysCompMass],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysCompMass][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysCompMass],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysLifetime][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysLifetime],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysLifetime][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysLifetime],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysNSigmaTPC][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNSigmaTPC],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysNSigmaTPC][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNSigmaTPC],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysDCAPVpos][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAPVpos],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysDCAPVpos][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAPVpos],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysDCAPVneg][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAPVneg],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysDCAPVneg][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysDCAPVneg],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysNCluster][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNCluster],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysNCluster][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNCluster],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
-		hV0IMvPtSys[iSp][iMu][iSph][sysNClusterF][iVar] = new TH2D(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNClusterF],SYSTVAR[iVar]),
+		hV0IMvPtSys[iSp][iMu][iSph][sysNClusterF][iVar] = new TH2F(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNClusterF],SYSTVAR[iVar]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
 
 	}	}	}	}
@@ -2002,29 +2053,29 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	//mDirFile->ls();
 
 	// MONITORS
-	hEventMonitor 				= (TH1D*)mDirFile->Get("hEventMonitor");
-	hTrackMonitor 				= (TH1D*)mDirFile->Get("hTrackMonitor");
-	hV0Monitor  				= (TH1D*)mDirFile->Get("hV0Monitor");
-	hParticleMonitor 			= (TH1D*)mDirFile->Get("hParticleMonitor");
-	hEventType					= (TH1D*)mDirFile->Get("hEventType");
+	hEventMonitor 				= (TH1F*)mDirFile->Get("hEventMonitor");
+	hTrackMonitor 				= (TH1F*)mDirFile->Get("hTrackMonitor");
+	hV0Monitor  				= (TH1F*)mDirFile->Get("hV0Monitor");
+	hParticleMonitor 			= (TH1F*)mDirFile->Get("hParticleMonitor");
+	hEventType					= (TH1F*)mDirFile->Get("hEventType");
 
 	// EVENT INFO HISTOGRAMS
-	hEventV0MCentrality			= (TH1D*)mDirFile->Get("hEventV0MCentrality");
-	hEventRefMult				= (TH1D*)mDirFile->Get("hEventRefMult");
-	hEventV0MCentvRefMult		= (TH2D*)mDirFile->Get("hEventV0MCentvRefMult");
+	hEventV0MCentrality			= (TH1F*)mDirFile->Get("hEventV0MCentrality");
+	hEventRefMult				= (TH1F*)mDirFile->Get("hEventRefMult");
+	hEventV0MCentvRefMult		= (TH2F*)mDirFile->Get("hEventV0MCentvRefMult");
 
-	hEventSpherocityV0M			= (TH1D*)mDirFile->Get("hEventSpherocityV0M");
-	hEventSpherocityNCharged	= (TH1D*)mDirFile->Get("hEventSpherocityNCharged");
-	hEventTSMCvRC				= (TH2D*)mDirFile->Get("hEventTSMCvRC");
-	hEventTSNormMCvRC			= (TH2D*)mDirFile->Get("hEventTSNormMCvRC");
-	hEventTSMCvNorm				= (TH2D*)mDirFile->Get("hEventTSMCvNorm");
-	hEventTSRCvNorm				= (TH2D*)mDirFile->Get("hEventTSRCvNorm");
+	hEventSpherocityV0M			= (TH1F*)mDirFile->Get("hEventSpherocityV0M");
+	hEventSpherocityNCharged	= (TH1F*)mDirFile->Get("hEventSpherocityNCharged");
+	hEventTSMCvRC				= (TH2F*)mDirFile->Get("hEventTSMCvRC");
+	hEventTSNormMCvRC			= (TH2F*)mDirFile->Get("hEventTSNormMCvRC");
+	hEventTSMCvNorm				= (TH2F*)mDirFile->Get("hEventTSMCvNorm");
+	hEventTSRCvNorm				= (TH2F*)mDirFile->Get("hEventTSRCvNorm");
 
-	hLeadPhivPt					= (TH2D*)mDirFile->Get("hLeadPhivPt");
-	hNchvLeadPt					= (TH1D*)mDirFile->Get("hNchvLeadPt");
-	hNchvLeadPt2				= (TH2D*)mDirFile->Get("hNchvLeadPt2");
-	hNchTrans					= (TH1D*)mDirFile->Get("hNchTrans");
-	hRt							= (TH1D*)mDirFile->Get("hRt");
+	hLeadPhivPt					= (TH2F*)mDirFile->Get("hLeadPhivPt");
+	hNchvLeadPt					= (TH1F*)mDirFile->Get("hNchvLeadPt");
+	hNchvLeadPt2				= (TH2F*)mDirFile->Get("hNchvLeadPt2");
+	hNchTrans					= (TH1F*)mDirFile->Get("hNchTrans");
+	hRt							= (TH1F*)mDirFile->Get("hRt");
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{
@@ -2033,8 +2084,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 				
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
-		hTrackPt[iType][iMu][iSph]	= (TH1D*)mDirFile->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-		hTrackEtavPhi[iType][iMu][iSph]	= (TH2D*)mDirFile->Get(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hTrackPt[iType][iMu][iSph]	= (TH1F*)mDirFile->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hTrackEtavPhi[iType][iMu][iSph]	= (TH2F*)mDirFile->Get(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
 	} } } 
 
@@ -2048,23 +2099,23 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 				
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
-		hV0Pt[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-		hV0Eta[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
-		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2D*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0Pt[iSp][iType][iMu][iSph]			= (TH1F*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0Eta[iSp][iType][iMu][iSph]			= (TH1F*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2F*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		// actually perhaps only histos which need to be processed within this analysis need to get fetched
 		
 	} } } }	
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
-		hV0Feeddown[iSp] 	= (TH1D*)mDirFile->Get(Form("hV0Feeddown_%s",SPECIES[iSp]));
-		hV0FeeddownPDG[iSp] = (TH1D*)mDirFile->Get(Form("hV0FeeddownPDG_%s",SPECIES[iSp]));
-		hV0FeeddownMatrix[iSp]		= (TH3D*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
-		hV0FeeddownMotherPt[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]));
-		hV0FeeddownMatrixXi0[iSp]		= (TH3D*)mDirFile->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]));
-		hV0FeeddownMotherPtXi0[iSp]	= (TH1D*)mDirFile->Get(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]));
+		hV0Feeddown[iSp] 	= (TH1F*)mDirFile->Get(Form("hV0Feeddown_%s",SPECIES[iSp]));
+		hV0FeeddownPDG[iSp] = (TH1F*)mDirFile->Get(Form("hV0FeeddownPDG_%s",SPECIES[iSp]));
+		hV0FeeddownMatrix[iSp]		= (TH3F*)mDirFile->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]));
+		hV0FeeddownMotherPt[iSp]	= (TH1F*)mDirFile->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]));
+		hV0FeeddownMatrixXi0[iSp]		= (TH3F*)mDirFile->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]));
+		hV0FeeddownMotherPtXi0[iSp]	= (TH1F*)mDirFile->Get(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]));
 
-		hV0PtNoTrigger[iSp]	= (TH1D*)mDirFile->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
+		hV0PtNoTrigger[iSp]	= (TH1F*)mDirFile->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
 		cout << "is " << hV0PtNoTrigger[iSp] << endl;
 	}
 
@@ -2083,12 +2134,12 @@ Int_t MyAnalysisV0::Finish() {
 	mDirFile->cd();
 	mDirFile->Write();
 
-	TH1D* hLeadPt = hLeadPhivPt->ProjectionX();
+	TH1F* hLeadPt = (TH1F*)hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);
 	
 
 	//MAKE RT BINNING
-	hRt2 = (TH1D*)hNchTrans->Clone("hRt2");
+	hRt2 = (TH1F*)hNchTrans->Clone("hRt2");
 	Double_t rt_den = hNchTrans->GetMean();
 	Int_t nbins = hNchTrans->GetXaxis()->GetNbins();
 	Double_t rtbins[nbins+1];
@@ -2118,8 +2169,8 @@ Int_t MyAnalysisV0::Finish() {
 void MyAnalysisV0::DoEfficiency() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		hV0Efficiency[iSp] = (TH1D*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Efficiency_%s",SPECIES[iSp]));
-		hV0EfficiencyEta[iSp] = (TH1D*)hV0Eta[iSp][1][0][0]->Clone(Form("hV0EfficiencyEta_%s",SPECIES[iSp]));
+		hV0Efficiency[iSp] = (TH1F*)hV0Pt[iSp][1][0][0]->Clone(Form("hV0Efficiency_%s",SPECIES[iSp]));
+		hV0EfficiencyEta[iSp] = (TH1F*)hV0Eta[iSp][1][0][0]->Clone(Form("hV0EfficiencyEta_%s",SPECIES[iSp]));
 
 		hV0Efficiency[iSp]->SetTitle("; V0 p_{T} (GeV/#it{c}); Efficiency");
 		hV0Efficiency[iSp]->GetYaxis()->SetRangeUser(0.,0.65);
@@ -2132,14 +2183,14 @@ void MyAnalysisV0::DoEfficiency() {
 }
 
 
-TH2D* MyAnalysisV0::RebinTH2(TH2D* h) {
+TH2F* MyAnalysisV0::RebinTH2(TH2F* h) {
 
 	if (!h) return 0x0;
 	if (h->GetNbinsX() != NPTBINS) {
 			
 		TAxis *xaxis = h->GetXaxis(); 
 		TAxis *yaxis = h->GetYaxis(); 
-		TH2D *htmp = new TH2D("htmp",
+		TH2F *htmp = new TH2F("htmp",
 			Form(";%s;%s;%s",xaxis->GetTitle(),yaxis->GetTitle(),h->GetZaxis()->GetTitle()),
 			NPTBINS, XBINS, yaxis->GetNbins(), yaxis->GetBinLowEdge(1), yaxis->GetBinLowEdge(h->GetYaxis()->GetNbins()+1));
 		for (int j=1; j<=yaxis->GetNbins();j++)	{ 
@@ -2147,7 +2198,47 @@ TH2D* MyAnalysisV0::RebinTH2(TH2D* h) {
 			htmp->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),h->GetBinContent(i,j)); 
 		}	}	
 			
-		h = (TH2D*)htmp->Clone(h->GetName());
+		h = (TH2F*)htmp->Clone(h->GetName());
+		delete htmp;
+			
+	}
+	return h;
+
+}
+
+
+TH3F* MyAnalysisV0::RebinTH3(TH3F* h) {
+
+	if (!h) return 0x0;
+	if (h->GetNbinsX() != NPTBINS) {
+			
+		TAxis *xaxis = h->GetXaxis(); 
+		TAxis *yaxis = h->GetYaxis(); 
+		TAxis *zaxis = h->GetZaxis(); 
+
+		// REPLACE THIS (maybe use TH3F::RebinX())
+		const int NBINS_IM = 125;
+		double XBINS_IM[NBINS_IM+1];// = {};
+		double binStepIM = (0.2 + 0.2)/(double)NBINS_IM;
+		for (int i=0; i <= NBINS_IM; i++) XBINS_IM[i] = -0.2 + (double)i*binStepIM;
+		const int NBINS_NT = 60;
+		double XBINS_NT[NBINS_NT+1];// = {};
+		double binStepNT = (0.5 + 59.5)/(double)NBINS_NT;
+		for (int i=0; i <= NBINS_NT; i++) XBINS_NT[i] = -0.5 + (double)i*binStepNT;
+		
+		TH3F *htmp = new TH3F("htmp",
+			Form(";%s;%s;%s;Entries",xaxis->GetTitle(),yaxis->GetTitle(),h->GetZaxis()->GetTitle()),
+			NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT); 
+		for (int k=1; k<=zaxis->GetNbins();k++)	{ 
+		for (int j=1; j<=yaxis->GetNbins();j++)	{ 
+		for (int i=1; i<=xaxis->GetNbins();i++)	{
+			htmp->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),zaxis->GetBinCenter(k),h->GetBinContent(i,j,k)); 
+			//if (i==4 && j==64 && k==8) cout << "bin had " << h->GetBinContent(i,j,k) << " now has " << htmp->GetBinContent(i,j,k) << endl;
+		}	}	}
+		
+		TString hname = h->GetName();
+		delete h;
+		h = (TH3F*)htmp->Clone(hname.Data());
 		delete htmp;
 			
 	}

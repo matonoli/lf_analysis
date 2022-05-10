@@ -43,6 +43,8 @@ class MyTrack: public TObject {
 		Bool_t IsITSTPC2011()					const { return (mAliTrack->GetTrackCutFlag()&2);};
 		Bool_t IsTPCOnlyRefit()					const { return (mAliTrack->GetTrackCutFlag()&4);};
 		Bool_t IsGoodV0daughter()				const { return (mAliTrack->GetTrackCutFlag()&16);};
+		Bool_t IsITSTPC2011HybridOff()			const { return (mAliTrack->GetTrackCutFlag()&32);};
+		Bool_t IsITSTPC2011HybridNone()			const { return (mAliTrack->GetTrackCutFlag()&64);};
 		Bool_t HasTOFPID()						const { return mAliTrack->HasTOFPID();};
 		Float_t GetTPCnc()						const { return mAliTrack->GetTPCnc();};
 		UShort_t GetTPCNclsF()					const { return mAliTrack->GetTPCNclsF();};
