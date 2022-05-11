@@ -5,7 +5,7 @@
 #include <TCanvas.h>
 #include <TPad.h>
 #include <TVirtualPad.h>
-#include <TH1D.h>
+#include <TH1F.h>
 #include <TLegend.h>
 #include <TSpline.h>
 
@@ -164,7 +164,7 @@ void MyHandler::DrawCut(Double_t cut, Int_t direction, TVirtualPad* can) {
 	gcut->Draw("same");
 }
 
-void MyHandler::MakeNiceHistogram(TH1D* h, Int_t col) {
+void MyHandler::MakeNiceHistogram(TH1F* h, Int_t col) {
 
 	h->SetLineColor(col);
 	h->SetMarkerStyle(20);
@@ -191,7 +191,7 @@ void MyHandler::MakeNiceLegend(TLegend *leg, Float_t size, Int_t columns)	{
 
 }
 
-void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
+void MyHandler::MakeRatioPlot(TH1F* hn, TH1F* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
 	
 	c->cd();
 
@@ -229,7 +229,7 @@ void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Doub
 		p2->cd();
 	}
 
-	TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
+	TH1F* hr = (TH1F*)hn->Clone(Form("hr_%s",hn->GetName()));
 	hr->SetMinimum(low);
 	hr->SetMaximum(high);
 	hr->GetXaxis()->SetRangeUser(lowx,highx);
@@ -260,7 +260,7 @@ void MyHandler::MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Doub
 
 }
 
-void MyHandler::SafeDivide(TH1D* hn, TH1D* hd, Double_t sF) {
+void MyHandler::SafeDivide(TH1F* hn, TH1F* hd, Double_t sF) {
 
 	// case 1: hd is a subrange of hn
 	// case 2: hn is a subrange of hd
@@ -317,7 +317,7 @@ void MyHandler::SafeDivide(TH1D* hn, TH1D* hd, Double_t sF) {
 
 }
 
-void MyHandler::MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
+void MyHandler::MakeRatioPlotInterp(TH1F* hn, TH1F* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx) {
 	
 	c->cd();
 
@@ -365,7 +365,7 @@ void MyHandler::MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low
     TSpline3* hn_spl 	= new TSpline3(hn, 0, 1, 0);
     TSpline3* hn_splerr = new TSpline3(Form("splerr_%s",hn->GetName()), hn_x, hn_err, hn_nbins, 0, 1, 0);
     
-	TH1D* hr = (TH1D*)hd->Clone(Form("hr_%s",hn->GetName()));
+	TH1F* hr = (TH1F*)hd->Clone(Form("hr_%s",hn->GetName()));
 	hr->SetMinimum(low);
 	hr->SetMaximum(high);
 	hr->GetXaxis()->SetRangeUser(lowx,highx);
@@ -399,7 +399,7 @@ void MyHandler::MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low
 }
 
 
-void MyHandler::MakeZoomPlot(TH1D* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax) {
+void MyHandler::MakeZoomPlot(TH1F* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax) {
 
 	c->cd();
 	TPad* p = new TPad(Form("p_%s",c->GetName()),"",0.13,0.5,0.5,0.89);

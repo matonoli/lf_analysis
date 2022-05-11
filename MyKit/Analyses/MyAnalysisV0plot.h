@@ -11,8 +11,8 @@
 
 class TFile;	// forward declaration
 class TList;
-class TH1D;
-class TH2D;
+class TH1F;
+class TH2F;
 class MyV0;
 class MyEvent;
 class MyTrack;
@@ -48,42 +48,42 @@ class MyAnalysisV0plot: public MyAnalysis {
 
 		// V0 HISTOGRAMS
 		//borrowed
-		TH1D* hEventSpherocityV0M;
-		TH1D* hEventSpherocityNCharged;
-		TH1D* hEventSpherocityV0M01;
-		TH1D* hEventSpherocityNCharged01;
-		TH1D* hNchTrans;
-		TH1D* hRt2;
-		TH2D* hNchvLeadPt2;
-		TH2D* hTrackDPhivNchTrans;
-		TH2D* hV0DPhivNchTrans;
+		TH1F* hEventSpherocityV0M;
+		TH1F* hEventSpherocityNCharged;
+		TH1F* hEventSpherocityV0M01;
+		TH1F* hEventSpherocityNCharged01;
+		TH1F* hNchTrans;
+		TH1F* hRt2;
+		TH2F* hNchvLeadPt2;
+		TH2F* hTrackDPhivNchTrans;
+		TH2F* hV0DPhivNchTrans;
 
-		TH2D* hNchTransRCvMC;
-		TH2D* hLeadPtvNchTrans0;
-		TH2D* hLeadPtvNchTrans;
+		TH2F* hNchTransRCvMC;
+		TH2F* hLeadPtvNchTrans0;
+		TH2F* hLeadPtvNchTrans;
 
-		TH1D* hV0Efficiency[V0consts::NSPECIES];
-		TH1D* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH1F* hV0Efficiency[V0consts::NSPECIES];
+		TH1F* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 
-		TH1D* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
-		TH1D* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hV0PtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
+		TH1F* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		
-		TH2D* hProtonNchTransvPt[V0consts::NREGIONS];
-		TH2D* hPionNchTransvPt[V0consts::NREGIONS];
-		TH2D* hLambdaNchTransvPt[V0consts::NREGIONS];
-		TH2D* hK0sNchTransvPt[V0consts::NREGIONS];
+		TH2F* hProtonNchTransvPt[V0consts::NREGIONS];
+		TH2F* hPionNchTransvPt[V0consts::NREGIONS];
+		TH2F* hLambdaNchTransvPt[V0consts::NREGIONS];
+		TH2F* hK0sNchTransvPt[V0consts::NREGIONS];
 
-		TH1D* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
-		TH1D* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
+		TH1F* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
+		TH1F* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 
 		//owned
-		TH1D* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
-		TH1D* hBtoMRt[V0consts::NREGIONS+1][V0consts::NRTBINS0];
-		TH1D* hV0toNchDR[2][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hBtoM[V0consts::NMULTI][V0consts::NSPHERO];
+		TH1F* hBtoMRt[V0consts::NREGIONS+1][V0consts::NRTBINS0];
+		TH1F* hV0toNchDR[2][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 };
 #endif

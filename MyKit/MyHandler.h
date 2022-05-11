@@ -16,7 +16,7 @@ class TFile;
 class TCanvas;
 class TPad;
 class TVirtualPad;
-class TH1D;
+class TH1F;
 class TLegend;
 class TDirectory;
 class TString;
@@ -102,12 +102,12 @@ class MyHandler: public TObject {
 		
 
 		void DrawCut(Double_t cut, Int_t direction, TVirtualPad* can);
-		void MakeNiceHistogram(TH1D* h, Int_t col);
+		void MakeNiceHistogram(TH1F* h, Int_t col);
 		void MakeNiceLegend(TLegend* leg, Float_t size = 0.07, Int_t columns = 2);
-		void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
-		void SafeDivide(TH1D* hn, TH1D* hd, Double_t sF);
-		void MakeRatioPlotInterp(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
-		void MakeZoomPlot(TH1D* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
+		void MakeRatioPlot(TH1F* hn, TH1F* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
+		void SafeDivide(TH1F* hn, TH1F* hd, Double_t sF);
+		void MakeRatioPlotInterp(TH1F* hn, TH1F* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
+		void MakeZoomPlot(TH1F* h, TCanvas* c, Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
 
 		Double_t DeltaPhi(Double_t phi1, Double_t phi2);
 		

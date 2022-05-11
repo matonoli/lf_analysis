@@ -76,18 +76,18 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 
-	hEventType			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hEventType");
-	hEventMultvSpheroD 	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hEventMultvSpheroD");
-	hEventMultvSpheroMC	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hEventMultvSpheroMC");
-	hNchTrans			= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
-	hRt					= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt");
-	hRt2				= (TH1D*)mHandler->analysis(0)->dirFile()->Get("hRt2");
+	hEventType			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hEventType");
+	hEventMultvSpheroD 	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hEventMultvSpheroD");
+	hEventMultvSpheroMC	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hEventMultvSpheroMC");
+	hNchTrans			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
+	hRt					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hRt");
+	hRt2				= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hRt2");
 	
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
 		hRtV0Yields[iType][iReg][iPtBin]	
-			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hRtV0Yields_%s_%s_%i",TYPE[iType],REGIONS[iReg],iPtBin));
+			= (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hRtV0Yields_%s_%s_%i",TYPE[iType],REGIONS[iReg],iPtBin));
 	} } }
 
 	
@@ -100,7 +100,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
 		hV0PtFit[iSp][iType][iMu][iSph] 
-			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+			= (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
 	} } } }
 
@@ -108,10 +108,10 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		Int_t iType = 2; Int_t iMu = 0; Int_t iSph = 0;
 		hV0Pt[iSp][iType][iMu][iSph] 
-			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+			= (TH1F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		
 		if (hV0Pt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS) 
-			hV0Pt[iSp][iType][iMu][iSph] = (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
+			hV0Pt[iSp][iType][iMu][iSph] = (TH1F*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
 	
 	}	}
 
@@ -121,7 +121,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
 		hV0RtFit[iSp][iType][iReg][iPtBin] 
-			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin));
+			= (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0RtFit_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin));
 	} } } }
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -130,7 +130,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 			
 		hV0PtRtFit[iSp][iType][iReg][iRtBin] 
-			= (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtRtFit_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
+			= (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtRtFit_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iRtBin) );
 
 
 	} } } }		
@@ -158,30 +158,21 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 		if (iMu == 0 && iSph > 0) continue;		
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
-		hV0PtFitCorr[iSp][iType][iMu][iSph]	= (TH1D*)hV0PtFit[iSp][iType][iMu][iSph]->Clone(
+		hV0PtFitCorr[iSp][iType][iMu][iSph]	= (TH1F*)hV0PtFit[iSp][iType][iMu][iSph]->Clone(
 			Form("hV0PtFitCorr_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]) );
 
 		//if (hV0PtFitCorr[iSp][iType][iMu][iSph] && mHandler->IsRebinPt()) {
-		//hV0PtFitCorr[iSp][iType][iMu][iSph] = (TH1D*)hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(),XBINS2); }
+		//hV0PtFitCorr[iSp][iType][iMu][iSph] = (TH1F*)hV0PtFitCorr[iSp][iType][iMu][iSph]->Rebin(NPTBINS2,hV0PtFitCorr[iSp][iType][iMu][iSph]->GetName(),XBINS2); }
 		
 	} } } }
-
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iType = 0; iType < nType; ++iType)			{
-	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
-	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
-
-		hV0RtFitCorr[iSp][iType][iReg][iPtBin] = (TH1D*)hV0RtFit[iSp][iType][iReg][iPtBin]->Clone(
-			Form("hV0RtFitCorr_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iPtBin) );
-	}	}	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 			
-		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin] = (TH1D*)hV0PtRtFit[iSp][iType][iReg][iRtBin]->Clone(
-			Form("hV0PtRtFitCorr_%s_%s_%s_%1.1f-%1.1f",SPECIES[iSp],TYPE[iType],REGIONS[iReg],RTBINS0[iRtBin],RTBINS0[iRtBin+1]) );
+		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin] = (TH1F*)hV0PtRtFit[iSp][iType][iReg][iRtBin]->Clone(
+			Form("hV0PtRtFitCorr_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iRtBin) );
 
 
 	} } } }
@@ -190,11 +181,11 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 	for (int iMu = 0; iMu < NMULTI; ++iMu)		{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 		if (!iMu && iSph) continue;
-		hV0PtFeeddown[iSp][iMu][iSph]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
+		hV0PtFeeddown[iSp][iMu][iSph]	= (TH1F*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
 			Form("hV0PtFeeddown_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		hV0PtFeeddownXi0[iSp][iMu][iSph]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
+		hV0PtFeeddownXi0[iSp][iMu][iSph]	= (TH1F*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
 			Form("hV0PtFeeddownXi0_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		hV0PtFeeddownXiErr[iSp][iMu][iSph]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
+		hV0PtFeeddownXiErr[iSp][iMu][iSph]	= (TH1F*)hV0PtFitCorr[iSp][0][iMu][0]->Clone(
 			Form("hV0PtFeeddownXiErr_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 	}	}	}
 
@@ -202,19 +193,19 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 		for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
 			int iMu = 0;
 			
-			hClosureTestFDvSec[iSp] = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryXi_%s",SPECIES[iSp]))->Clone(Form("hClosureTestFDvSec_%s",SPECIES[iSp]));
-			hClosureTestFDvSecPDG[iSp] = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp]))->Clone(Form("hClosureTestFDvSecPDG_%s",SPECIES[iSp]));
+			hClosureTestFDvSec[iSp] = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryXi_%s",SPECIES[iSp]))->Clone(Form("hClosureTestFDvSec_%s",SPECIES[iSp]));
+			hClosureTestFDvSecPDG[iSp] = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp]))->Clone(Form("hClosureTestFDvSecPDG_%s",SPECIES[iSp]));
 
-			hClosureTestPDG[iSp] = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitPrimaryPDG_%s",SPECIES[iSp]))->Clone(Form("hClosureTestPDG_%s",SPECIES[iSp]));
-			hClosureTestPDG[iSp]->Add((TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp])));
+			hClosureTestPDG[iSp] = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitPrimaryPDG_%s",SPECIES[iSp]))->Clone(Form("hClosureTestPDG_%s",SPECIES[iSp]));
+			hClosureTestPDG[iSp]->Add((TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp])));
 			cout << "AWBEALWKEBAWLEBAL " <<  hClosureTestPDG[iSp] << endl;
 		}	
 
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 			int iMu = 0;
 			
-			hClosureTestEffi[iSp] = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitPrimary_%s",SPECIES[iSp]))->Clone(Form("hClosureTestEffi_%s",SPECIES[iSp]));
-			hClosureTestEffiPDG[iSp] = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitPrimaryPDG_%s",SPECIES[iSp]))->Clone(Form("hClosureTestEffiPDG_%s",SPECIES[iSp]));
+			hClosureTestEffi[iSp] = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitPrimary_%s",SPECIES[iSp]))->Clone(Form("hClosureTestEffi_%s",SPECIES[iSp]));
+			hClosureTestEffiPDG[iSp] = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitPrimaryPDG_%s",SPECIES[iSp]))->Clone(Form("hClosureTestEffiPDG_%s",SPECIES[iSp]));
 		
 		}	
 	}
@@ -230,7 +221,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	
 	if (MAKE_EXCLUSIVE) MakeExclusiveS0Bins(); 
 	NormaliseSpectra();
-	CorrectForFeeddown();
+	//CorrectForFeeddown();
 
 	//LoadEfficiency();
 	DoEfficiencyFromFile();
@@ -250,9 +241,9 @@ Int_t MyAnalysisV0correct::Finish() {
 	//draw shit, move to func later
 	{
 	//fast det
-		TH2D* hV0BaselineIMvPt[NSPECIES][NTYPE];
-		TH2D* hV0FastSignalIMvPt[NSPECIES][NTYPE];
-		TH2D* hV0CutIMvPt[NSPECIES][NTYPE][25];
+		TH2F* hV0BaselineIMvPt[NSPECIES][NTYPE];
+		TH2F* hV0FastSignalIMvPt[NSPECIES][NTYPE];
+		TH2F* hV0CutIMvPt[NSPECIES][NTYPE][25];
 		TDirectoryFile* dirFile1 = new TDirectoryFile("mcFile2","mcFile2","",mHandler->file());
 	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
 		cout << "Doing efficiency from a TDirectoryFile" << endl;
@@ -265,86 +256,86 @@ Int_t MyAnalysisV0correct::Finish() {
 			hashList->RemoveFirst();
 		}
 	}
-		int iSp = 1; TH1D* hd; TH1D* hmc;
-		hV0FastSignalIMvPt[iSp][0]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0FastSignalIMvPt_K0s_D");
-		hV0BaselineIMvPt[iSp][0]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0BaselineIMvPt_K0s_D");
+		int iSp = 1; TH1F* hd; TH1F* hmc;
+		hV0FastSignalIMvPt[iSp][0]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0FastSignalIMvPt_K0s_D");
+		hV0BaselineIMvPt[iSp][0]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0BaselineIMvPt_K0s_D");
 		hV0FastSignalIMvPt[iSp][0]->Divide(hV0BaselineIMvPt[iSp][0]);
-		hV0FastSignalIMvPt[iSp][1]	= (TH2D*)dirFile1->Get("hV0FastSignalIMvPt_K0s_D");
-		hV0BaselineIMvPt[iSp][1]	= (TH2D*)dirFile1->Get("hV0BaselineIMvPt_K0s_D");
+		hV0FastSignalIMvPt[iSp][1]	= (TH2F*)dirFile1->Get("hV0FastSignalIMvPt_K0s_D");
+		hV0BaselineIMvPt[iSp][1]	= (TH2F*)dirFile1->Get("hV0BaselineIMvPt_K0s_D");
 		hV0FastSignalIMvPt[iSp][1]->Divide(hV0BaselineIMvPt[iSp][1]);
 		TCanvas* cn1 = new TCanvas("cn1","",1200,800); cn1->Divide(2,2,0.00005,0.00005);
 		cn1->cd(1); hV0FastSignalIMvPt[iSp][0]->SetStats(0); hV0FastSignalIMvPt[iSp][0]->Draw("colz");
 		cn1->cd(2); hV0FastSignalIMvPt[iSp][1]->SetStats(0); hV0FastSignalIMvPt[iSp][1]->Draw("colz");
-		hd 	= (TH1D*)hV0FastSignalIMvPt[iSp][0]->ProjectionX("hd",13,13);
-		hmc = (TH1D*)hV0FastSignalIMvPt[iSp][1]->ProjectionX("hmc",13,13);
+		hd 	= (TH1F*)hV0FastSignalIMvPt[iSp][0]->ProjectionX("hd",13,13);
+		hmc = (TH1F*)hV0FastSignalIMvPt[iSp][1]->ProjectionX("hmc",13,13);
 		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
 		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
 		cn1->cd(3); hd->Draw();
 		cn1->cd(4); hmc->Draw();
 		cn1->Draw(); cn1->SaveAs("plots/pileup.png");
 
-		hV0CutIMvPt[iSp][0][19]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_19");
-		hV0CutIMvPt[iSp][0][15]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][0][19]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_19");
+		hV0CutIMvPt[iSp][0][15]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_15");
 		hV0CutIMvPt[iSp][0][19]->Divide(hV0CutIMvPt[iSp][0][15]);
-		hV0CutIMvPt[iSp][1][19]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_19");
-		hV0CutIMvPt[iSp][1][15]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][1][19]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_19");
+		hV0CutIMvPt[iSp][1][15]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_15");
 		hV0CutIMvPt[iSp][1][19]->Divide(hV0CutIMvPt[iSp][1][15]);
 		TCanvas* cn2 = new TCanvas("cn2","",1200,800); cn2->Divide(2,2,0.00005,0.00005);
 		cn2->cd(1); hV0CutIMvPt[iSp][0][19]->SetStats(0); hV0CutIMvPt[iSp][0][19]->Draw("colz");
 		cn2->cd(2); hV0CutIMvPt[iSp][1][19]->SetStats(0); hV0CutIMvPt[iSp][1][19]->Draw("colz");
-		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][19]->ProjectionX("hd",13,13);
-		hmc = (TH1D*)hV0CutIMvPt[iSp][1][19]->ProjectionX("hmc",13,13);
+		hd 	= (TH1F*)hV0CutIMvPt[iSp][0][19]->ProjectionX("hd",13,13);
+		hmc = (TH1F*)hV0CutIMvPt[iSp][1][19]->ProjectionX("hmc",13,13);
 		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
 		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
 		cn2->cd(3); hd->Draw();
 		cn2->cd(4); hmc->Draw();
 		cn2->Draw(); cn2->SaveAs("plots/nsigma.png");
 
-		hV0CutIMvPt[iSp][0][15]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_15");
-		hV0CutIMvPt[iSp][0][13]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][0][15]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][0][13]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_13");
 		hV0CutIMvPt[iSp][0][15]->Divide(hV0CutIMvPt[iSp][0][13]);
-		hV0CutIMvPt[iSp][1][15]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_15");
-		hV0CutIMvPt[iSp][1][13]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][1][15]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_15");
+		hV0CutIMvPt[iSp][1][13]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_13");
 		hV0CutIMvPt[iSp][1][15]->Divide(hV0CutIMvPt[iSp][1][13]);
 		TCanvas* cn5 = new TCanvas("cn5","",1200,800); cn5->Divide(2,2,0.00005,0.00005);
 		cn5->cd(1); hV0CutIMvPt[iSp][0][15]->SetStats(0); hV0CutIMvPt[iSp][0][15]->Draw("colz");
 		cn5->cd(2); hV0CutIMvPt[iSp][1][15]->SetStats(0); hV0CutIMvPt[iSp][1][15]->Draw("colz");
-		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][15]->ProjectionX("hd",13,13);
-		hmc = (TH1D*)hV0CutIMvPt[iSp][1][15]->ProjectionX("hmc",13,13);
+		hd 	= (TH1F*)hV0CutIMvPt[iSp][0][15]->ProjectionX("hd",13,13);
+		hmc = (TH1F*)hV0CutIMvPt[iSp][1][15]->ProjectionX("hmc",13,13);
 		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
 		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
 		cn5->cd(3); hd->Draw();
 		cn5->cd(4); hmc->Draw();
 		cn5->Draw(); cn5->SaveAs("plots/compmass.png");
 
-		hV0CutIMvPt[iSp][0][13]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_13");
-		hV0CutIMvPt[iSp][0][12]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_12");
+		hV0CutIMvPt[iSp][0][13]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][0][12]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_12");
 		hV0CutIMvPt[iSp][0][13]->Divide(hV0CutIMvPt[iSp][0][12]);
-		hV0CutIMvPt[iSp][1][13]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_13");
-		hV0CutIMvPt[iSp][1][12]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_12");
+		hV0CutIMvPt[iSp][1][13]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_13");
+		hV0CutIMvPt[iSp][1][12]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_12");
 		hV0CutIMvPt[iSp][1][13]->Divide(hV0CutIMvPt[iSp][1][12]);
 		TCanvas* cn3 = new TCanvas("cn3","",1200,800); cn3->Divide(2,2,0.00005,0.00005);
 		cn3->cd(1); hV0CutIMvPt[iSp][0][13]->SetStats(0); hV0CutIMvPt[iSp][0][13]->Draw("colz");
 		cn3->cd(2); hV0CutIMvPt[iSp][1][13]->SetStats(0); hV0CutIMvPt[iSp][1][13]->Draw("colz");
-		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][13]->ProjectionX("hd",13,13);
-		hmc = (TH1D*)hV0CutIMvPt[iSp][1][13]->ProjectionX("hmc",13,13);
+		hd 	= (TH1F*)hV0CutIMvPt[iSp][0][13]->ProjectionX("hd",13,13);
+		hmc = (TH1F*)hV0CutIMvPt[iSp][1][13]->ProjectionX("hmc",13,13);
 		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
 		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
 		cn3->cd(3); hd->Draw();
 		cn3->cd(4); hmc->Draw();
 		cn3->Draw(); cn3->SaveAs("plots/lifetime.png");
 
-		hV0CutIMvPt[iSp][0][9]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_9");
-		hV0CutIMvPt[iSp][0][8]	= (TH2D*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_8");
+		hV0CutIMvPt[iSp][0][9]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_9");
+		hV0CutIMvPt[iSp][0][8]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hV0CutIMvPt_K0s_D_8");
 		hV0CutIMvPt[iSp][0][9]->Divide(hV0CutIMvPt[iSp][0][8]);
-		hV0CutIMvPt[iSp][1][9]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_9");
-		hV0CutIMvPt[iSp][1][8]	= (TH2D*)dirFile1->Get("hV0CutIMvPt_K0s_D_8");
+		hV0CutIMvPt[iSp][1][9]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_9");
+		hV0CutIMvPt[iSp][1][8]	= (TH2F*)dirFile1->Get("hV0CutIMvPt_K0s_D_8");
 		hV0CutIMvPt[iSp][1][9]->Divide(hV0CutIMvPt[iSp][1][8]);
 		TCanvas* cn4 = new TCanvas("cn4","",1200,800); cn4->Divide(2,2,0.00005,0.00005);
 		cn4->cd(1); hV0CutIMvPt[iSp][0][9]->SetStats(0); hV0CutIMvPt[iSp][0][9]->Draw("colz");
 		cn4->cd(2); hV0CutIMvPt[iSp][1][9]->SetStats(0); hV0CutIMvPt[iSp][1][9]->Draw("colz");
-		hd 	= (TH1D*)hV0CutIMvPt[iSp][0][9]->ProjectionX("hd",13,13);
-		hmc = (TH1D*)hV0CutIMvPt[iSp][1][9]->ProjectionX("hmc",13,13);
+		hd 	= (TH1F*)hV0CutIMvPt[iSp][0][9]->ProjectionX("hd",13,13);
+		hmc = (TH1F*)hV0CutIMvPt[iSp][1][9]->ProjectionX("hmc",13,13);
 		mHandler->MakeNiceHistogram(hd,kRed); mHandler->MakeNiceHistogram(hmc,kRed);
 		hd->GetYaxis()->SetRangeUser(0.,1.2); hmc->GetYaxis()->SetRangeUser(0.,1.2);
 		cn4->cd(3); hd->Draw();
@@ -390,7 +381,7 @@ void MyAnalysisV0correct::MakeExclusiveS0Bins() {
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	enum { sphMB, Jetty20, Iso20, Jetty10, Iso10, Jetty5, Iso5, Jetty1, Iso1};
 
-	TH2D* hM;
+	TH2F* hM;
 
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iMu = 1; iMu < NMULTI; ++iMu)		{
@@ -436,10 +427,10 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 	TCutG* cutg;
 	TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
 	for (int iSp = 2; iSp < NSPECIES; ++iSp)	{
-		hV0FeeddownMatrix[iSp]		= (TH3D*)dirFile1->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
-		hV0FeeddownMotherPt[iSp]	= (TH1D*)dirFile1->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
-		hV0FeeddownMatrixXi0[iSp]	= (TH3D*)dirFile1->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]) );
-		hV0FeeddownMotherPtXi0[iSp]	= (TH1D*)dirFile1->Get(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]) );
+		hV0FeeddownMatrix[iSp]		= (TH3F*)dirFile1->Get(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]) );
+		hV0FeeddownMotherPt[iSp]	= (TH1F*)dirFile1->Get(Form("hV0FeeddownMotherPt_%s",SPECIES[iSp]) );
+		hV0FeeddownMatrixXi0[iSp]	= (TH3F*)dirFile1->Get(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]) );
+		hV0FeeddownMotherPtXi0[iSp]	= (TH1F*)dirFile1->Get(Form("hV0FeeddownMotherPtXi0_%s",SPECIES[iSp]) );
 		if (!hV0FeeddownMatrix[iSp]) {
 			printf("Feed-down matrix not found, no correction performed.\n");
 			return;
@@ -449,8 +440,8 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 
 			cout << "Rebinning FD matrix to right dimensions." << endl;
 			
-			TH3D *htmp	= new TH3D(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; mass p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
-			TH3D *htmp2	= new TH3D(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; mass p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
+			TH3F *htmp	= new TH3F(Form("hV0FeeddownMatrix_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; mass p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
+			TH3F *htmp2	= new TH3F(Form("hV0FeeddownMatrixXi0_%s",SPECIES[iSp]),";primary grandmother p_{T}; decay V0 p_{T}; mass p_{T}", NXIPTBINS, XIXBINS, NPTBINS, XBINS, NBINS_FDMASS, XBINS_FDMASS);
 			TAxis *xaxis = hV0FeeddownMatrix[iSp]->GetXaxis(); 
 			TAxis *yaxis = hV0FeeddownMatrix[iSp]->GetYaxis();
 			TAxis *zaxis = hV0FeeddownMatrix[iSp]->GetZaxis(); 
@@ -461,8 +452,8 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 				htmp2->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),zaxis->GetBinCenter(k),hV0FeeddownMatrixXi0[iSp]->GetBinContent(i,j,k)); 
 			}	}	}
 			
-			hV0FeeddownMatrix[iSp] = (TH3D*)htmp->Clone(hV0FeeddownMatrix[iSp]->GetName());
-			hV0FeeddownMatrixXi0[iSp] = (TH3D*)htmp2->Clone(hV0FeeddownMatrixXi0[iSp]->GetName());
+			hV0FeeddownMatrix[iSp] = (TH3F*)htmp->Clone(hV0FeeddownMatrix[iSp]->GetName());
+			hV0FeeddownMatrixXi0[iSp] = (TH3F*)htmp2->Clone(hV0FeeddownMatrixXi0[iSp]->GetName());
 			delete htmp;
 			delete htmp2;
 			
@@ -513,7 +504,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hV0FeeddownMatrixXi0[iSp]->Write();
 	}
 
-	TH2D* hFMatrix = (TH2D*)hV0FeeddownMatrix[2]->Project3D("xy")->Clone("hFMatrix");
+	TH2F* hFMatrix = (TH2F*)hV0FeeddownMatrix[2]->Project3D("xy")->Clone("hFMatrix");
 	/*for (int iMotherBin = 1; iMotherBin < hV0FeeddownMatrix[2]->GetNbinsX()+1; ++iMotherBin)	{
 		for (int iPtBin = 1; iPtBin < hV0FeeddownMatrix[2]->GetNbinsY()+1; ++iPtBin)	{
 				
@@ -554,35 +545,35 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 
 		for (int iS = 0; iS < NSPHERO; iS++) {
 			if (NMULTI<2) continue;
-			hXiPt[2][1][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
-			hXiPt[3][1][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
+			hXiPt[2][1][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
+			hXiPt[3][1][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
 		}
 
 		mFileXi = new TFile("../official/xi_results_So_CL1_aug_6.root","READ");
 		for (int iS = 0; iS < NSPHERO; iS++) {
 			if (NMULTI<3) continue;
-			hXiPt[2][2][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
-			hXiPt[3][2][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
+			hXiPt[2][2][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
+			hXiPt[3][2][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
 		}
 
 		mFileXi = new TFile("../official/xi_results_So_V0M_top1_aug_6.root","READ");
 		for (int iS = 0; iS < NSPHERO; iS++) {
 			if (NMULTI<4) continue;
-			hXiPt[2][3][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
-			hXiPt[3][3][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
+			hXiPt[2][3][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
+			hXiPt[3][3][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
 		}
 
 		mFileXi = new TFile("../official/xi_results_So_CL1_top1_aug_6.root","READ");
 		for (int iS = 0; iS < NSPHERO; iS++) {
 			if (NMULTI<5) continue;
-			hXiPt[2][4][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
-			hXiPt[3][4][iS] = (TH1D*)mFileXi->Get(xiNames[iS]);
+			hXiPt[2][4][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
+			hXiPt[3][4][iS] = (TH1F*)mFileXi->Get(xiNames[iS]);
 		}
 
 
 		TFile* fileXIMB = new TFile("../official/xi_MB_spectra_sep_9_2019_sum_rebin.root","READ");
-		hXiPt[2][0][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
-		hXiPt[3][0][0] = (TH1D*)fileXIMB->Get("hXiSumSpectrum_MB");
+		hXiPt[2][0][0] = (TH1F*)fileXIMB->Get("hXiSumSpectrum_MB");
+		hXiPt[3][0][0] = (TH1F*)fileXIMB->Get("hXiSumSpectrum_MB");
 
 		mDirFile->cd();
 	}
@@ -779,7 +770,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		hV0PtFeeddownXi0[iSp][iMu][iSph]->Scale(1,"width");
 		hV0PtFeeddownXiErr[iSp][iMu][iSph]->Scale(1,"width");
 
-		TH1D* htmp = (TH1D*)hV0PtFitCorr[iSp][0][iMu][iSph]->Clone("htmp");
+		TH1F* htmp = (TH1F*)hV0PtFitCorr[iSp][0][iMu][iSph]->Clone("htmp");
 		
 		//for (int iSph = 0; iSph < NSPHERO; iSph++)  {
 		//	if (iMu==0 && iSph>0) continue;
@@ -788,10 +779,10 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 		//}
 
 		if (!iMu && mHandler->GetFlagMC() && !iSph) {
-			//hClosureTestFDvSec[iSp] 	= (TH1D*)hV0PtFeeddown[iSp][iMu]->Clone(Form("hClosureTestFDvSec_%s",SPECIES[iSp]));
-			//hClosureTestFDvSecPDG[iSp] 	= (TH1D*)hV0PtFeeddown[iSp][iMu]->Clone(Form("hClosureTestFDvSecPDG_%s",SPECIES[iSp]));
-			//TH1D* htmpFD = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondary_%s",SPECIES[iSp]));
-			//TH1D* htmpFDPDG = (TH1D*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp]));
+			//hClosureTestFDvSec[iSp] 	= (TH1F*)hV0PtFeeddown[iSp][iMu]->Clone(Form("hClosureTestFDvSec_%s",SPECIES[iSp]));
+			//hClosureTestFDvSecPDG[iSp] 	= (TH1F*)hV0PtFeeddown[iSp][iMu]->Clone(Form("hClosureTestFDvSecPDG_%s",SPECIES[iSp]));
+			//TH1F* htmpFD = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondary_%s",SPECIES[iSp]));
+			//TH1F* htmpFDPDG = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFitSecondaryPDG_%s",SPECIES[iSp]));
 			hClosureTestFDvSec[iSp]->Divide(hV0PtFeeddown[iSp][iMu][iSph]);
 			hClosureTestFDvSec[iSp]->Scale(2.0);
 			hClosureTestFDvSecPDG[iSp]->Divide(hV0PtFeeddownXi0[iSp][iMu][iSph]);
@@ -800,7 +791,7 @@ void MyAnalysisV0correct::CorrectForFeeddown() {
 			
 		}
 
-		hV0PtFeeddownContr[iSp][iMu][iSph] = (TH1D*)hV0PtFeeddownXi0[iSp][iMu][iSph]->Clone(Form("hV0PtFeeddownContr_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		hV0PtFeeddownContr[iSp][iMu][iSph] = (TH1F*)hV0PtFeeddownXi0[iSp][iMu][iSph]->Clone(Form("hV0PtFeeddownContr_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 		//hV0PtFeeddownContr[iSp][iMu]->Scale(1./1.6);
 
 		hV0PtFeeddown[iSp][iMu][iSph]->Divide(htmp);
@@ -975,90 +966,34 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 	cout << hV0PtFitCorr[1][0][0][0]->GetBinContent(30) << endl;
 
 
-	// normalise rt spectra
-	Int_t increm = 2;
-	Double_t rt_den = hNchTrans->GetMean();
-	hRtRebin		= (TH1D*)hRt->Rebin(NRTBINS,"hRtRebin",RTBINS);
-	hRt2Rebin		= (TH1D*)hV0RtFitCorr[1][0][0][0]->Clone("hRt2Rebin");
-	Int_t nbins = hRt2Rebin->GetNbinsX();
-	Double_t rtbins[nbins+1];
+	Double_t ntedges[NRTBINS0+1];
+	for (int i=0; i<NRTBINS0+1; i++) ntedges[i] = RTBINS0[i]*RT_DEN;
+	Int_t binedges[NRTBINS0+1];
+	for (int i=0; i<NRTBINS0+1; i++) binedges[i] = hNchTrans->FindBin(ntedges[i]);
+	for (int i=0; i<NRTBINS0+1; i++) cout << ntedges[i] << " -- " << binedges[i] << endl;
 
-	cout << "nbins is " << nbins << endl;
-
-	for (int iB = 0; iB < nbins; ++iB)	{
-		Int_t binA = hNchTrans->FindBin(hRt2Rebin->GetBinLowEdge(iB));
-		Int_t binB = hNchTrans->FindBin(hRt2Rebin->GetBinLowEdge(iB+1));
-		//cout << "bin a " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB) << endl;
-		//cout << "bin b " << binA << " w center " << hRt2Rebin->GetBinLowEdge(iB+1) << endl;
-		Double_t integr = 0;
-		for (int i = binA; i < binB; ++i)
-		{
-			//cout << "in bin " << i << " integrating " << integr << " + " << hNchTrans->GetBinContent(i) << endl;
-			integr += hNchTrans->GetBinContent(i);
-		}
-		Double_t error;
-		Double_t content 	= hNchTrans->IntegralAndError(binA,binB-1,error,"");
-		//cout << "integral is " << integr << " vs " << content << endl;
-		hRt2Rebin->SetBinContent(iB,content);
-		hRt2Rebin->SetBinError(iB,error);
-	}
-	//hNchTransRebin	= (TH1D*)hNchTrans->Rebin(increm);
-
-	//im dumb
-	cout << "a " << hV0RtFitCorr[1][0][0][0]->Integral(hV0RtFitCorr[1][0][0][0]->FindBin(30.),hV0RtFitCorr[1][0][0][0]->FindBin(30.)) << endl;
-	cout << "b " << hRt2Rebin->Integral(hRt2Rebin->FindBin(30.),hRt2Rebin->FindBin(30.)) << endl;
-	cout << "c " << hRtV0Yields[0][0][0]->GetBinContent(1+1) << endl;
-	cout << "d " << hRt2Rebin->Integral(1,-1) << endl;
-
-	for (int iType = 0; iType < nType; ++iType)			{
-	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
-	for (int iPtBin = 0; iPtBin < NRTPTBINS; ++iPtBin)	{
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
-		
-		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->Divide(hRt2Rebin);
-		// now we have #v0s/per event(rtbin)
-
-		//cout << "rt " << hRtV0Yields << endl;
-		Double_t meanV0 = hRtV0Yields[iType][iReg][iPtBin]->GetBinContent(1+iSp);
-		meanV0 = meanV0/hRt2Rebin->Integral(1,-1);
-		//cout << "2 meanV0 " << meanV0 << endl;
-		if (meanV0>0) hV0RtFitCorr[iSp][iType][iReg][iPtBin]->Scale(1./meanV0);
-
-		for (int iBin = 0; iBin < nbins+1; ++iBin)	{
-		rtbins[iBin] = (double)hV0RtFitCorr[iSp][iType][iReg][iPtBin]->GetBinLowEdge(iBin+1)/rt_den;	}
-
-		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->SetBins(nbins,rtbins);
-		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->GetXaxis()->SetRangeUser(rtbins[0],5.1);
-		hV0RtFitCorr[iSp][iType][iReg][iPtBin]->GetYaxis()->SetRangeUser(0.,10.1);
-
-	}	}	}	}
-
-
-
-
-
-	// normalise pt spectra (rt) created from trees
+	// normalise pt spectra (rt)
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
 	for (int iType = 0; iType < nType; ++iType)			{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin)	{
 
 		Double_t NormEv = 0;
+		NormEv = hNchTrans->Integral(binedges[iRtBin],binedges[iRtBin+1]);
 		//cout << "bla " << RTBINS0[iRtBin] << " " << RTBINS0[iRtBin]*rt_den <<
 		//" bla " << RTBINS0[iRtBin+1] << " " << RTBINS0[iRtBin+1]*rt_den << endl;
-		for (int ib = 1; ib < hNchTrans->GetNbinsX(); ++ib)
-		{
+		//for (int ib = 1; ib < hNchTrans->GetNbinsX(); ++ib)
+		//{
 			//cout << "aaaa " << 
-			if (hNchTrans->GetBinCenter(ib) < RTBINS0[iRtBin]*rt_den-1E-05) continue;
-			if (hNchTrans->GetBinCenter(ib) > RTBINS0[iRtBin+1]*rt_den) continue;
-			NormEv += hNchTrans->GetBinContent(ib);
+		//	if (hNchTrans->GetBinCenter(ib) < RTBINS0[iRtBin]*rt_den-1E-05) continue;
+		//	if (hNchTrans->GetBinCenter(ib) > RTBINS0[iRtBin+1]*rt_den) continue;
+		//	NormEv += hNchTrans->GetBinContent(ib);
 			//cout << "ib " << ib << " bins " << hNchTrans->GetBinCenter(ib) << " sum " << sum << endl;
-		}
+		//}
 
-		if (NormEv == 0) NormEv = 1;
-		else { 
-			//NormEv += NormEv * hEventType->GetBinContent(22) * 1./(hEventType->GetBinContent(23) + hEventType->GetBinContent(24));
-		}
+		//if (NormEv>0) {
+		//	NormEv += NormEv * hEventType->GetBinContent(4) * 1./(hEventType->GetBinContent(5) + hEventType->GetBinContent(6));
+		//}
 
 		printf("Normalising histogram %s by event count %f \n", hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->GetName(), NormEv);
 		hV0PtRtFitCorr[iSp][iType][iReg][iRtBin]->Scale(1./NormEv);
@@ -1108,7 +1043,7 @@ void MyAnalysisV0correct::LoadEfficiency() {
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	
-		hV0Efficiency[iSp] = (TH1D*)dirFile1->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
+		hV0Efficiency[iSp] = (TH1F*)dirFile1->Get(Form("hV0Efficiency_%s",SPECIES[iSp]));
 		hV0Efficiency[iSp]->Write();
 	}
 
@@ -1163,8 +1098,8 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		
 		// minimum bias histos
-		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS); //NPTBINS2, XBINS2);
-		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
+		hV0Efficiency[iSp] = new TH1F(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS); //NPTBINS2, XBINS2);
+		TH1F* hDen = (TH1F*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
 		//TString masscut = (iSp == 1 ) ? Form("MassDT < 0.03 && MassDT > -0.03") : Form("MassDT < 0.0075 && MassDT > -0.0075");
 		TCut masscutL; TCut masscutR;
@@ -1255,16 +1190,16 @@ void MyAnalysisV0correct::CorrectSpectra() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		
 		hV0PtNoTrigger[iSp]
-			= (TH1D*)dirFile1->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
+			= (TH1F*)dirFile1->Get(Form("hV0PtNoTrigger_%s",SPECIES[iSp]));
 		
 		if (hV0PtNoTrigger[iSp]->GetNbinsX() != NPTBINS)	{
-			hV0PtNoTrigger[iSp] = (TH1D*)hV0PtNoTrigger[iSp]->Rebin(NPTBINS,hV0PtNoTrigger[iSp]->GetName(),XBINS);
+			hV0PtNoTrigger[iSp] = (TH1F*)hV0PtNoTrigger[iSp]->Rebin(NPTBINS,hV0PtNoTrigger[iSp]->GetName(),XBINS);
 		}
 
 		hV0PtSignalLoss[iSp] 
-			= (TH1D*)dirFile1->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[2],MULTI[0],SPHERO[0]));
+			= (TH1F*)dirFile1->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[2],MULTI[0],SPHERO[0]));
 		if (hV0PtSignalLoss[iSp]->GetNbinsX() != NPTBINS) 
-			hV0PtSignalLoss[iSp] = (TH1D*)hV0PtSignalLoss[iSp]->Rebin(NPTBINS,hV0PtSignalLoss[iSp]->GetName(),XBINS);
+			hV0PtSignalLoss[iSp] = (TH1F*)hV0PtSignalLoss[iSp]->Rebin(NPTBINS,hV0PtSignalLoss[iSp]->GetName(),XBINS);
 	
 		hV0PtSignalLoss[iSp]->Divide(hV0PtNoTrigger[iSp]);
 	}
@@ -1359,7 +1294,7 @@ void MyAnalysisV0correct::StudyCuts() {
 
 	for (int iCut = 0; iCut < 25; ++iCut)	{
 		hV0PtCut[iCut]
-			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtCut_%i",iCut) );
+			= (TH1F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtCut_%i",iCut) );
 		
 	}
 
@@ -1369,9 +1304,9 @@ void MyAnalysisV0correct::StudyCuts() {
 		} else {
 		TDirectoryFile* dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
 		for (int iCut = 0; iCut < 25; ++iCut)	{
-			TH1D* htmp
-				= (TH1D*)dirFile1->Get(Form("hV0PtCut_%i",iCut) );
-			hV0PtCutMC[iCut] = (TH1D*)htmp->Clone(Form("hV0PtCutMC_%i",iCut));
+			TH1F* htmp
+				= (TH1F*)dirFile1->Get(Form("hV0PtCut_%i",iCut) );
+			hV0PtCutMC[iCut] = (TH1F*)htmp->Clone(Form("hV0PtCutMC_%i",iCut));
 			
 			}
 	}
@@ -1436,7 +1371,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
 
-		TH1D* hDen = (TH1D*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
+		TH1F* hDen = (TH1F*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1./NormEv);
 		hDen->Scale(1./NormEta);
 		hDen->Scale(1.,"width");
@@ -1447,7 +1382,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 		hClosureTestEffiPDG[iSp]->Divide(hDen);
 
 		if (iSp>1) {
-			TH1D* hcltmp = (TH1D*)hClosureTestPDG[iSp]->Clone("hcltmp");
+			TH1F* hcltmp = (TH1F*)hClosureTestPDG[iSp]->Clone("hcltmp");
 		hcltmp->Multiply(hV0PtFeeddown[iSp][0][0]);
 		hClosureTestPDG[iSp]->Add(hV0PtFeeddownContr[iSp][0][0],-1.);
 		delete hcltmp;
@@ -1455,7 +1390,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 		hClosureTestPDG[iSp]->Divide(hDen);
 		}
 
-		hClosureTestCorr[iSp]	= (TH1D*)hV0PtFitCorr[iSp][0][iMu][iSph]->Clone(Form("hClosureTestCorr_%s",SPECIES[iSp]));
+		hClosureTestCorr[iSp]	= (TH1F*)hV0PtFitCorr[iSp][0][iMu][iSph]->Clone(Form("hClosureTestCorr_%s",SPECIES[iSp]));
 		hDen->Scale(MBtrigEff);
 		funcRapCorrection->SetParameters(0.5*NormEta,MASSES[iSp]);
 		hDen->Divide(funcRapCorrection,1.);
@@ -1510,16 +1445,16 @@ void MyAnalysisV0correct::DoXCheckV0M() {
 	hOffiL->Scale(5.); hOffiL->Add(hOffiL15,4.); hOffiL->Add(hOffiL01,1.);
 	hOffiL->Scale(1./10);
 
-	TH1D* hLLbarMB = (TH1D*)hV0PtFitCorr[3][0][0][0]->Clone("hLLbarMB");
+	TH1F* hLLbarMB = (TH1F*)hV0PtFitCorr[3][0][0][0]->Clone("hLLbarMB");
 	hLLbarMB->Add(hV0PtFitCorr[2][0][0][0]);
 	hLLbarMB->Scale(1./0.7448);
 	//hLLbarMB->Scale(2.);
-	TH1D* hLLbarV0M = (TH1D*)hV0PtFitCorr[3][0][1][0]->Clone("hLLbarV0M"); 
+	TH1F* hLLbarV0M = (TH1F*)hV0PtFitCorr[3][0][1][0]->Clone("hLLbarV0M"); 
 	hLLbarV0M->Add(hV0PtFitCorr[2][0][1][0]);
 	//hLLbarV0M->Scale(2.);
 	//hLLbarV0M->Scale(1./0.7448);
 
-	TH1D* hLLbarV0M01 = (TH1D*)hV0PtFitCorr[3][0][3][0]->Clone("hLLbarV0M01"); 
+	TH1F* hLLbarV0M01 = (TH1F*)hV0PtFitCorr[3][0][3][0]->Clone("hLLbarV0M01"); 
 	hLLbarV0M01->Add(hV0PtFitCorr[2][0][3][0]);
 
 	TF1* funcRapCorrectionL = new TF1("funcRapCorrectionL",rap_correction,XBINS[0],XBINS[NPTBINS],2);
@@ -1540,9 +1475,9 @@ cout << "blaaadawdaaa " << endl;
 	mHandler->MakeNiceHistogram(hLLbarMB,kBlack);
 	mHandler->MakeNiceHistogram(hLLbarV0M,kRed);
 	mHandler->MakeNiceHistogram(hLLbarV0M01,kBlue);
-	mHandler->MakeNiceHistogram((TH1D*)hOffiLMB,kGray+3);
-	mHandler->MakeNiceHistogram((TH1D*)hOffiL,kRed+1);
-	mHandler->MakeNiceHistogram((TH1D*)hOffiL01,kBlue+1);
+	mHandler->MakeNiceHistogram((TH1F*)hOffiLMB,kGray+3);
+	mHandler->MakeNiceHistogram((TH1F*)hOffiL,kRed+1);
+	mHandler->MakeNiceHistogram((TH1F*)hOffiL01,kBlue+1);
 	hOffiLMB->SetMarkerStyle(21); hOffiL->SetMarkerStyle(21); hOffiL01->SetMarkerStyle(21);
 
 	
@@ -1577,9 +1512,9 @@ cout << "blaaadawdaaa " << endl;
 
 
 	mDirFile->cd();
-	mHandler->MakeRatioPlot(hLLbarMB,(TH1D*)hOffiLMB,cOffiL,0.75,1.25,0.2,10.);
-	mHandler->MakeRatioPlot(hLLbarV0M,(TH1D*)hOffiL,cOffiL,0.75,1.25,0.2,10.);
-	mHandler->MakeRatioPlot(hLLbarV0M01,(TH1D*)hOffiL01,cOffiL,0.75,1.25,0.2,10.);
+	mHandler->MakeRatioPlot(hLLbarMB,(TH1F*)hOffiLMB,cOffiL,0.75,1.25,0.2,10.);
+	mHandler->MakeRatioPlot(hLLbarV0M,(TH1F*)hOffiL,cOffiL,0.75,1.25,0.2,10.);
+	mHandler->MakeRatioPlot(hLLbarV0M01,(TH1F*)hOffiL01,cOffiL,0.75,1.25,0.2,10.);
 
 	/*mHandler->MakeZoomPlot(hMB,cOffiK0,0.2,1.501,0.599,1.401);
 	hMB->DrawCopy();
@@ -1599,8 +1534,8 @@ cout << "blaaadawdaaa " << endl;
 
 		TCanvas* cXcheck = new TCanvas("cXcheck","",900,900);
 		cXcheck->SetLogy();
-		mHandler->MakeNiceHistogram((TH1D*)hOffiL,kGreen+2);
-		mHandler->MakeNiceHistogram((TH1D*)hOffiLMB,kGreen+2);
+		mHandler->MakeNiceHistogram((TH1F*)hOffiL,kGreen+2);
+		mHandler->MakeNiceHistogram((TH1F*)hOffiLMB,kGreen+2);
 		hOffiLMB->SetMarkerStyle(21);
 		mHandler->MakeNiceHistogram(hLLbarV0M,kRed);
 		mHandler->MakeNiceHistogram(hLLbarMB,kBlue);
@@ -1609,14 +1544,14 @@ cout << "blaaadawdaaa " << endl;
 		hLLbarV0M->Draw("same");
 		hLLbarMB->Draw("same");
 		hOffiLMB->Draw("same");
-		mHandler->MakeRatioPlot(hLLbarMB,(TH1D*)hOffiLMB,cXcheck,0.6,1.4,0.4,8.);
-		mHandler->MakeRatioPlot(hLLbarV0M,(TH1D*)hOffiL,cXcheck,0.6,1.4,0.4,8.);
+		mHandler->MakeRatioPlot(hLLbarMB,(TH1F*)hOffiLMB,cXcheck,0.6,1.4,0.4,8.);
+		mHandler->MakeRatioPlot(hLLbarV0M,(TH1F*)hOffiL,cXcheck,0.6,1.4,0.4,8.);
 	}
 	cout << "blaaadawdaaa " << endl;
 
-	TH1D* hK0sMB = (TH1D*)hV0PtFitCorr[1][0][0][0]->Clone("hK0sMB");
-	TH1D* hK0sMBeff = (TH1D*)hV0Efficiency[1]->Clone("hK0sMBeff");
-	TH1D* hK0sMBraw = (TH1D*)hV0PtFit[1][0][0][0]->Clone("hK0sMBraw");
+	TH1F* hK0sMB = (TH1F*)hV0PtFitCorr[1][0][0][0]->Clone("hK0sMB");
+	TH1F* hK0sMBeff = (TH1F*)hV0Efficiency[1]->Clone("hK0sMBeff");
+	TH1F* hK0sMBraw = (TH1F*)hV0PtFit[1][0][0][0]->Clone("hK0sMBraw");
 	hK0sMBraw->Scale(1./NormEta);
 
 	cout << "blaaadawdaaa " << endl;
@@ -1647,7 +1582,7 @@ cout << "blaaadawdaaa " << endl;
 	cXcheck2->SetLogy();
 	//hOffiLMB->SetMarkerStyle(21);
 	mHandler->MakeNiceHistogram(hK0sMB,kRed);
-	mHandler->MakeNiceHistogram((TH1D*)hOffiKMB,kRed+1);
+	mHandler->MakeNiceHistogram((TH1F*)hOffiKMB,kRed+1);
 	hOffiKMB->SetMarkerStyle(21);
 	//mHandler->MakeNiceHistogram(hK0sMBeff,kBlue);
 	//mHandler->MakeNiceHistogram(hK0sMBraw,kBlue);
@@ -1659,7 +1594,7 @@ cout << "blaaadawdaaa " << endl;
 	hK0sMB->Draw();
 	hOffiKMB->Draw("same");
 
-	mHandler->MakeRatioPlotInterp(hK0sMB,(TH1D*)hOffiKMB,cXcheck2,0.799,1.201,0.2,10.);
+	mHandler->MakeRatioPlotInterp(hK0sMB,(TH1F*)hOffiKMB,cXcheck2,0.799,1.201,0.2,10.);
 	//hOffiKMB->Draw("same");
 	
 	//hK0sMBeff->Draw("same");
