@@ -326,6 +326,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
+		Bool_t IsGeometricalCut(Float_t phiprime);
 		void ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 
 
@@ -386,6 +387,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2F* hEventMultvSpheroMC;
 
 		TH2F* hLeadPhivPt;
+		TH2F* hLeadPhiPrimevPt;
 		TH1F* hNchvLeadPt;
 		TH2F* hNchvLeadPt2;
 		TH2F* hNchMinvLeadPt2;
@@ -398,6 +400,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1F* hNchTransHybrid;
 		TH1F* hNchTransNo2011Hybrid;
 		TH1F* hNchTrans2011OrHybrid;
+		TH2F* hNchTrans2011vsHybrid;
 		TH1F* hTrackTransPhi2011;
 		TH1F* hTrackTransPhiHybrid;
 		TH1F* hTrackTransPhiNo2011Hybrid;

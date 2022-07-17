@@ -40,6 +40,7 @@ class MyEvent: public TObject {
 		Int_t GetRefMult()					const { return mAliEvent->GetReferenceMultiplicity();};
 		Bool_t IsGoodAliEvent() 			const { return mAliEvent->AcceptEvent(kFALSE,0);}; // checks flag + collision candidate
 		Bool_t HasVertex()					const { return mAliEvent->HasVertex();};
+		Double_t GetMagneticField()			const { return mAliEvent->GetMagneticField();};
 		
 		void SetCheckFlag(Int_t flag)	{ mAliEvent->SetCheckFlag(flag);};
 		Bool_t CheckFlag() 					const { return mAliEvent->CheckFlag();};

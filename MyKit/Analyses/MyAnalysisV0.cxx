@@ -288,17 +288,24 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Int_t nTracks = mHandler->getNtracks();
 	Int_t nParticles = (mFlagMC) ? mHandler->getNparticles() : 0;
 
-	ptLead = -99.; phiLead = -99.;
+	ptLead = -99.; phiLead = -99.; phiPrimeLead = -99;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		
 		if (!mHandler->track(iTr)) continue;
 		MyTrack t(mHandler->track(iTr)); t.SetHandler(mHandler);
 
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
-		if (SelectTrack(t)) {				// strict cuts, has primary dca cut
+
+		Float_t phiPrime = tr.GetPhi();
+		if (event.GetMagneticField()<0)		phiPrime = 2*TMath::Pi()-phiPrime;
+		if (tr.GetSign()<0) phiPrime = 2*TMath::Pi()-phiPrime;
+		phiPrime = phiPrime + TMath::Pi()/18.;
+
+		if (SelectTrack(t) && IsGeometricalCut(phiPrime) ) {				// strict cuts, has primary dca cut
 			if (t.GetPt() > ptLead) {		// search for leading track among primaries
 				ptLead = t.GetPt();
-				phiLead = t.GetPhi();	}
+				phiLead = t.GetPhi();
+				phiLeadPrime = phiPrime;	}
 		}
 
 		if (!t.IskITSrefit()) 		continue;	// cuts for tracks entering spherocity
@@ -330,6 +337,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		}
 	}
 	hLeadPhivPt->Fill(ptLead,phiLead);
+	hLeadPhiPrimevPt->Fill(ptLead,phiPrimeLead);
 
 
 	// SPHERO CALCULATION ON PARTICLE LEVEL IN MC
@@ -519,10 +527,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			nChTrans2011OrHybrid++;
 			hTrackTransPhi2011OrHybrid->Fill(t.GetPhi()); }	
 	}
-	hNchTrans2011->Fill(nChTrans2011);
-	hNchTransHybrid->Fill(nChTransHybrid);
-	hNchTransNo2011Hybrid->Fill(nChTransNo2011Hybrid);
-	hNchTrans2011OrHybrid->Fill(nChTrans2011OrHybrid);
 
 	
 	// DETERMINE NT_MIN AND NT_MAX
@@ -552,6 +556,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	eventRt = 0;
 	if (ptLead>5. && ptLead < 40.) {
 		hNchTrans->Fill(nChTrans);
+
+		hNchTrans2011->Fill(nChTrans2011);		// 2011
+		hNchTransHybrid->Fill(nChTransHybrid);		// complementary
+		hNchTrans2011OrHybrid->Fill(nChTrans2011OrHybrid);		// hybrid
+		hNchTrans2011vsHybrid->Fill(nChTrans2011OrHybrid,nChTrans2011);		//2011 vs hybrid
+
+
 		eventRt = (double)nChTrans/RT_DEN;
 		hRt->Fill(eventRt);		}
 
@@ -1696,6 +1707,14 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 	return true;
 }
 
+Bool_t MyAnalysisV0::IsGeometricalCut(Float_t phiprime) {
+
+	bool ret = ( phiprime<(0.12/tr.GetPt() + TMath::Pi()/18. + 0.035) &&
+				phiprime>(0.1/tr.GetPt()/tr.GetPt() + TMath::Pi()/18. - 0.025) );
+
+	return ret;
+}
+
 Bool_t MyAnalysisV0::CreateHistograms() {
 
 	Int_t nType = (mFlagMC) ? 2 : 1;
@@ -1736,6 +1755,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 
 	hLeadPhivPt				= new TH2F("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
+	hLeadPhiPrimevPt		= new TH2F("hLeadPhiPrimevPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hNchvLeadPt				= new TH1F("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
 	hNchvLeadPt2			= new TH2F("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
 	hNchMinvLeadPt2			= new TH2F("hNchMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,min]", 90, 0., 30.,50,-0.5,49.5);
@@ -1748,6 +1768,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hNchTransHybrid			= new TH1F("hNchTransHybrid","; N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransNo2011Hybrid	= new TH1F("hNchTransNo2011Hybrid","; N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTrans2011OrHybrid	= new TH1F("hNchTrans2011OrHybrid","; N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTrans2011vsHybrid	= new TH2F("hNchTrans2011vsHybrid","; N_ch [trans.] -- Hybrid; N_ch [trans.] -- ITSTPC2011; Entries",50, -0.5, 49.5,50, -0.5, 49.5);
 	hTrackTransPhi2011			= new TH1F("hTrackTransPhi2011",";#phi; Entries",	400, -0.2, 6.4);
 	hTrackTransPhiHybrid		= new TH1F("hTrackTransPhiHybrid",";#phi; Entries",	400, -0.2, 6.4);
 	hTrackTransPhiNo2011Hybrid	= new TH1F("hTrackTransPhiNo2011Hybrid",";#phi; Entries",	400, -0.2, 6.4);

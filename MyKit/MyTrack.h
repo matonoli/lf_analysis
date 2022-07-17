@@ -36,6 +36,7 @@ class MyTrack: public TObject {
 		Float_t GetPy() 						const { return mAliTrack->GetPt()*TMath::Sin(mAliTrack->GetPhi());};
 		Float_t GetEta() 						const { return mAliTrack->GetEta();};
 		Float_t GetPhi() 						const { return mAliTrack->GetPhi();};
+		Double_t GetSign()						const { return mAliTrack->GetSign();};
 		Float_t GetNSigmaPionTPC() 				const { return mAliTrack->GetNSigmaPionTPC();};
 		Float_t GetNSigmaProtonTPC() 			const { return mAliTrack->GetNSigmaProtonTPC();};
 		Float_t GetDCApvXY() 					const { return mAliTrack->GetImpactParameter(0);};
