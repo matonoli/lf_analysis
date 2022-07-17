@@ -296,16 +296,16 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 
-		Float_t phiPrime = tr.GetPhi();
+		Float_t phiPrime = t.GetPhi();
 		if (event.GetMagneticField()<0)		phiPrime = 2*TMath::Pi()-phiPrime;
-		if (tr.GetSign()<0) phiPrime = 2*TMath::Pi()-phiPrime;
+		if (t.GetSign()<0) phiPrime = 2*TMath::Pi()-phiPrime;
 		phiPrime = phiPrime + TMath::Pi()/18.;
 
 		if (SelectTrack(t) && IsGeometricalCut(phiPrime, t.GetPt()) ) {				// strict cuts, has primary dca cut
 			if (t.GetPt() > ptLead) {		// search for leading track among primaries
 				ptLead = t.GetPt();
 				phiLead = t.GetPhi();
-				phiLeadPrime = phiPrime;	}
+				phiPrimeLead = phiPrime;	}
 		}
 
 		if (!t.IskITSrefit()) 		continue;	// cuts for tracks entering spherocity
