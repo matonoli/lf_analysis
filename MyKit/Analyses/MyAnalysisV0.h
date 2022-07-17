@@ -326,7 +326,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t SelectParticle(MyParticle &p);
 		Bool_t SelectTrack(MyTrack &tr);
-		Bool_t IsGeometricalCut(Float_t phiprime);
+		Bool_t IsGeometricalCut(Float_t phiprime, Float_t pt);
 		void ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 
 
@@ -351,6 +351,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Double_t eventRt;
 		Int_t nChTrans;
 		Double_t phiLead;
+		Double_t phiPrimeLead;
 		Double_t ptLead;
 
 		TF1* mParMuK0s;

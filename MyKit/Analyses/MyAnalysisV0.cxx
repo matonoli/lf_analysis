@@ -301,7 +301,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (tr.GetSign()<0) phiPrime = 2*TMath::Pi()-phiPrime;
 		phiPrime = phiPrime + TMath::Pi()/18.;
 
-		if (SelectTrack(t) && IsGeometricalCut(phiPrime) ) {				// strict cuts, has primary dca cut
+		if (SelectTrack(t) && IsGeometricalCut(phiPrime, t.GetPt()) ) {				// strict cuts, has primary dca cut
 			if (t.GetPt() > ptLead) {		// search for leading track among primaries
 				ptLead = t.GetPt();
 				phiLead = t.GetPhi();
@@ -1707,10 +1707,11 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 	return true;
 }
 
-Bool_t MyAnalysisV0::IsGeometricalCut(Float_t phiprime) {
+Bool_t MyAnalysisV0::IsGeometricalCut(Float_t phiprime, Float_t pt) {
 
-	bool ret = ( phiprime<(0.12/tr.GetPt() + TMath::Pi()/18. + 0.035) &&
-				phiprime>(0.1/tr.GetPt()/tr.GetPt() + TMath::Pi()/18. - 0.025) );
+	bool ret;
+	if (pt>0) ret = ( phiprime<(0.12/pt + TMath::Pi()/18. + 0.035) &&
+				phiprime>(0.1/pt/pt + TMath::Pi()/18. - 0.025) );
 
 	return ret;
 }
