@@ -1709,9 +1709,13 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 
 Bool_t MyAnalysisV0::IsGeometricalCut(Float_t phiprime, Float_t pt) {
 
-	bool ret;
-	if (pt>0) ret = ( phiprime<(0.12/pt + TMath::Pi()/18. + 0.035) &&
-				phiprime>(0.1/pt/pt + TMath::Pi()/18. - 0.025) );
+	bool ret = true;
+	for (int i = 0; i<18; i++) {
+
+		if (pt>0) if ( phiprime<(0.12/pt + TMath::Pi()/18. + 0.035) &&
+				phiprime>(0.1/pt/pt + TMath::Pi()/18. - 0.025) ) ret = false;
+		phiprime += TMath::Pi()/18. ;
+	}
 
 	return ret;
 }
