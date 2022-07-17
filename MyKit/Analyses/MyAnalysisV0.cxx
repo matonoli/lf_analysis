@@ -296,7 +296,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 
-		Float_t phiPrime = t.GetPhi();
+		Float_t phiPrime = fmod(t.GetPhi(),2*TMath::Pi()/18.);
 		if (event.GetMagneticField()<0)		phiPrime = 2*TMath::Pi()-phiPrime;
 		if (t.GetSign()<0) phiPrime = 2*TMath::Pi()-phiPrime;
 		phiPrime = phiPrime + TMath::Pi()/18.;
@@ -1714,7 +1714,6 @@ Bool_t MyAnalysisV0::IsGeometricalCut(Float_t phiprime, Float_t pt) {
 
 		if (pt>0) if ( phiprime<(0.12/pt + TMath::Pi()/18. + 0.035) &&
 				phiprime>(0.1/pt/pt + TMath::Pi()/18. - 0.025) ) ret = false;
-		phiprime += TMath::Pi()/18. ;
 	}
 
 	return ret;
