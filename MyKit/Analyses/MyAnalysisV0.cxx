@@ -296,10 +296,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1] ) continue;
 
-		Float_t phiPrime = fmod(t.GetPhi(),2*TMath::Pi()/18.);
+		Float_t phiPrime = t.GetPhi();//fmod(t.GetPhi(),2*TMath::Pi()/18.);
 		if (event.GetMagneticField()<0)		phiPrime = 2*TMath::Pi()-phiPrime;
 		if (t.GetSign()<0) phiPrime = 2*TMath::Pi()-phiPrime;
 		phiPrime = phiPrime + TMath::Pi()/18.;
+		phiPrime = fmod(phiPrime,2*TMath::Pi()/18.);
 
 		if (SelectTrack(t) && IsGeometricalCut(phiPrime, t.GetPt()) ) {				// strict cuts, has primary dca cut
 			if (t.GetPt() > ptLead) {		// search for leading track among primaries
@@ -471,9 +472,12 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		
 		// RT DETERMINATION
 		if (!IsTrans(t.GetPhi(),phiLead))	continue;
-		if (!t.IskITSrefit()) continue;		// cuts for tracks entering Nch^trans calculations
-		if (!t.IsTPCOnlyRefit()) continue;
+		//if (!t.IskITSrefit()) continue;		// cuts for tracks entering Nch^trans calculations
+		//if (!t.IsTPCOnlyRefit()) continue; // not using these cuts anymore
 		if (t.GetPt()<0.15) continue;
+
+		// using hybrid tracks instead
+		if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
 		
 		hNchvLeadPt->Fill(ptLead);
 		nChTrans0++;
@@ -1701,7 +1705,8 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 		cuts::TR_PRIMARY_PAR[0] + 
 		cuts::TR_PRIMARY_PAR[1]/TMath::Power(tr.GetPt(),cuts::TR_PRIMARY_PAR[2])) return false;
 
-	if (!tr.IsITSTPC2011())					return false;
+	if (!tr.IsITSTPC2011() && !t.IsITSTPC2011HybridNone())					return false; // using hybrid tracks
+	
 
 
 	return true;
@@ -1710,12 +1715,9 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 Bool_t MyAnalysisV0::IsGeometricalCut(Float_t phiprime, Float_t pt) {
 
 	bool ret = true;
-	for (int i = 0; i<18; i++) {
-
-		if (pt>0) if ( phiprime<(0.12/pt + TMath::Pi()/18. + 0.035) &&
+	if (pt>0) if ( phiprime<(0.12/pt + TMath::Pi()/18. + 0.035) &&
 				phiprime>(0.1/pt/pt + TMath::Pi()/18. - 0.025) ) ret = false;
-	}
-
+	
 	return ret;
 }
 
