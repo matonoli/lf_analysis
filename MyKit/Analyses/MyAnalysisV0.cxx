@@ -477,8 +477,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (t.GetPt()<0.15) continue;
 
 		// using hybrid tracks instead
-		//if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
-		if (!t.IsITSTPC2011()) continue;
+		if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
+		//if (!t.IsITSTPC2011()) continue;
 		
 		hNchvLeadPt->Fill(ptLead);
 		nChTrans0++;
@@ -1706,8 +1706,8 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 		cuts::TR_PRIMARY_PAR[0] + 
 		cuts::TR_PRIMARY_PAR[1]/TMath::Power(tr.GetPt(),cuts::TR_PRIMARY_PAR[2])) return false;
 
-	//if (!tr.IsITSTPC2011() && !tr.IsITSTPC2011HybridNone())					return false; // using hybrid tracks
-	if (!tr.IsITSTPC2011())					return false;
+	if (!tr.IsITSTPC2011() && !tr.IsITSTPC2011HybridNone())					return false; // using hybrid tracks
+	//if (!tr.IsITSTPC2011())					return false;
 
 
 	return true;
