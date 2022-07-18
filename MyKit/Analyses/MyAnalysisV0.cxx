@@ -1705,7 +1705,7 @@ Bool_t MyAnalysisV0::SelectTrack(MyTrack &tr) {
 		cuts::TR_PRIMARY_PAR[0] + 
 		cuts::TR_PRIMARY_PAR[1]/TMath::Power(tr.GetPt(),cuts::TR_PRIMARY_PAR[2])) return false;
 
-	if (!tr.IsITSTPC2011() && !t.IsITSTPC2011HybridNone())					return false; // using hybrid tracks
+	if (!tr.IsITSTPC2011() && !tr.IsITSTPC2011HybridNone())					return false; // using hybrid tracks
 	
 
 
