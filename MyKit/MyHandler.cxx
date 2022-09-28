@@ -6,6 +6,7 @@
 #include <TPad.h>
 #include <TVirtualPad.h>
 #include <TH1F.h>
+#include <TH1.h>
 #include <TLegend.h>
 #include <TSpline.h>
 
@@ -164,7 +165,7 @@ void MyHandler::DrawCut(Double_t cut, Int_t direction, TVirtualPad* can) {
 	gcut->Draw("same");
 }
 
-void MyHandler::MakeNiceHistogram(TH1F* h, Int_t col) {
+void MyHandler::MakeNiceHistogram(TH1* h, Int_t col) {
 
 	h->SetLineColor(col);
 	h->SetMarkerStyle(20);

@@ -102,7 +102,7 @@ class MyHandler: public TObject {
 		
 
 		void DrawCut(Double_t cut, Int_t direction, TVirtualPad* can);
-		void MakeNiceHistogram(TH1F* h, Int_t col);
+		void MakeNiceHistogram(TH1* h, Int_t col);
 		void MakeNiceLegend(TLegend* leg, Float_t size = 0.07, Int_t columns = 2);
 		void MakeRatioPlot(TH1F* hn, TH1F* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx);
 		void SafeDivide(TH1F* hn, TH1F* hd, Double_t sF);

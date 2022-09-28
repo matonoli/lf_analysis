@@ -412,50 +412,6 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 	}	}
 
-	// TRACK DEPENDENCE ON SPHEROCITY STUDY LOOP
-	for (int iTr = 0; iTr < nTracks; ++iTr)		{
-		if (!mHandler->track(iTr)) continue;
-		MyTrack t(mHandler->track(iTr));	t.SetHandler(mHandler);
-
-		if (!SelectTrack(t)) continue;
-
-		ProcessTrack(t,D,multMB,sphMB);
-		if (mFlagMC) ProcessTrack(t,RC,multMB,sphMB);
-
-		if (isEventFHM) {
-			ProcessTrack(t,D,V0M,sphMB);
-			if (mFlagMC)	ProcessTrack(t,RC,V0M,sphMB);
-			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessTrack(t,D,V0M,iSph);
-			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M][iSph]) ProcessTrack(t,RC,V0M,iSph);
-			/*if (isEventJetty[V0M])		ProcessTrack(t,D,V0M,Jetty);
-			if (isEventIso[V0M])		ProcessTrack(t,D,V0M,Iso);			//
-			if (isEventJettyMC[V0M])	ProcessTrack(t,RC,V0M,Jetty);		// study tracks also for true sphero, stored under RC
-			if (isEventIsoMC[V0M])		ProcessTrack(t,RC,V0M,Iso);*/		
-		} 
-
-		if (isEventMHM) {
-			ProcessTrack(t,D,NCharged,sphMB);
-			if (mFlagMC) ProcessTrack(t,RC,NCharged,sphMB);
-			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessTrack(t,D,NCharged,iSph);
-			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged][iSph]) ProcessTrack(t,RC,NCharged,iSph);
-		}
-
-		if (isEventFHM01) {
-			ProcessTrack(t,D,V0M01,sphMB);
-			if (mFlagMC) ProcessTrack(t,RC,V0M01,sphMB);
-			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessTrack(t,D,V0M01,iSph);
-			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M01][iSph]) ProcessTrack(t,RC,V0M01,iSph);		
-		} 
-
-		if (isEventMHM01) {
-			ProcessTrack(t,D,NCharged01,sphMB);
-			if (mFlagMC) ProcessTrack(t,RC,NCharged01,sphMB);
-			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessTrack(t,D,NCharged01,iSph);
-			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged01][iSph]) ProcessTrack(t,RC,NCharged01,iSph);
-		}
-
-	}
-
 
 	// RT NCH CALCULATION
 	nChTrans = 0;
@@ -670,8 +626,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			nChTransMaxMC = nChTransBMC;	}
 
 		if ( (ptLeadMC > 5. && ptLeadMC < 40.) && (ptLead > 5. && ptLead < 40.) )	{   // or ||
+			hNchTransRC->Fill(nChTrans);
 			hNchTransMC->Fill(nChTransMC);
 			hNchTransRCvMC->Fill(nChTransMC,nChTrans);
+			hNchTransMinRCvMC->Fill(nChTransMinMC,nChTransMin);
 			eventRtMC = (double)nChTransMC/RT_DEN_MC;
 			hRtMC->Fill(eventRtMC);
 			hRtRCvMC->Fill(eventRtMC,eventRt);		}
@@ -714,6 +672,24 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				&& p.GetSign() != 0 && p.IsPrimary())	{
 
 				hTrackPt[MC][multMB][sphMB]->Fill(p.GetPt());
+
+				// FILLING MC SPECTRA FOR PIONS AND CHARGED KAONS
+				if (TMath::Abs(p.GetPdgCode())==211) hPiPtMC->Fill(p.GetPt());
+				if (TMath::Abs(p.GetPdgCode())==321) hKpmPtMC->Fill(p.GetPt());
+				if (isEventRT)	{
+					Int_t region = WhatRegion(p.GetPhi(),phiLead);
+					if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMC[region]->Fill(p.GetPt(),nChTransMC);
+					if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMinMC[region]->Fill(p.GetPt(),nChTransMinMC);
+					if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMC[region]->Fill(p.GetPt(),nChTransMC);
+					if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[region]->Fill(p.GetPt(),nChTransMinMC);
+					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLead);
+					if (!region) {
+						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMinMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+					}
+				}
 
 				if (isEventFHM) {
 					hTrackPt[MC][V0M][sphMB]->Fill(p.GetPt());
@@ -800,6 +776,72 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				}
 			}
 		}
+	}
+
+	// TRACK STUDY LOOP
+	for (int iTr = 0; iTr < nTracks; ++iTr)		{
+		if (!mHandler->track(iTr)) continue;
+		MyTrack t(mHandler->track(iTr));	t.SetHandler(mHandler);
+
+		if (mFlagMC) {
+			if (t.GetEta() > cuts::V0_ETA[0] && t.GetEta() < cuts::V0_ETA[1]
+				&& t.GetSign() != 0 && t.IsMCPrimary())	{
+				if (TMath::Abs(t.GetMCPdgCode()) == 211) hPiPtRC->Fill(t.GetPt());
+				if (TMath::Abs(t.GetMCPdgCode()) == 321) hKpmPtRC->Fill(t.GetPt());
+				if (isEventRT)	{
+					Int_t region = WhatRegion(t.GetPhi(),phiLead);
+					if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtRC[region]->Fill(t.GetPt(),nChTrans);
+					if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMinRC[region]->Fill(t.GetPt(),nChTransMin);
+					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtRC[region]->Fill(t.GetPt(),nChTrans);
+					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMinRC[region]->Fill(t.GetPt(),nChTransMin);
+					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLead);
+					if (!region) {
+						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
+						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMinRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
+						if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
+						if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMinRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
+					}
+				}
+			}
+		}
+
+		if (!SelectTrack(t)) continue;
+
+		ProcessTrack(t,D,multMB,sphMB);
+		if (mFlagMC) ProcessTrack(t,RC,multMB,sphMB);
+
+		if (isEventFHM) {
+			ProcessTrack(t,D,V0M,sphMB);
+			if (mFlagMC)	ProcessTrack(t,RC,V0M,sphMB);
+			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M][iSph]) ProcessTrack(t,D,V0M,iSph);
+			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M][iSph]) ProcessTrack(t,RC,V0M,iSph);
+			/*if (isEventJetty[V0M])		ProcessTrack(t,D,V0M,Jetty);
+			if (isEventIso[V0M])		ProcessTrack(t,D,V0M,Iso);			//
+			if (isEventJettyMC[V0M])	ProcessTrack(t,RC,V0M,Jetty);		// study tracks also for true sphero, stored under RC
+			if (isEventIsoMC[V0M])		ProcessTrack(t,RC,V0M,Iso);*/		
+		} 
+
+		if (isEventMHM) {
+			ProcessTrack(t,D,NCharged,sphMB);
+			if (mFlagMC) ProcessTrack(t,RC,NCharged,sphMB);
+			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged][iSph]) ProcessTrack(t,D,NCharged,iSph);
+			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged][iSph]) ProcessTrack(t,RC,NCharged,iSph);
+		}
+
+		if (isEventFHM01) {
+			ProcessTrack(t,D,V0M01,sphMB);
+			if (mFlagMC) ProcessTrack(t,RC,V0M01,sphMB);
+			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][V0M01][iSph]) ProcessTrack(t,D,V0M01,iSph);
+			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][V0M01][iSph]) ProcessTrack(t,RC,V0M01,iSph);		
+		} 
+
+		if (isEventMHM01) {
+			ProcessTrack(t,D,NCharged01,sphMB);
+			if (mFlagMC) ProcessTrack(t,RC,NCharged01,sphMB);
+			for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessTrack(t,D,NCharged01,iSph);
+			if (mFlagMC) for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[MC][NCharged01][iSph]) ProcessTrack(t,RC,NCharged01,iSph);
+		}
+
 	}
 
 
@@ -1780,8 +1822,10 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hTrackTransPhiHybrid		= new TH1F("hTrackTransPhiHybrid",";#phi; Entries",	400, -0.2, 6.4);
 	hTrackTransPhiNo2011Hybrid	= new TH1F("hTrackTransPhiNo2011Hybrid",";#phi; Entries",	400, -0.2, 6.4);
 	hTrackTransPhi2011OrHybrid	= new TH1F("hTrackTransPhi2011OrHybrid",";#phi; Entries",	400, -0.2, 6.4);
+	hNchTransRC 			= new TH1F("hNchTransRC","; RC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransMC 			= new TH1F("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransRCvMC			= new TH2F("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
+	hNchTransMinRCvMC		= new TH2F("hNchTransMinRCvMC", ";MC N_ch [trans.,min]; RC N_ch [trans.,min]",50,-0.5,49.5,50,-0.5,49.5);
 	hNtvNtMin				= new TH2F("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
 	hNtvNtMax				= new TH2F("hNtvNtMax","; N_ch [trans.,max]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
 	hNtMaxvNtMin			= new TH2F("hNtMaxvNtMin","; N_ch [trans.,max]; N_ch [trans.,min]",50, -0.5, 49.5,50, -0.5, 49.5);
@@ -1820,13 +1864,43 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	} } } 
 
 	// MC PARTICLE HISTOGRAMS
-	hParticlePrimaryvPDG				= new TH2F("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
-	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
-		hProtonNchTransvPt[iReg]		= new TH2F(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
-		hPionNchTransvPt[iReg]			= new TH2F(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
-		hLambdaNchTransvPt[iReg]		= new TH2F(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
-		hK0sNchTransvPt[iReg]			= new TH2F(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+	if (mFlagMC) {
+		hParticlePrimaryvPDG				= new TH2F("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
+		hPiPtMC								= new TH1F(Form("hPiPtMC"),
+				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hPiPtRC								= new TH1F(Form("hPiPtRC"),
+				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hKpmPtMC								= new TH1F(Form("hKpmPtMC"),
+				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+		hKpmPtRC								= new TH1F(Form("hKpmPtRC"),
+				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
+
+		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+			hProtonNchTransvPt[iReg]		= new TH2F(Form("hProtonNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+			hPionNchTransvPt[iReg]			= new TH2F(Form("hPionNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+			hLambdaNchTransvPt[iReg]		= new TH2F(Form("hLambdaNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+			hK0sNchTransvPt[iReg]			= new TH2F(Form("hK0sNchTransvPt_%s",REGIONS[iReg]),"; p_{T} (GeV/#it{c}); N_{ch}^{trans}", NPTBINS, XBINS, 50, -0.5, 49.5);
+
+			hPiPtNtMC[iReg]				= new TH2F(Form("hPiPtNtMC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hPiPtNtMinMC[iReg]			= new TH2F(Form("hPiPtNtMinMC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hPiPtNtRC[iReg]				= new TH2F(Form("hPiPtNtRC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hPiPtNtMinRC[iReg]			= new TH2F(Form("hPiPtNtMinRC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hKpmPtNtMC[iReg]				= new TH2F(Form("hKpmPtNtMC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hKpmPtNtMinMC[iReg]			= new TH2F(Form("hKpmPtNtMinMC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hKpmPtNtRC[iReg]				= new TH2F(Form("hKpmPtNtRC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hKpmPtNtMinRC[iReg]			= new TH2F(Form("hKpmPtNtMinRC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+
+		}
 	}
+
 
 	// V0 HISTOGRAMS
 	hV0Radius		= new TH1F("hV0Radius",";V0 radius; Entries",400,0.,150.);
@@ -1884,9 +1958,9 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	double XBINS_IM[NBINS_IM+1];// = {};
 	double binStepIM = (0.2 + 0.2)/(double)NBINS_IM;
 	for (int i=0; i <= NBINS_IM; i++) XBINS_IM[i] = -0.2 + (double)i*binStepIM;
-	const int NBINS_NT = 60;
+	const int NBINS_NT = 50;
 	double XBINS_NT[NBINS_NT+1];// = {};
-	double binStepNT = (0.5 + 59.5)/(double)NBINS_NT;
+	double binStepNT = (0.5 + 49.5)/(double)NBINS_NT;
 	for (int i=0; i <= NBINS_NT; i++) XBINS_NT[i] = -0.5 + (double)i*binStepNT;
 		
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
@@ -1895,14 +1969,14 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 				
 
 		hV0PtNt[iSp][iType][iReg]			= new TH2F(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
-			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 		hV0PtNtMin[iSp][iType][iReg]			= new TH2F(Form("hV0PtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
-			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 		
 		hV0EtaNt[iSp][iType][iReg]			= new TH2F(Form("hV0EtaNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
-			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -1., 1., 60, -0.5, 59.5);
+			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -1., 1., 50, -0.5, 49.5);
 		hV0PhiNt[iSp][iType][iReg]			= new TH2F(Form("hV0PhiNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
-			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -3.2, 3.2, 60, -0.5, 59.5);
+			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -3.2, 3.2, 50, -0.5, 49.5);
 
 		hV0IMvPtNt[iSp][iType][iReg]		= new TH3F(Form("hV0IMvPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
@@ -2104,6 +2178,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	hNchvLeadPt2				= (TH2F*)mDirFile->Get("hNchvLeadPt2");
 	hNchTrans					= (TH1F*)mDirFile->Get("hNchTrans");
 	hRt							= (TH1F*)mDirFile->Get("hRt");
+
+	
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{

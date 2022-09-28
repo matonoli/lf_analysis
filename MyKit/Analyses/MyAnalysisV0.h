@@ -33,7 +33,7 @@ namespace V0consts {
 	const Int_t NTYPE = 3; 
 	const Int_t NMULTI = 5;//5;
 	const Int_t NSPHERO = 1;//9;
-	const Int_t NREGIONS = 5;
+	const Int_t NREGIONS = 5;//5;
 	const char* SPECIES[] = {"inc","K0s","L","Lbar"};
 	const Float_t MASSES[] = {0., 0.497614, 1.11568, 1.11568};
 	const Float_t XIMASS = 1.32171;
@@ -43,8 +43,8 @@ namespace V0consts {
 	const char* PLOTS_MULTI[] = {"MB","V0M 0-10%","CL1 0-10%", "V0M 0-1%","CL1 0-1%"};//, "R_{T} Trans.","R_{T} Near","R_{T} Away"};
 	const char* SPHERO[] = {"MB","Jetty20","Iso20", "Jetty10","Iso10","Jetty5","Iso5","Jetty1","Iso1"};//,"0-1","1-2","2-3","3-4","4-5"};
 	const char* PLOTS_SPHERO[] = {"MB","Jetty 20%","Iso 20%", "Jetty 10%","Iso 10%","Jetty 5%","Iso %5","Jetty %1","Iso %1"};//,"0-1","1-2","2-3","3-4","4-5";
-	const char* REGIONS[NREGIONS] = {"Trans","Near","Away","TransMin","TransMax"};
-	const char* PLOTS_REGIONS[NREGIONS] = {"Trans.","Near","Away","Trans.-min","Trans.-max"};
+	const char* REGIONS[] = {"Trans","Near","Away","TransMin","TransMax"};
+	const char* PLOTS_REGIONS[] = {"Trans.","Near","Away","Trans.-min","Trans.-max"};
 	//const Int_t NPTBINS = 35;
 	//const Double_t XBINS[NPTBINS+1] = { 0.00, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 
 	/*const Int_t NPTBINS = 55;
@@ -406,8 +406,10 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1F* hTrackTransPhiHybrid;
 		TH1F* hTrackTransPhiNo2011Hybrid;
 		TH1F* hTrackTransPhi2011OrHybrid;
+		TH1F* hNchTransRC;
 		TH1F* hNchTransMC;
 		TH2F* hNchTransRCvMC;
+		TH2F* hNchTransMinRCvMC;
 		TH2F* hNtvNtMin;
 		TH2F* hNtvNtMax;
 		TH2F* hNtMaxvNtMin;
@@ -454,6 +456,19 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2F* hPionNchTransvPt[V0consts::NREGIONS];
 		TH2F* hLambdaNchTransvPt[V0consts::NREGIONS];
 		TH2F* hK0sNchTransvPt[V0consts::NREGIONS];
+
+		TH1F* hPiPtMC;
+		TH1F* hPiPtRC;
+		TH1F* hKpmPtMC;
+		TH1F* hKpmPtRC;
+		TH2F* hPiPtNtMC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMinMC[V0consts::NREGIONS];
+		TH2F* hPiPtNtRC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMinRC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMinMC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtRC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMinRC[V0consts::NREGIONS];
 
 		// V0 HISTOGRAMS
 		TH1F* hV0Radius;
