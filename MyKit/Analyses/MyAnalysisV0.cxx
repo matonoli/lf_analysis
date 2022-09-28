@@ -794,7 +794,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMinRC[region]->Fill(t.GetPt(),nChTransMin);
 					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtRC[region]->Fill(t.GetPt(),nChTrans);
 					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMinRC[region]->Fill(t.GetPt(),nChTransMin);
-					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLead);
+					Int_t regionSide = WhatRegionSide(t.GetPhi(),phiLead);
 					if (!region) {
 						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
 						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMinRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
