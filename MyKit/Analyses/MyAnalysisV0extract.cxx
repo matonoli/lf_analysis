@@ -150,9 +150,22 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 			
 		hV0PtFit[iSp][iType][iMu][iSph]		= new TH1F(Form("hV0PtFit_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 Pt (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-
+		
 
 	} } } }
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		hV0PtNtFit[iSp][iType][iReg]		= new TH2F(Form("hV0PtNtFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+
+		hV0PtNtMinFit[iSp][iType][iReg]		= new TH2F(Form("hV0PtNtMinFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+
+	}	}	}
 
 	cout << "N OF BINS IS -------------------------" << endl;
 	cout << NPTBINS << endl;
@@ -222,9 +235,9 @@ Int_t MyAnalysisV0extract::Finish() {
 	//DefineSidebands();
 	TakeoverSidebands();
 	ProducePtSpectraFromHists();
-	if (MAKE_EXCLUSIVE) MakeExclusiveS0Bins();
+	//if (MAKE_EXCLUSIVE) MakeExclusiveS0Bins();
 	
-	ConvertNttoRt();
+	//ConvertNttoRt();
 	ProducePtSpectraFromHistsRt();
 
 	if (mHandler->GetFlagMC()) DoClosureTest(0);
@@ -652,6 +665,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 	xBins	= XBINS;
 	Int_t binSize = 0;//-1 + TMath::Nint((Double_t)NPTBINS/nBins);	// this is buggy actually
 	nPads = TMath::FloorNint(TMath::Sqrt(nBins));
+	canCounterRt = 0;
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
 	iCan = 0;
@@ -659,49 +673,52 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
-	for (int iRtBin = 0; iRtBin < NRTBINS0; ++iRtBin) {		
 
-		printf("Extracting yield for pt spectrum iSp%i_iType%i_iReg%i_iRtBin%i \n",iSp,iType,iReg,iRtBin);
+		for (int iNt = 1; iNt < hV0IMvPtNt[iSp][iType][iReg]->GetZaxis()->GetNbins()+1; iNt++)	{
 
-		cFitsRt[iCan] = new TCanvas(Form("cFitsRt_iSp%i_iType%i_iReg%i_iRtBin%i",iSp,iType,iReg,iRtBin),"",4200,3000);
-		cFitsRt[iCan]->Divide(nPads+2,nPads,0.00005,0.00005);
+			hV0IMvPtNt[iSp][iType][iReg]->GetZaxis()->SetRange(iNt,iNt);
+			TH2F* hXY = (TH2F*)hV0IMvPtNt[iSp][iType][iReg]->Project3D("yx");			
+
+			printf("Extracting yield for pt spectrum iSp%i_iType%i_iReg%i_iNtBin%i \n",iSp,iType,iReg,iNt);
 			
-		Double_t* yield = 0;
-		Int_t binCounter = 1;
-
-		for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1+binSize)	{
-		//for (int iBin = 10; iBin < 11; ++iBin)	{
+			cFitsRt[iCan] = new TCanvas(Form("cFitsRt_iSp%i_iType%i_iReg%i_iNtBin%i",iSp,iType,iReg,iNt),"",4200,3000);
+			cFitsRt[iCan]->Divide(nPads+2,nPads,0.00005,0.00005);
 			
-			/*yield = ExtractYieldFit((TH1F*)hV0IMvPt[iSp][iType][iMu][iSph]->ProjectionY(
-				Form("iSp%i_iType%i_iMu%i_iSph%i_iBin%i", iSp, iType, iMu, iSph, binCounter),
-				iBin,iBin+binSize),		iType,	(iType==0&&iMu==3&&iSph==0) );		// should be perhaps changed to FindBin
-			*/
+			Double_t* yield = 0;
+			Int_t binCounter = 1;
 
 
-			// ACTUAL RAW YIELDS
-			yield = ExtractYieldSB((TH1F*)hV0IMvPtRt[iSp][iType][iReg][iRtBin]->ProjectionY(
-				Form("iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iRtBin, binCounter),
-				iBin,iBin+binSize));
+			for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
+			
+				// ACTUAL RAW YIELDS
+				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
+					Form("Rt_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
+					iBin,iBin));
 
-			hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetBinContent(binCounter,*(yield+0));
-			hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetBinError(binCounter,*(yield+1));
-			binCounter++;
+				hV0PtNtFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
+				hV0PtNtFit[iSp][iType][iReg]->SetBinError(iBin,iNt,*(yield+1));
+				binCounter++;
 
+			}
+
+			if (iCan%60==10) cFitsRt[iCan]->Write();
+			//cFitsRt[iCan]->SaveAs(Form("plots/cFitsRt_%i.png",iCan));
+			iCan++;
+
+		} 
+
+		// SCALE BY BIN WIDTH
+		for (int iX = 1; iX < hV0PtNtFit[iSp][iType][iReg]->GetNbinsX()+1; iX++) {
+			for (int iY = 1; iY < hV0PtNtFit[iSp][iType][iReg]->GetNbinsY()+1; iY++) {	
+				float binwidth = hV0PtNtFit[iSp][iType][iReg]->GetXaxis()->GetBinWidth(iX);
+				float binc = hV0PtNtFit[iSp][iType][iReg]->GetBinContent(iX,iY);
+				float bine = hV0PtNtFit[iSp][iType][iReg]->GetBinError(iX,iY);
+				if (binwidth>0) hV0PtNtFit[iSp][iType][iReg]->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) hV0PtNtFit[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
+			}
 		}
 
-		//if (iType==0&&iMu==0&&iSph==0) cFits[iCan]->SaveAs(Form("tmp/%s.png",cFits[iCan]->GetName()));
-		cFitsRt[iCan]->Write();
-		//cFits[iCan]->SaveAs(Form("plots/cFits_%i.png",iCan));
-		iCan++;
-
-		//return 0;
-
-		hV0PtRtFit[iSp][iType][iReg][iRtBin]->Scale(1,"width");
-		hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetMarkerColor(1);
-		hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetMarkerStyle(20);
-		hV0PtRtFit[iSp][iType][iReg][iRtBin]->SetLineColor(2);
-
-	} } } }
+	} } }
 
 	// Remove junk from the file memory
 	TIter objIt(mDirFile->GetList(),kIterForward);
@@ -1056,7 +1073,9 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist) {
 	std::cout << "h " << hist << " ib " << binNumber << " c " << canCounter/nBins << 
 	" p " << canCounter%nBins << std::endl;*/
 
-	cout << isRt << " " << cFitsRt[canCounterRt/nBins] << " " << canCounterRt/nBins << endl;
+	//cout << NPTBINS << " " << nBins << endl;
+	//cout << isRt << " " << cFitsRt[canCounterRt/nBins] << " " << canCounterRt/nBins << " " << canCounterRt%nBins << endl;
+	//cout << "aa " << canCounterRt << " " << nBins << endl;
 
 	if (!isRt) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 	else cFitsRt[canCounterRt/nBins]->cd(1+canCounterRt%nBins);
@@ -1093,11 +1112,12 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist) {
 		mHandler->DrawCut(Mean-NSig*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
 		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins)); }
 	else {
+		//cout << "UGH " << cFitsRt[canCounterRt/nBins] << " " << Mean << " " << Sigma << " " << cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins) << "\n";
 		cFitsRt[canCounterRt/nBins]->Update();
-		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounter%nBins));
-		mHandler->DrawCut(Mean+NSig*Sigma,2,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounter%nBins));
-		mHandler->DrawCut(Mean-NSig*Sigma,1,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounter%nBins));
-		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounter%nBins));
+		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
+		mHandler->DrawCut(Mean+NSig*Sigma,2,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
+		mHandler->DrawCut(Mean-NSig*Sigma,1,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
+		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
 	}
 
 	

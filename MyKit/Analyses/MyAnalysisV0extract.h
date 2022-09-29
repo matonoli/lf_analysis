@@ -77,7 +77,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Int_t canCounterRt = 0;
 		TCanvas* cFitsSB[V0consts::NSPECIES];
 		TCanvas* cFits[(V0consts::NSPECIES-1) * V0consts::NMULTI * V0consts::NSPHERO * 2];
-		TCanvas* cFitsRt[(V0consts::NSPECIES-1) * V0consts::NREGIONS * V0consts::NRTBINS0 * 2];
+		TCanvas* cFitsRt[(V0consts::NSPECIES-1) * V0consts::NREGIONS * V0consts::NPTBINS * 60 * 2];
 		TCanvas* cFitsPtTree[(V0consts::NSPECIES-1) * V0consts::NREGIONS * V0consts::NRTBINS0 * 2];
 
 		Int_t nBins;
@@ -123,6 +123,9 @@ class MyAnalysisV0extract: public MyAnalysis {
 		TH1F* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH1F* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
+
+		TH2F* hV0PtNtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMinFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
 		TH1F* hV0PtFitPrimary[V0consts::NSPECIES];
 		TH1F* hV0PtFitPrimaryPDG[V0consts::NSPECIES];
