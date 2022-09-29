@@ -339,10 +339,10 @@ Int_t MyAnalysisV0correct::Finish() {
 			for (int iX = 1; iX < hPiPtNtRC[iReg]->GetNbinsX()+1; iX++) {
 			for (int iY = 1; iY < hPiPtNtRC[iReg]->GetNbinsY()+1; iY++) {
 				
-				hPiPtNtRC->SetBinContent(iX,iY, hPiPtRC->GetBinContent(iX)>0 ? 
-					(float)hPiPtNtRC->GetBinContent(iX,iY)/hPiPtRC->GetBinContent(iX) : 0);
-				hKpmPtNtRC->SetBinContent(iX,iY, hKpmPtRC->GetBinContent(iX)>0 ? 
-					(float)hKpmPtNtRC->GetBinContent(iX,iY)/hKpmPtRC->GetBinContent(iX) : 0);
+				hPiPtNtRC[iReg]->SetBinContent(iX,iY, hPiPtRC->GetBinContent(iX)>0 ? 
+					(float)hPiPtNtRC[iReg]->GetBinContent(iX,iY)/hPiPtRC->GetBinContent(iX) : 0);
+				hKpmPtNtRC[iReg]->SetBinContent(iX,iY, hKpmPtRC->GetBinContent(iX)>0 ? 
+					(float)hKpmPtNtRC[iReg]->GetBinContent(iX,iY)/hKpmPtRC->GetBinContent(iX) : 0);
 			}	}
 
 			hPiPtNtRC[iReg]->Write();
