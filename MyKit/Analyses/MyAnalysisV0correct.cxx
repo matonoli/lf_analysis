@@ -298,7 +298,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	if (mHandler->GetFlagMC()) {
 		hPiPtRC->Divide(hPiPtMC);
 		hKpmPtRC->Divide(hKpmPtMC);
-		TH1F* htmp; TH1F* heffitmp;
+		TH2F* htmp;
 
 		for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 		
@@ -314,23 +314,23 @@ Int_t MyAnalysisV0correct::Finish() {
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 
 				htmp = hPiPtNtMC[iReg];
-				float binwidth = htmp->GetXaxis()->GetBinWidth(iX);
-				float binc = htmp->GetBinContent(iX,iY);
-				float bine = htmp->GetBinError(iX,iY);
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
 				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 
 				htmp = hKpmPtNtRC[iReg];
-				float binwidth = htmp->GetXaxis()->GetBinWidth(iX);
-				float binc = htmp->GetBinContent(iX,iY);
-				float bine = htmp->GetBinError(iX,iY);
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
 				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 
 				htmp = hKpmPtNtMC[iReg];
-				float binwidth = htmp->GetXaxis()->GetBinWidth(iX);
-				float binc = htmp->GetBinContent(iX,iY);
-				float bine = htmp->GetBinError(iX,iY);
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
 				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 			}	}
