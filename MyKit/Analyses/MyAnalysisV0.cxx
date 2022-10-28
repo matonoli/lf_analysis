@@ -1769,22 +1769,22 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	Int_t nType = (mFlagMC) ? 2 : 1;
 
 	// MONITORS
-	hEventMonitor 			= new TH1F("hEventMonitor","; Step; Entries",10,-0.5,9.5);
-	hTrackMonitor 			= new TH1F("hTrackMonitor","; Step; Entries",10,-0.5,9.5);
-	hV0Monitor  			= new TH1F("hV0Monitor","; Step; Entries",10,-0.5,9.5);
-	hParticleMonitor 		= new TH1F("hParticleMonitor","; Step; Entries",10,-0.5,9.5);
+	hEventMonitor 			= new TH1D("hEventMonitor","; Step; Entries",10,-0.5,9.5);
+	hTrackMonitor 			= new TH1D("hTrackMonitor","; Step; Entries",10,-0.5,9.5);
+	hV0Monitor  			= new TH1D("hV0Monitor","; Step; Entries",10,-0.5,9.5);
+	hParticleMonitor 		= new TH1D("hParticleMonitor","; Step; Entries",10,-0.5,9.5);
 
 	cout << "Created " << hEventMonitor << endl;
 
 	// EVENT INFO HISTOGRAMS
-	hEventCuts	 			= new TH1F("hEventCuts","; Step; Entries",10,-0.5,9.5);
-	hEventVz				= new TH1F("hEventVz","; vz; Entries",400,-50,50);
+	hEventCuts	 			= new TH1D("hEventCuts","; Step; Entries",10,-0.5,9.5);
+	hEventVz				= new TH1D("hEventVz","; vz; Entries",400,-50,50);
 	hEventV0MCentrality		= new TH1F("hEventV0MCentrality","; V0M Centrality; Entries",300,0,150);
 	hEventRefMult			= new TH1F("hEventRefMult","; Reference multiplicity; Entries",150,0,150);
 	hEventV0MCentvRefMult	= new TH2F("hEventV0MCentvRefMult","; Reference multiplicity; V0M Centrality; Entries"
 		,150,0,150,300,0,150);
 
-	hEventType					= new TH1F("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
+	hEventType					= new TH1D("hEventType",";; Counts", NEVENTTYPES, 0, NEVENTTYPES);
 	for (int iBin = 1; iBin <= NEVENTTYPES; iBin++) {
 		hEventType->GetXaxis()->SetBinLabel(iBin,EVENTTYPES[iBin-1]); }
 	hEventSpherocityV0M			= new TH1F("hEventSpherocityV0M","; S_{O}; Entries",400,-0.1,1.1);
@@ -1856,7 +1856,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 		
 		if (iMu == 0 && iSph > 0) continue;		
 		
-		hTrackPt[iType][iMu][iSph]			= new TH1F(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hTrackPt[iType][iMu][iSph]			= new TH1D(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";track p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 		hTrackEtavPhi[iType][iMu][iSph]		= new TH2F(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";track #phi; track #eta", 400, -0.2, 6.4, 400, -1., 1.);		
@@ -1866,13 +1866,13 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	// MC PARTICLE HISTOGRAMS
 	if (mFlagMC) {
 		hParticlePrimaryvPDG				= new TH2F("hParticlePrimaryvPDG", "; PDG id; Primary", 10000,-5000,5000,2,-0.5,1.5);
-		hPiPtMC								= new TH1F(Form("hPiPtMC"),
+		hPiPtMC								= new TH1D(Form("hPiPtMC"),
 				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-		hPiPtRC								= new TH1F(Form("hPiPtRC"),
+		hPiPtRC								= new TH1D(Form("hPiPtRC"),
 				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-		hKpmPtMC								= new TH1F(Form("hKpmPtMC"),
+		hKpmPtMC								= new TH1D(Form("hKpmPtMC"),
 				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
-		hKpmPtRC								= new TH1F(Form("hKpmPtRC"),
+		hKpmPtRC								= new TH1D(Form("hKpmPtRC"),
 				";p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 
 		for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
@@ -1912,7 +1912,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 				
 		if (iMu == 0 && iSph > 0) continue;		
 
-		hV0Pt[iSp][iType][iMu][iSph]			= new TH1F(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
+		hV0Pt[iSp][iType][iMu][iSph]			= new TH1D(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
 			";V0 p_{T} (GeV/#it{c}); Entries",								NPTBINS,XBINS);
 			//";V0 p_{T} (GeV/#it{c}); Entries",								400, 0, 20);
 		hV0Eta[iSp][iType][iMu][iSph]			= new TH1F(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]),
@@ -2155,11 +2155,11 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 	//mDirFile->ls();
 
 	// MONITORS
-	hEventMonitor 				= (TH1F*)mDirFile->Get("hEventMonitor");
-	hTrackMonitor 				= (TH1F*)mDirFile->Get("hTrackMonitor");
-	hV0Monitor  				= (TH1F*)mDirFile->Get("hV0Monitor");
-	hParticleMonitor 			= (TH1F*)mDirFile->Get("hParticleMonitor");
-	hEventType					= (TH1F*)mDirFile->Get("hEventType");
+	hEventMonitor 				= (TH1D*)mDirFile->Get("hEventMonitor");
+	hTrackMonitor 				= (TH1D*)mDirFile->Get("hTrackMonitor");
+	hV0Monitor  				= (TH1D*)mDirFile->Get("hV0Monitor");
+	hParticleMonitor 			= (TH1D*)mDirFile->Get("hParticleMonitor");
+	hEventType					= (TH1D*)mDirFile->Get("hEventType");
 
 	// EVENT INFO HISTOGRAMS
 	hEventV0MCentrality			= (TH1F*)mDirFile->Get("hEventV0MCentrality");
@@ -2188,7 +2188,7 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 				
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
-		hTrackPt[iType][iMu][iSph]	= (TH1F*)mDirFile->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hTrackPt[iType][iMu][iSph]	= (TH1D*)mDirFile->Get(Form("hTrackPt_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hTrackEtavPhi[iType][iMu][iSph]	= (TH2F*)mDirFile->Get(Form("hTrackEtavPhi_%s_%s_%s",TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
 	} } } 
@@ -2203,7 +2203,7 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 				
 		//if (iMu > 4 && (iSph < 3 && iSph)) continue;
 		//if (iMu < 5 && iSph > 2) continue; 
-		hV0Pt[iSp][iType][iMu][iSph]			= (TH1F*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+		hV0Pt[iSp][iType][iMu][iSph]			= (TH1D*)mDirFile->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0Eta[iSp][iType][iMu][iSph]			= (TH1F*)mDirFile->Get(Form("hV0Eta_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		hV0IMvPt[iSp][iType][iMu][iSph]			= (TH2F*)mDirFile->Get(Form("hV0IMvPt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		// actually perhaps only histos which need to be processed within this analysis need to get fetched

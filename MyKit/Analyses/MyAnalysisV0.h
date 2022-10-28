@@ -123,11 +123,18 @@ namespace V0consts {
 		2.5, 2.9, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };*/
 
-	const Int_t NPTBINS = 16;
+	/*const Int_t NPTBINS = 16;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 5.0, 
+		6.5, 8.0 };*/
+
+	const Int_t NPTBINS = 20;
+	const Double_t XBINS[NPTBINS+1] = { // test to study trigger bin edge effect
+		0.4, 0.6, 0.8, 1.0, 1.2, 
+		1.4, 1.6, 1.8, 2.0, 2.2, 
+		2.6, 3.0, 3.4, 4.0, 4.5, 4.8, 5.0, 5.2, 5.5, 
 		6.5, 8.0 };
 
 	/*const Int_t NPTBINS = 13;
@@ -363,19 +370,19 @@ class MyAnalysisV0: public MyAnalysis {
 		Double_t mCutsVal[V0consts::NSPECIES][V0consts::cutsSizeof+1];
 
 		// MONITORS
-		TH1F* hEventMonitor;
-		TH1F* hTrackMonitor;
-		TH1F* hV0Monitor;
-		TH1F* hParticleMonitor;
+		TH1D* hEventMonitor;
+		TH1D* hTrackMonitor;
+		TH1D* hV0Monitor;
+		TH1D* hParticleMonitor;
 
 		// EVENT INFO HISTOGRAMS
-		TH1F* hEventCuts;
-		TH1F* hEventVz;
+		TH1D* hEventCuts;
+		TH1D* hEventVz;
 		TH1F* hEventV0MCentrality;
 		TH1F* hEventRefMult;
 		TH2F* hEventV0MCentvRefMult;
 
-		TH1F* hEventType;
+		TH1D* hEventType;
 		TH1F* hEventSpherocityV0M;
 		TH1F* hEventSpherocityNCharged;
 		TH1F* hEventSpherocityV0M01;
@@ -437,7 +444,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2F* hLbarDPhivNchTransMC;
 
 		// TRACK HISTOGRAMS
-		TH1F* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2F* hTrackEtavPhi[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 
 		// MC PARTICLE HISTOGRAMS
@@ -457,10 +464,10 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2F* hLambdaNchTransvPt[V0consts::NREGIONS];
 		TH2F* hK0sNchTransvPt[V0consts::NREGIONS];
 
-		TH1F* hPiPtMC;
-		TH1F* hPiPtRC;
-		TH1F* hKpmPtMC;
-		TH1F* hKpmPtRC;
+		TH1D* hPiPtMC;
+		TH1D* hPiPtRC;
+		TH1D* hKpmPtMC;
+		TH1D* hKpmPtRC;
 		TH2F* hPiPtNtMC[V0consts::NREGIONS];
 		TH2F* hPiPtNtMinMC[V0consts::NREGIONS];
 		TH2F* hPiPtNtRC[V0consts::NREGIONS];
@@ -473,7 +480,7 @@ class MyAnalysisV0: public MyAnalysis {
 		// V0 HISTOGRAMS
 		TH1F* hV0Radius;
 		TH1F* hV0ProperT;
-		TH1F* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2F* hV0EtavY[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
