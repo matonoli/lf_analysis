@@ -147,6 +147,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	
 	hNchTrans					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTrans");
 	hNchTransMC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMC");
+	hNchTransMCTrigMC			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMCTrigMC");
 	hNchTransRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC");
 	hNchTransRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRCvMC");
 	hNchTransMinRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinRCvMC");
@@ -1153,14 +1154,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hPiPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
+			/*hpt = (TH1F*)hPiPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hPiPtNtMinRC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hPiPtNtMinRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}
+			}*/
 
 			hpt = (TH1F*)hKpmPtNtRC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
@@ -1171,14 +1172,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hKpmPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
+			/*hpt = (TH1F*)hKpmPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hKpmPtNtMinRC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hKpmPtNtMinRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}
+			}*/
 
 			NormEv = hNchTransMCTrigMC->Integral(1,50);
 
@@ -1191,14 +1192,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hPiPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
+			/*hpt = (TH1F*)hPiPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hPiPtNtMinMC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hPiPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}
+			}*/
 
 			hpt = (TH1F*)hKpmPtNtMC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
@@ -1209,14 +1210,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hKpmPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
+			/*hpt = (TH1F*)hKpmPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hKpmPtNtMinMC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hKpmPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}
+			}*/
 
 		}
 

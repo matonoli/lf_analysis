@@ -116,6 +116,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 
 		TH1F* hNchTrans;
 		TH1F* hNchTransMC;
+		TH1F* hNchTransMCTrigMC;
 		TH1F* hNchTransRC;
 		TH2F* hNchTransRCvMC;
 		TH2F* hNchTransMinRCvMC;
