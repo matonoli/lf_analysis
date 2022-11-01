@@ -415,6 +415,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1F* hTrackTransPhi2011OrHybrid;
 		TH1F* hNchTransRC;
 		TH1F* hNchTransMC;
+		TH1F* hNchTransMCTrigMC;
 		TH2F* hNchTransRCvMC;
 		TH2F* hNchTransMinRCvMC;
 		TH2F* hNtvNtMin;

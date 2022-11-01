@@ -579,9 +579,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Int_t nChTransMC = 0;
 	Int_t nChTransAMC = 0;
 	Int_t nChTransBMC = 0;
-	Bool_t isSideAMinMC;
-	Int_t nChTransMinMC;
-	Int_t nChTransMaxMC;
+	Bool_t isSideAMinMC = 0;
+	Int_t nChTransMinMC = 0;
+	Int_t nChTransMaxMC = 0;
 	
 	if (mFlagMC) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
@@ -662,9 +662,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Bool_t isEventRTMC = false;		
 	if (ptLeadMC>5. && ptLeadMC<40.) {
 		isEventRTMC = true;
+		hNchTransMCTrigMC->Fill(nChTransMC);
 	}
 
-	if ( ( isEventRT || isEventRTMC) && nChTransMinMC==0 && nChTransMin>0) {
+	if ( 0 && ( isEventRT || isEventRTMC) && nChTransMinMC==0 && nChTransMin>0) {
 		cout << "Event isRT_RC " << isEventRT << " , isRT_MC " << isEventRTMC << endl;
 		cout << "Event has RC: pTlead " << ptLead << " phiLead " << phiLead << " NT/NTMin/NtMax " << nChTrans << "/" << nChTransMin << "/" << nChTransMax << endl;
 		cout << "Event has MC: pTlead " << ptLeadMC << " phiLead " << phiLeadMC << " NT/NTMin/NtMax " << nChTransMC << "/" << nChTransMinMC << "/" << nChTransMaxMC << endl;
@@ -1840,6 +1841,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hTrackTransPhi2011OrHybrid	= new TH1F("hTrackTransPhi2011OrHybrid",";#phi; Entries",	400, -0.2, 6.4);
 	hNchTransRC 			= new TH1F("hNchTransRC","; RC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransMC 			= new TH1F("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
+	hNchTransMCTrigMC		= new TH1F("hNchTransMCTrigMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransRCvMC			= new TH2F("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
 	hNchTransMinRCvMC		= new TH2F("hNchTransMinRCvMC", ";MC N_ch [trans.,min]; RC N_ch [trans.,min]",50,-0.5,49.5,50,-0.5,49.5);
 	hNtvNtMin				= new TH2F("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
