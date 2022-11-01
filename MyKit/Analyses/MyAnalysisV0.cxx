@@ -579,10 +579,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Int_t nChTransMC = 0;
 	Int_t nChTransAMC = 0;
 	Int_t nChTransBMC = 0;
-	Bool_t isSideAMinMC = 0;			// We need to keep track for also classifying the regions for spectra.
-	Int_t nChTransMinMC = nChTransBMC;	// NT in the min transverse region
-	Int_t nChTransMaxMC = nChTransAMC;	// NT in the max transverse region
-
+	Bool_t isSideAMinMC;
+	Int_t nChTransMinMC;
+	Int_t nChTransMaxMC;
+	
 	if (mFlagMC) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
 			
@@ -621,7 +621,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			}
 		}
 
-
+		isSideAMinMC = 0;			// We need to keep track for also classifying the regions for spectra.
+		nChTransMinMC = nChTransBMC;	// NT in the min transverse region
+		nChTransMaxMC = nChTransAMC;	// NT in the max transverse region
 		if (nChTransAMC < nChTransBMC) {
 			isSideAMinMC = 1;
 			nChTransMinMC = nChTransAMC;
@@ -662,7 +664,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		isEventRTMC = true;
 	}
 
-	if (nChTransMinMC==0 && nChTransMin>0) {
+	if ( ( isEventRT || isEventRTMC) && nChTransMinMC==0 && nChTransMin>0) {
 		cout << "Event isRT_RC " << isEventRT << " , isRT_MC " << isEventRTMC << endl;
 		cout << "Event has RC: pTlead " << ptLead << " phiLead " << phiLead << " NT/NTMin/NtMax " << nChTrans << "/" << nChTransMin << "/" << nChTransMax << endl;
 		cout << "Event has MC: pTlead " << ptLeadMC << " phiLead " << phiLeadMC << " NT/NTMin/NtMax " << nChTransMC << "/" << nChTransMinMC << "/" << nChTransMaxMC << endl;
