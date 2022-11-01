@@ -273,6 +273,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	CloneHistograms();
 	hNchTrans->Write();
 	hNchTransMC->Write();
+	hNchTransMCTrigMC->Write();
 	hNchTransRC->Write();
 	hNchTransRCvMC->Write();
 	hNchTransMinRCvMC->Write();
@@ -347,11 +348,6 @@ Int_t MyAnalysisV0correct::Finish() {
 
 				// errors ?
 			}	}
-
-			hPiPtNtRC[iReg]->Write();
-			hPiPtNtMC[iReg]->Write();
-			hKpmPtNtRC[iReg]->Write();
-			hKpmPtNtMC[iReg]->Write();
 		}
 	}
 
@@ -1138,14 +1134,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 
-		printf("Normalising histograms pi and Kpm in region %s", REGIONS[iReg]);
+		printf("Normalising histograms pi and Kpm in region %s yn", REGIONS[iReg]);
 
 		for (int iNt = 1; iNt < hPiPtNtRC[0]->GetNbinsY()+1; iNt++) {
 
 			Double_t NormEv = 0;
 			NormEv = hNchTrans->Integral(1,50);
 
-			TH1F* hpt = (TH1F*)hPiPtNtRC[iReg]->ProjectionX("",iNt,iNt);
+			TH1F* hpt = (TH1F*)hPiPtNtRC[iReg]->ProjectionX(Form("%s_%i",hPiPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1163,7 +1159,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMinRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}*/
 
-			hpt = (TH1F*)hKpmPtNtRC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtRC[iReg]->ProjectionX(Form("%s_%i",hKpmPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1183,7 +1179,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 			NormEv = hNchTransMCTrigMC->Integral(1,50);
 
-			hpt = (TH1F*)hPiPtNtMC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hPiPtNtMC[iReg]->ProjectionX(Form("%s_%i",hPiPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1201,7 +1197,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}*/
 
-			hpt = (TH1F*)hKpmPtNtMC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtMC[iReg]->ProjectionX(Form("%s_%i",hKpmPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1219,9 +1215,15 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}*/
 
-		}
+		}		
+
+		hPiPtNtRC[iReg]->Write();
+		hPiPtNtMC[iReg]->Write();
+		hKpmPtNtRC[iReg]->Write();
+		hKpmPtNtMC[iReg]->Write();
 
 	}
+
 
 	//hNchTrans->Write();
 
