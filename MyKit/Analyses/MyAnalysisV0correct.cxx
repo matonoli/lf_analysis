@@ -161,6 +161,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	hNchTransRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC");
 	hNchTransRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRCvMC");
 	hNchTransMinRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinRCvMC");
+	if (mHandler->GetFlagMC()) {
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 2; iType < NTYPE; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
@@ -169,6 +170,7 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		hV0PtNt[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0PtNt[iSp][iType][iReg]);
 
 	}	}	}
+	}
 
 	if (mHandler->GetFlagMC()) {
 
@@ -287,6 +289,8 @@ Int_t MyAnalysisV0correct::Finish() {
 	hNchTransRC->Write();
 	hNchTransRCvMC->Write();
 	hNchTransMinRCvMC->Write();
+
+	if (mHandler->GetFlagMC()) {
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 2; iType < NTYPE; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
@@ -304,6 +308,7 @@ Int_t MyAnalysisV0correct::Finish() {
 		//hV0PtNt[iSp][iType][iReg]->Write();
 
 	}	}	}
+	}
 
 
 	// CORRECT PI AND KPM
@@ -1127,8 +1132,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 			Double_t NormEv = 0;
 			//NormEv = hNchTrans->GetBinContent(iNt);
-			NormEv = (iType==2) ? hNchTransMCTrigMC->Integral(1,50) : hNchTrans->Integral(1,50);
-			TH2F* htmp = (iType==2) ? hV0PtNt[iSp][iType][iReg] : hV0PtNtFitCorr[iSp][iType][iReg];
+			NormEv = hNchTrans->Integral(1,50);
+			TH2F* htmp = hV0PtNtFitCorr[iSp][iType][iReg];
 
 			TH1F* hpt = (TH1F*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
@@ -1141,10 +1146,40 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 		}
 
-	hV0PtNt[iSp][iType][iReg]->Write();
-
 	}	}	}
 
+	if (mHandler->GetFlagMC()) {
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)			{
+	for (int iType = 2; iType < NTYPE; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+
+		printf("Normalising histogram %s by N_T distribution \n", hV0PtNt[iSp][iType][iReg]->GetName());
+
+		for (int iNt = 1; iNt < hV0PtNt[iSp][iType][iReg]->GetNbinsY()+1; iNt++) {
+
+			Double_t NormEv = 0;
+			
+			NormEv = hNchTransMCTrigMC->Integral(1,50);
+			TH2F* htmp = hV0PtNt[iSp][iType][iReg];
+
+			TH1D* hpt = (TH1D*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			if (NormEta>0) hpt->Scale(1./NormEta);
+			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
+
+			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
+				htmp->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			}
+
+		}
+
+		hV0PtNt[iSp][iType][iReg]->Write();
+
+	}	}	}
+	}
+
+
+	if (mHandler->GetFlagMC()) {
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
 
 		printf("Normalising histograms pi and Kpm in region %s yn", REGIONS[iReg]);
@@ -1235,6 +1270,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		hKpmPtNtRC[iReg]->Write();
 		hKpmPtNtMC[iReg]->Write();
 
+	}
 	}
 
 
