@@ -101,7 +101,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		//borrowed
 		TH1F* hNchTrans;
 		TH2F* hV0IMvPt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
-		TH1F* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		
 		TNtuple* tV0massRCMB[V0consts::NSPECIES];
 		TH2F* hV0IMvPtPrimary[V0consts::NSPECIES];

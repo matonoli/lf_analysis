@@ -111,16 +111,26 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		hV0PtNtFit[iSp][iType][iReg]		
 			= (TH2F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtNtFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
 		
-	}	}	}	
+	}	}	}
+
+	if (mHandler->GetFlagMC()) {
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	Int_t iType = 2;
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		hV0PtNt[iSp][iType][iReg]		
+			= (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+	}	}	
+	}
 
 	if (mHandler->GetFlagMC()) {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 		Int_t iType = 2; Int_t iMu = 0; Int_t iSph = 0;
 		hV0Pt[iSp][iType][iMu][iSph] 
-			= (TH1F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 		
 		if (hV0Pt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS) 
-			hV0Pt[iSp][iType][iMu][iSph] = (TH1F*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
+			hV0Pt[iSp][iType][iMu][iSph] = (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
 	
 	}	}
 
@@ -1118,14 +1128,15 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 			Double_t NormEv = 0;
 			//NormEv = hNchTrans->GetBinContent(iNt);
 			NormEv = (iType==2) ? hNchTransMCTrigMC->Integral(1,50) : hNchTrans->Integral(1,50);
+			TH2F* htmp = (iType==2) ? hV0PtNt[iSp][iType][iReg] : hV0PtNtFitCorr[iSp][iType][iReg];
 
-			TH1F* hpt = (TH1F*)hV0PtNtFitCorr[iSp][iType][iReg]->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			TH1F* hpt = (TH1F*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
-			for (int iBin = 1; iBin < hV0PtNtFitCorr[1][0][0]->GetNbinsX()+1; iBin++) {
-				hV0PtNtFitCorr[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
-				hV0PtNtFitCorr[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
+				htmp[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
 		}
@@ -1652,7 +1663,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
 
-		TH1F* hDen = (TH1F*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
+		TH1F* hDen = (TH1DF*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1./NormEv);
 		hDen->Scale(1./NormEta);
 		hDen->Scale(1.,"width");

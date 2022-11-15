@@ -110,11 +110,11 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 		Int_t iType = 1, iMu = 0, iSph = 0;	
 
 		hV0Pt[iSp][iType][iMu][iSph] 
-			= (TH1F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
+			= (TH1D*)mHandler->analysis(0)->dirFile()->Get(Form("hV0Pt_%s_%s_%s_%s",SPECIES[iSp],TYPE[iType],MULTI[iMu],SPHERO[iSph]));
 
 		if (hV0Pt[iSp][iType][iMu][iSph]->GetNbinsX() != NPTBINS)	{
 			
-			hV0Pt[iSp][iType][iMu][iSph] = (TH1F*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
+			hV0Pt[iSp][iType][iMu][iSph] = (TH1D*)hV0Pt[iSp][iType][iMu][iSph]->Rebin(NPTBINS,hV0Pt[iSp][iType][iMu][iSph]->GetName(),XBINS);
 		}
 		
 
@@ -1101,7 +1101,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist) {
 	//hist->Rebin(8);
 	hist->GetXaxis()->SetRangeUser(fitMin,fitMax);
 	if (spNumber>1) hist->GetXaxis()->SetRangeUser(-0.05,0.05);
-	hist->GetYaxis()->SetRangeUser(1e-3,2.*hist->GetMaximum());
+	hist->GetYaxis()->SetRangeUser(1e-3, hist->GetMaximum()>0 ? 2.*hist->GetMaximum() : 2);
 	hist->Draw();
 	//fbg->Draw("same");
 
@@ -1779,7 +1779,7 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
 		hClosureTest[iSp]	= (TH1F*)hV0PtFit[iSp][0][iMu][iSph]->Clone(Form("hClosureTest_%s",SPECIES[iSp]));
-		TH1F* hDen = (TH1F*)hV0Pt[iSp][1][iMu][iSph]->Clone(Form("hDen"));
+		TH1F* hDen = (TH1D*)hV0Pt[iSp][1][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1.,"width");
 
 		mHandler->MakeNiceHistogram(hClosureTest[iSp],kBlack);

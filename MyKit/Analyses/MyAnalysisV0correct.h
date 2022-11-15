@@ -140,7 +140,9 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1F* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TH1F* hV0PtCut[25];
 		TH1F* hV0PtCutMC[25];
-		TH1F* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
+		TH2F* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+
 
 		TH1F* hClosureTestCorr[V0consts::NSPECIES];
 
