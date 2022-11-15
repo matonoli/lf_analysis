@@ -120,7 +120,6 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1F* hNchTransRC;
 		TH2F* hNchTransRCvMC;
 		TH2F* hNchTransMinRCvMC;
-		TH2F* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH1F* hPiPtRC;
 		TH1F* hPiPtMC;
 		TH1F* hKpmPtRC;

@@ -1779,7 +1779,7 @@ void MyAnalysisV0extract::DoClosureTest(Int_t opt) {
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
 		hClosureTest[iSp]	= (TH1F*)hV0PtFit[iSp][0][iMu][iSph]->Clone(Form("hClosureTest_%s",SPECIES[iSp]));
-		TH1F* hDen = (TH1D*)hV0Pt[iSp][1][iMu][iSph]->Clone(Form("hDen"));
+		TH1D* hDen = (TH1D*)hV0Pt[iSp][1][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1.,"width");
 
 		mHandler->MakeNiceHistogram(hClosureTest[iSp],kBlack);

@@ -1135,8 +1135,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
-				htmp[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
-				htmp[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+				htmp->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
 		}
@@ -1367,7 +1367,7 @@ void MyAnalysisV0correct::DoEfficiencyFromTrees() {
 		
 		// minimum bias histos
 		hV0Efficiency[iSp] = new TH1D(Form("hV0Efficiency_%s",SPECIES[iSp]),"; V0 pT (GeV/#it{c}); Efficiency",NPTBINS,XBINS); //NPTBINS2, XBINS2);
-		TH1F* hDen = (TH1F*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
+		TH1D* hDen = (TH1D*)hV0Efficiency[iSp]->Clone("hDen"); // denominator with same binning
 
 		//TString masscut = (iSp == 1 ) ? Form("MassDT < 0.03 && MassDT > -0.03") : Form("MassDT < 0.0075 && MassDT > -0.0075");
 		TCut masscutL; TCut masscutR;
@@ -1663,7 +1663,7 @@ void MyAnalysisV0correct::DoClosureTest(Int_t opt) {
 	for (Int_t iSp = 1; iSp < NSPECIES; iSp++)		{
 		Int_t iMu = 0; Int_t iSph = 0;	
 
-		TH1F* hDen = (TH1DF*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
+		TH1D* hDen = (TH1D*)hV0Pt[iSp][2][iMu][iSph]->Clone(Form("hDen"));
 		hDen->Scale(1./NormEv);
 		hDen->Scale(1./NormEta);
 		hDen->Scale(1.,"width");

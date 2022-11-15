@@ -123,19 +123,19 @@ namespace V0consts {
 		2.5, 2.9, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };*/
 
-	const Int_t NPTBINS = 16;
+	/*const Int_t NPTBINS = 16;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 5.0, 
-		6.5, 8.0 };
+		6.5, 8.0 };*/
 
-	/*const Int_t NPTBINS = 20;
+	const Int_t NPTBINS = 20;
 	const Double_t XBINS[NPTBINS+1] = { // test to study trigger bin edge effect
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 4.5, 4.8, 5.0, 5.2, 5.5, 
-		6.5, 8.0 };*/
+		6.5, 8.0 };
 
 	/*const Int_t NPTBINS = 13;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions, 1gev cut
