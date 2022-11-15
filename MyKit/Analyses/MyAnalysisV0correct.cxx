@@ -301,7 +301,7 @@ Int_t MyAnalysisV0correct::Finish() {
 				if (binwidth>0) hV0PtNt[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
 			}
 		}
-		hV0PtNt[iSp][iType][iReg]->Write();
+		//hV0PtNt[iSp][iType][iReg]->Write();
 
 	}	}	}
 
@@ -1140,6 +1140,8 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 			}
 
 		}
+
+	hV0PtNt[iSp][iType][iReg]->Write();
 
 	}	}	}
 
