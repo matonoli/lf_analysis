@@ -487,7 +487,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			hTrackTransPhiNo2011Hybrid->Fill(t.GetPhi()); }
 		if (is2011OrHybrid) {
 			nChTrans2011OrHybrid++;
-			hTrackTransPhi2011OrHybrid->Fill(t.GetPhi()); }	
+			hTrackTransPhi2011OrHybrid->Fill(t.GetPhi());
+			hTrackTransDCAXY->Fill(TMath::Abs(t.GetDCApvXY())); }	
 	}
 
 	
@@ -802,7 +803,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 		if (mFlagMC) {
 			if (t.GetEta() > cuts::V0_ETA[0] && t.GetEta() < cuts::V0_ETA[1]
-				&& t.GetSign() != 0 && t.IsMCPrimary())	{
+				&& t.GetSign() != 0 && t.IsMCPrimary() 
+				&& (t.IsITSTPC2011() || t.IsITSTPC2011HybridNone()) )	{
 				if (TMath::Abs(t.GetMCPdgCode()) == 211) hPiPtRC->Fill(t.GetPt());
 				if (TMath::Abs(t.GetMCPdgCode()) == 321) hKpmPtRC->Fill(t.GetPt());
 				if (isEventRT)	{
@@ -918,35 +920,16 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 			for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 
+				if ( IsV0VaryCut(v0,iSp,RC,DCAPVpos,0.) )
+					hV0DCAPVpos[iSp]->Fill(TMath::Abs(v0.GetPosTrack()->GetImpactParameter(0)));
 				if (IsV0(v0,iSp,RC)) {
 					
-					//if (iSp==1) cout << "detected k0s with label " << v0.GetMCLabel() << endl;
-					//else 
-					//hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode()); //
-					//printf("code is %i and %i \n", v0mc.GetPdgCode(), v0mc.GetMotherPdgCode());
 					
 					Bool_t properDaughters = ((v0.GetPosTrackPdg() == PDG_IDS_DPOS[iSp]) && (v0.GetNegTrackPdg() == PDG_IDS_DNEG[iSp]));
 					//if (iSp == 1 && !MCfound) cout << "mc code " << v0.GetMCPdgCode() << " pt " << v0.GetPt() << " primary " << v0.IsMCPrimary() << " daughters " << properDaughters << " granma " << v0.GetMCPrimaryPdgCode() << endl;
 					if (!properDaughters) continue;
 						
-					/**MyParticle v0mc2; v0mc2.SetHandler(mHandler);
-					for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
-						v0mc2 = MyParticle(mHandler->particle(PartIds[iP])); v0mc2.SetHandler(mHandler); v0mc2.SetLabel(PartIds[iP]);
-								
-
-					// ask for primary
-					// get the MC label of mother
-					// get the Xi
-					// fill histo  l.pt and xi.pt
-					if (!v0.IsMCPrimary()) {
-						printf("primary %i and grandma pdg code %i and v0 codes mc %i and rc %i \n", v0.IsMCPrimary(), v0.GetMCPrimaryPdgCode(),v0mc2.GetPdgCode(),v0.GetMCPdgCode());
-						printf("labels are mc %i and rc %i ",v0mc2.GetLabel(),v0.GetMCPrimaryLabel());
-						cout << iSp << endl;
-						cout << properDaughters << endl;
-						cout << "mc f " << MCfound << endl;
-					}
-					}
-					*/
+					
 
 					if (!v0.IsMCPrimary()) {
 							// using secondary particles to build the feeddown matrix
@@ -981,52 +964,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 							}
 						}
 					}
-					/*if (!v0.IsMCPrimary()) {			// ask for secondary
-						hV0FeeddownPDG[iSp]->Fill(v0mc.GetMotherPdgCode());
-						
-						if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {	// consider Xi->L
-							MyParticle priMC;
-							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{	// find particle Xi
-								if (PartLxiabels[iP] == v0.GetMCPrimaryLabel()) {
-									priMC = MyParticle(mHandler->particle(PartIds[iP]));
-								}
-							}
-
-							if (TMath::Abs(priMC.GetPdgCode()) != 3312) {
-								cout << "GRANDMOTHER NOT XI" << endl;
-								return 1;
-							}
-
-							hV0FeeddownMatrix[iSp]->Fill(priMC.GetPt(),v0.GetPt());
-						}
-						continue;
-					}*/
-
-					// also require daughter pdg id for association
-
-					/*if (!v0.IsMCPrimary() && MCfound) {
-							// using secondary particles to build the feeddown matrix
-
-
-							cout << "v0 not primary " << iSp << endl;
-							//if (iSp>1 && TMath::Abs(v0mc.GetMotherPdgCode()) == 3312) {
-						if (iSp>1) {
-							MyParticle xiMC; xiMC.SetHandler(mHandler);
-						
-							for (unsigned int iP = 0; iP < PartLabels.size(); ++iP)	{
-								xiMC = MyParticle(mHandler->particle(PartIds[iP])); xiMC.SetHandler(mHandler); xiMC.SetLabel(PartIds[iP]);
-								cout << "found particle w id " << xiMC.GetPdgCode() << endl;
-								if (xiMC.GetPdgCode() == 3312 && iSp==2 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == 3312)	{
-									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
-								}
-								if (xiMC.GetPdgCode() == -3312 && iSp==3 && xiMC.IsPrimary() && v0mc.GetMotherPdgCode() == -3312)	{
-									hV0FeeddownMatrix[iSp]->Fill(xiMC.GetPt(),v0.GetPt());
-								}
-							}
-						}
-					}*/
-
-
+					
 					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
 					if (!MCfound) continue;
 
@@ -1169,6 +1107,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					//if (iSp == 1) if (v0.GetMCPdgCode() == 310) continue;
 					//if (iSp > 1) if (!v0.IsMCPrimary()) continue;
 					ProcessV0toHist(v0,iSp,D,multMB,sphMB);
+					
 					if (isEventRT && iSp==1) hK0sDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
 					if (isEventRT && iSp==2) hLDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
 					if (isEventRT && iSp==3) hLbarDPhivNchTrans->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
@@ -1839,6 +1778,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hTrackTransPhiHybrid		= new TH1F("hTrackTransPhiHybrid",";#phi; Entries",	400, -0.2, 6.4);
 	hTrackTransPhiNo2011Hybrid	= new TH1F("hTrackTransPhiNo2011Hybrid",";#phi; Entries",	400, -0.2, 6.4);
 	hTrackTransPhi2011OrHybrid	= new TH1F("hTrackTransPhi2011OrHybrid",";#phi; Entries",	400, -0.2, 6.4);
+	hTrackTransDCAXY		= new TH1D("hTrackTransDCAXY",";DCA_{xy}^{PV}; Entries",	400, 0.0, 1.0);
 	hNchTransRC 			= new TH1F("hNchTransRC","; RC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransMC 			= new TH1F("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransMCTrigMC		= new TH1F("hNchTransMCTrigMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
@@ -1946,6 +1886,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	} } } }
 
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+		hV0DCAPVpos[iSp]		= new TH1D(Form("hV0DCAPVpos_%s",SPECIES[iSp]),";DCA_{xy}^{PV-d+}; Entries",	400, 0.0, 1.0);
 	for (int iType = 0; iType < nType; ++iType)		{
 
 		hV0DpiNsigTPCvpt[iSp][iType]		= new TH2F(TString::Format("hV0DpiNsigTPCvpt_%s_%s",SPECIES[iSp],TYPE[iType]),

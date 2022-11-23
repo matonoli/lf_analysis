@@ -123,19 +123,19 @@ namespace V0consts {
 		2.5, 2.9, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };*/
 
-	/*const Int_t NPTBINS = 16;
+	const Int_t NPTBINS = 16;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 5.0, 
-		6.5, 8.0 };*/
+		6.5, 8.0 };
 
-	const Int_t NPTBINS = 20;
+	/*const Int_t NPTBINS = 20;
 	const Double_t XBINS[NPTBINS+1] = { // test to study trigger bin edge effect
 		0.4, 0.6, 0.8, 1.0, 1.2, 
 		1.4, 1.6, 1.8, 2.0, 2.2, 
 		2.6, 3.0, 3.4, 4.0, 4.5, 4.8, 5.0, 5.2, 5.5, 
-		6.5, 8.0 };
+		6.5, 8.0 };*/
 
 	/*const Int_t NPTBINS = 13;
 	const Double_t XBINS[NPTBINS+1] = { // divisible by omar's pions, 1gev cut
@@ -413,6 +413,7 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1F* hTrackTransPhiHybrid;
 		TH1F* hTrackTransPhiNo2011Hybrid;
 		TH1F* hTrackTransPhi2011OrHybrid;
+		TH1D* hTrackTransDCAXY;
 		TH1F* hNchTransRC;
 		TH1F* hNchTransMC;
 		TH1F* hNchTransMCTrigMC;
@@ -481,6 +482,7 @@ class MyAnalysisV0: public MyAnalysis {
 		// V0 HISTOGRAMS
 		TH1F* hV0Radius;
 		TH1F* hV0ProperT;
+		TH1D* hV0DCAPVpos[V0consts::NSPECIES];
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0Eta[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0Y[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
