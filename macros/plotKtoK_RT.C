@@ -311,7 +311,7 @@ void plotKtoK_RT() {
   TH1D* hK0soverK[NREGIONS][NRT];
 
   // kpm
-  TFile* fIn = new TFile(Form("%s/out_mc_221115.root",path.Data()),"READ");
+  TFile* fIn = new TFile(Form("%s/outMC_221128.root",path.Data()),"READ");
   TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0correct_2"); 
   hK0sNt[Transverse]  = (TH2F*)dirCorr->Get("hV0PtNtFitCorr_K0s_RC_Trans");
   hK0sNt[Near]        = (TH2F*)dirCorr->Get("hV0PtNtFitCorr_K0s_RC_Near");
@@ -320,6 +320,13 @@ void plotKtoK_RT() {
   hKNt[Transverse]  = (TH2F*)dirCorr->Get("hKpmPtNtRC_Trans");
   hKNt[Near]        = (TH2F*)dirCorr->Get("hKpmPtNtRC_Near");
   hKNt[Away]        = (TH2F*)dirCorr->Get("hKpmPtNtRC_Away");
+  /*hK0sNt[Transverse]  = (TH2F*)dirCorr->Get("hV0PtNt_K0s_MC_Trans");
+  hK0sNt[Near]        = (TH2F*)dirCorr->Get("hV0PtNt_K0s_MC_Near");
+  hK0sNt[Away]        = (TH2F*)dirCorr->Get("hV0PtNt_K0s_MC_Away");
+  
+  hKNt[Transverse]  = (TH2F*)dirCorr->Get("hKpmPtNtMC_Trans");
+  hKNt[Near]        = (TH2F*)dirCorr->Get("hKpmPtNtMC_Near");
+  hKNt[Away]        = (TH2F*)dirCorr->Get("hKpmPtNtMC_Away");*/
   
   
   for (int iR = 0; iR < NREGIONS; ++iR)  {

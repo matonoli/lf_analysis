@@ -436,6 +436,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		// using hybrid tracks instead
 		if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
 		//if (!t.IsITSTPC2011()) continue;
+
+		// APPLY DCA CUT TO AVOID V0 DAUGHTERS
+		if (TMath::Abs(t.GetDCApvXY()) > cuts::V0_D_DCAPVXY) continue;
 		
 		hNchvLeadPt->Fill(ptLead);
 		nChTrans0++;
@@ -634,6 +637,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			hNchTransRC->Fill(nChTrans);
 			hNchTransMC->Fill(nChTransMC);
 			hNchTransRCvMC->Fill(nChTransMC,nChTrans);
+			hNchTransMinRC->Fill(nChTransMin);
+			hNchTransMinMC->Fill(nChTransMinMC);
 			hNchTransMinRCvMC->Fill(nChTransMinMC,nChTransMin);
 			eventRtMC = (double)nChTransMC/RT_DEN_MC;
 			hRtMC->Fill(eventRtMC);
@@ -664,6 +669,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	if (ptLeadMC>5. && ptLeadMC<40.) {
 		isEventRTMC = true;
 		hNchTransMCTrigMC->Fill(nChTransMC);
+		hNchTransMinMCTrigMC->Fill(nChTransMinMC);
 	}
 
 	if ( 0 && ( isEventRT || isEventRTMC) && nChTransMinMC==0 && nChTransMin>0) {
@@ -804,7 +810,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (mFlagMC) {
 			if (t.GetEta() > cuts::V0_ETA[0] && t.GetEta() < cuts::V0_ETA[1]
 				&& t.GetSign() != 0 && t.IsMCPrimary() 
-				&& (t.IsITSTPC2011() || t.IsITSTPC2011HybridNone()) )	{
+				&& (t.IsITSTPC2011() || t.IsITSTPC2011HybridNone()) 
+				&& TMath::Abs(t.GetDCApvXY()) < cuts::V0_D_DCAPVXY)	{
 				if (TMath::Abs(t.GetMCPdgCode()) == 211) hPiPtRC->Fill(t.GetPt());
 				if (TMath::Abs(t.GetMCPdgCode()) == 321) hKpmPtRC->Fill(t.GetPt());
 				if (isEventRT)	{
@@ -1783,6 +1790,9 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hNchTransMC 			= new TH1F("hNchTransMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransMCTrigMC		= new TH1F("hNchTransMCTrigMC","; MC N_ch [trans.]; Entries",50, -0.5, 49.5);
 	hNchTransRCvMC			= new TH2F("hNchTransRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]",50,-0.5,49.5,50,-0.5,49.5);
+	hNchTransMinRC 			= new TH1F("hNchTransMinRC","; RC N_ch [trans.,min]; Entries",50, -0.5, 49.5);
+	hNchTransMinMC 			= new TH1F("hNchTransMinMC","; MC N_ch [trans.,min]; Entries",50, -0.5, 49.5);
+	hNchTransMinMCTrigMC		= new TH1F("hNchTransMinMCTrigMC","; MC N_ch [trans.,min]; Entries",50, -0.5, 49.5);
 	hNchTransMinRCvMC		= new TH2F("hNchTransMinRCvMC", ";MC N_ch [trans.,min]; RC N_ch [trans.,min]",50,-0.5,49.5,50,-0.5,49.5);
 	hNtvNtMin				= new TH2F("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
 	hNtvNtMax				= new TH2F("hNtvNtMax","; N_ch [trans.,max]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);

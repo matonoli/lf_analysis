@@ -418,6 +418,9 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1F* hNchTransMC;
 		TH1F* hNchTransMCTrigMC;
 		TH2F* hNchTransRCvMC;
+		TH1F* hNchTransMinRC;
+		TH1F* hNchTransMinMC;
+		TH1F* hNchTransMinMCTrigMC;
 		TH2F* hNchTransMinRCvMC;
 		TH2F* hNtvNtMin;
 		TH2F* hNtvNtMax;
