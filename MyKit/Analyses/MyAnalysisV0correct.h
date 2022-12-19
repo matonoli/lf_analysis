@@ -119,6 +119,9 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1F* hNchTransMCTrigMC;
 		TH1F* hNchTransRC;
 		TH2F* hNchTransRCvMC;
+		TH1F* hNchTransMinMC;
+		TH1F* hNchTransMinMCTrigMC;
+		TH1F* hNchTransMinRC;
 		TH2F* hNchTransMinRCvMC;
 		TH1F* hPiPtRC;
 		TH1F* hPiPtMC;
@@ -128,6 +131,10 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH2F* hPiPtNtRC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtMC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtRC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMinMC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMinRC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMinMC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMinRC[V0consts::NREGIONS];
 
 		TH1F* hRt;
 		TH1F* hRt2;
@@ -135,12 +142,14 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1F* hV0PtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH2F* hV0PtNtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMinFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH1F* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1F* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TH1F* hV0PtCut[25];
 		TH1F* hV0PtCutMC[25];
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2F* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
 
 		TH1F* hClosureTestCorr[V0consts::NSPECIES];

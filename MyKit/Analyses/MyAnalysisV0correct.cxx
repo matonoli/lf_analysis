@@ -110,18 +110,11 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 
 		hV0PtNtFit[iSp][iType][iReg]		
 			= (TH2F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtNtFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hV0PtNtMinFit[iSp][iType][iReg]		
+			= (TH2F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtNtMinFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
 		
 	}	}	}
 
-	if (mHandler->GetFlagMC()) {
-	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	Int_t iType = 2;
-	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
-
-		hV0PtNt[iSp][iType][iReg]		
-			= (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
-	}	}	
-	}
 
 	if (mHandler->GetFlagMC()) {
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -160,6 +153,9 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	hNchTransMCTrigMC			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMCTrigMC");
 	hNchTransRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC");
 	hNchTransRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRCvMC");
+	hNchTransMinMC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMC");
+	hNchTransMinMCTrigMC			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMCTrigMC");
+	hNchTransMinRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC");
 	hNchTransMinRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinRCvMC");
 	if (mHandler->GetFlagMC()) {
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
@@ -168,6 +164,8 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 				
 		hV0PtNt[iSp][iType][iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
 		hV0PtNt[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0PtNt[iSp][iType][iReg]);
+		hV0PtNtMin[iSp][iType][iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0PtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hV0PtNtMin[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hV0PtNtMin[iSp][iType][iReg]);
 
 	}	}	}
 	}
@@ -189,6 +187,16 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 			hKpmPtNtRC[iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hKpmPtNtRC[iReg]);
 			hKpmPtNtMC[iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hKpmPtNtMC_%s",REGIONS[iReg]));
 			hKpmPtNtMC[iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hKpmPtNtMC[iReg]);
+
+			hPiPtNtMinRC[iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hPiPtNtMinRC_%s",REGIONS[iReg]));
+			hPiPtNtMinRC[iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hPiPtNtMinRC[iReg]);
+			hPiPtNtMinMC[iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hPiPtNtMinMC_%s",REGIONS[iReg]));
+			hPiPtNtMinMC[iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hPiPtNtMinMC[iReg]);
+
+			hKpmPtNtMinRC[iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hKpmPtNtMinRC_%s",REGIONS[iReg]));
+			hKpmPtNtMinRC[iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hKpmPtNtMinRC[iReg]);
+			hKpmPtNtMinMC[iReg] = (TH2F*)mHandler->analysis(0)->dirFile()->Get(Form("hKpmPtNtMinMC_%s",REGIONS[iReg]));
+			hKpmPtNtMinMC[iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hKpmPtNtMinMC[iReg]);
 		}
 	}	
 
@@ -288,6 +296,9 @@ Int_t MyAnalysisV0correct::Finish() {
 	hNchTransMCTrigMC->Write();
 	hNchTransRC->Write();
 	hNchTransRCvMC->Write();
+	hNchTransMinMC->Write();
+	hNchTransMinMCTrigMC->Write();
+	hNchTransMinRC->Write();
 	hNchTransMinRCvMC->Write();
 
 	if (mHandler->GetFlagMC()) {
@@ -303,6 +314,16 @@ Int_t MyAnalysisV0correct::Finish() {
 				float bine = hV0PtNt[iSp][iType][iReg]->GetBinError(iX,iY);
 				if (binwidth>0) hV0PtNt[iSp][iType][iReg]->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) hV0PtNt[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
+			}
+		}
+
+		for (int iX = 1; iX < hV0PtNtMin[iSp][iType][iReg]->GetNbinsX()+1; iX++) {
+			for (int iY = 1; iY < hV0PtNtMin[iSp][iType][iReg]->GetNbinsY()+1; iY++) {	
+				float binwidth = hV0PtNtMin[iSp][iType][iReg]->GetXaxis()->GetBinWidth(iX);
+				float binc = hV0PtNtMin[iSp][iType][iReg]->GetBinContent(iX,iY);
+				float bine = hV0PtNtMin[iSp][iType][iReg]->GetBinError(iX,iY);
+				if (binwidth>0) hV0PtNtMin[iSp][iType][iReg]->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) hV0PtNtMin[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
 			}
 		}
 		//hV0PtNt[iSp][iType][iReg]->Write();
@@ -350,6 +371,34 @@ Int_t MyAnalysisV0correct::Finish() {
 				bine = htmp->GetBinError(iX,iY);
 				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
+
+				htmp = hPiPtNtMinRC[iReg];
+				float binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				float binc = htmp->GetBinContent(iX,iY);
+				float bine = htmp->GetBinError(iX,iY);
+				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
+
+				htmp = hPiPtNtMinMC[iReg];
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
+				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
+
+				htmp = hKpmPtNtMinRC[iReg];
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
+				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
+
+				htmp = hKpmPtNtMinMC[iReg];
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
+				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 			}	}
 
 			// CORRECT FOR EFFI
@@ -360,6 +409,11 @@ Int_t MyAnalysisV0correct::Finish() {
 					(float)hPiPtNtRC[iReg]->GetBinContent(iX,iY)/hPiPtRC->GetBinContent(iX) : 0);
 				hKpmPtNtRC[iReg]->SetBinContent(iX,iY, hKpmPtRC->GetBinContent(iX)>0 ? 
 					(float)hKpmPtNtRC[iReg]->GetBinContent(iX,iY)/hKpmPtRC->GetBinContent(iX) : 0);
+
+				hPiPtNtMinRC[iReg]->SetBinContent(iX,iY, hPiPtRC->GetBinContent(iX)>0 ? 
+					(float)hPiPtNtMinRC[iReg]->GetBinContent(iX,iY)/hPiPtRC->GetBinContent(iX) : 0);
+				hKpmPtNtMinRC[iReg]->SetBinContent(iX,iY, hKpmPtRC->GetBinContent(iX)>0 ? 
+					(float)hKpmPtNtMinRC[iReg]->GetBinContent(iX,iY)/hKpmPtRC->GetBinContent(iX) : 0);
 
 				// errors ?
 			}	}
@@ -1144,6 +1198,16 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
+			htmp = hV0PtNtMinFitCorr[iSp][iType][iReg];
+			hpt = (TH1F*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			if (NormEta>0) hpt->Scale(1./NormEta);
+			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
+
+			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
+				htmp->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			}
+
 		}
 
 	}	}	}
@@ -1171,9 +1235,21 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
+			htmp = hV0PtNtMin[iSp][iType][iReg];
+
+			hpt = (TH1D*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			if (NormEta>0) hpt->Scale(1./NormEta);
+			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
+
+			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
+				htmp->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			}
+
 		}
 
 		hV0PtNt[iSp][iType][iReg]->Write();
+		hV0PtNtMin[iSp][iType][iReg]->Write();
 
 	}	}	}
 	}
@@ -1198,14 +1274,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			/*hpt = (TH1F*)hPiPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hPiPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hPiPtNtMinRC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hPiPtNtMinRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}*/
+			}
 
 			hpt = (TH1F*)hKpmPtNtRC[iReg]->ProjectionX(Form("%s_%i",hKpmPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
@@ -1216,14 +1292,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			/*hpt = (TH1F*)hKpmPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hKpmPtNtMinRC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hKpmPtNtMinRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}*/
+			}
 
 			NormEv = hNchTransMCTrigMC->Integral(1,50);
 
@@ -1236,14 +1312,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			/*hpt = (TH1F*)hPiPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hPiPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hPiPtNtMinMC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hPiPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}*/
+			}
 
 			hpt = (TH1F*)hKpmPtNtMC[iReg]->ProjectionX(Form("%s_%i",hKpmPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
@@ -1254,14 +1330,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			/*hpt = (TH1F*)hKpmPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
 			for (int iBin = 1; iBin < hPiPtNtRC[0]->GetNbinsX()+1; iBin++) {
 				hKpmPtNtMinMC[iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hKpmPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
-			}*/
+			}
 
 		}		
 
@@ -1269,6 +1345,11 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 		hPiPtNtMC[iReg]->Write();
 		hKpmPtNtRC[iReg]->Write();
 		hKpmPtNtMC[iReg]->Write();
+
+		hPiPtNtMinRC[iReg]->Write();
+		hPiPtNtMinMC[iReg]->Write();
+		hKpmPtNtMinRC[iReg]->Write();
+		hKpmPtNtMinMC[iReg]->Write();
 
 	}
 	}
