@@ -238,7 +238,7 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 			Form("hV0PtNtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg])	);
 
 		hV0PtNtMinFitCorr[iSp][iType][iReg]		= (TH2F*)hV0PtNtMinFit[iSp][iType][iReg]->Clone(
-			Form("hV0PtNtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg])	);
+			Form("hV0PtNtMinFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg])	);
 
 	}	}	}
 
@@ -1653,6 +1653,16 @@ void MyAnalysisV0correct::CorrectSpectra() {
 			for (int iBin = 1; iBin < hV0PtNtFitCorr[1][0][0]->GetNbinsX()+1; iBin++) {
 				hV0PtNtFitCorr[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hV0PtNtFitCorr[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			}
+
+			hpt = (TH1F*)hV0PtNtMinFitCorr[iSp][iType][iReg]->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			hpt->Divide(hV0Efficiency[iSp]);
+			//hpt->Divide(funcRapCorrection2,1.);
+			//hpt->Scale(MBtrigEff);
+
+			for (int iBin = 1; iBin < hV0PtNtMinFitCorr[1][0][0]->GetNbinsX()+1; iBin++) {
+				hV0PtNtMinFitCorr[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				hV0PtNtMinFitCorr[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
 		}
