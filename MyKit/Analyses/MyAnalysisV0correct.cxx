@@ -153,9 +153,9 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 	hNchTransMCTrigMC			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMCTrigMC");
 	hNchTransRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC");
 	hNchTransRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRCvMC");
-	hNchTransMinMC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMC");
-	hNchTransMinMCTrigMC			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMCTrigMC");
-	hNchTransMinRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC");
+	hNchTransMinMC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinMC");
+	hNchTransMinMCTrigMC			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinMCTrigMC");
+	hNchTransMinRC					= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinRC");
 	hNchTransMinRCvMC				= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMinRCvMC");
 	if (mHandler->GetFlagMC()) {
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
