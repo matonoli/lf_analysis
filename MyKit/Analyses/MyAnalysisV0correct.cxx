@@ -237,6 +237,9 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 		hV0PtNtFitCorr[iSp][iType][iReg]		= (TH2F*)hV0PtNtFit[iSp][iType][iReg]->Clone(
 			Form("hV0PtNtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg])	);
 
+		hV0PtNtMinFitCorr[iSp][iType][iReg]		= (TH2F*)hV0PtNtMinFit[iSp][iType][iReg]->Clone(
+			Form("hV0PtNtFitCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg])	);
+
 	}	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -373,9 +376,9 @@ Int_t MyAnalysisV0correct::Finish() {
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 
 				htmp = hPiPtNtMinRC[iReg];
-				float binwidth = htmp->GetXaxis()->GetBinWidth(iX);
-				float binc = htmp->GetBinContent(iX,iY);
-				float bine = htmp->GetBinError(iX,iY);
+				binwidth = htmp->GetXaxis()->GetBinWidth(iX);
+				binc = htmp->GetBinContent(iX,iY);
+				bine = htmp->GetBinError(iX,iY);
 				if (binwidth>0) htmp->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) htmp->SetBinError(iX,iY,bine/binwidth);
 
