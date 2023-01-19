@@ -983,7 +983,6 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
 Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 
-	cout << "ERR GOT HERE " << hist << endl;
 
 
 	static Double_t val[2];
@@ -999,8 +998,6 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	Int_t spNumber = spName.Atoi();
 
 	Bool_t isRt = histName.Contains("Rt");
-
-	cout << "ERR GOT HERE " << hist << endl;
 
 	/*TString muName(histName(histName.Index("iMu")+3,1));
 	Int_t muNumber = muName.Atoi();*/
@@ -1076,7 +1073,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 
 
 	Double_t N 	= hist->Integral(hist->FindBin(Mean-NSig*Sigma),hist->FindBin(Mean+NSig*Sigma));
-	cout << "N 1 " << N << endl;
+
 	N = DT_set.sumEntries(0,"sigR");
 	//cout << "N 2 " << N << endl;
 	//Double_t Bg = hist->Integral(hist->FindBin(Mean-2*NSig*Sigma),hist->FindBin(Mean-NSig*Sigma));
@@ -1127,11 +1124,9 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	//cout << isRt << " " << cFitsRt[canCounterRt/nBins] << " " << canCounterRt/nBins << " " << canCounterRt%nBins << endl;
 	//cout << "aa " << canCounterRt << " " << nBins << endl;
 
-	cout << "ERR GOT HERE3 " << hist << endl;
 
 	if (!willDraw) return val;
 
-	cout << "ERR GOT HERE4 " << hist << endl;
 
 	if (!isRt) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 	else cFitsRt[canCounterRt/nBins]->cd(1+canCounterRt%nBins);
