@@ -11,11 +11,8 @@ using namespace std;
 TString path("../Unfolding");
 
 // HELPER GLOBAL VARIABLES
-enum {Transverse, Near, Away, NREGIONS};
-enum {LowRT, HighRT, Int, NRT};
+enum {is2011, isComp, isHybrid, NTRACKS};
 
-const char* strS[NREGIONS] = {"Transverse", "Near", "Away"};
-const char* strH[NRT] = {"N_{T}<7", "N_{T}>14", "Integrated"};
 Int_t colors[3] = {kRed, kBlue, kBlack};
 
 
@@ -215,7 +212,7 @@ void MakeNiceHistogram(TH1D* h, Int_t col) {
   h->SetLineColor(col);
   h->SetLineWidth(1);
   h->SetMarkerStyle(20);
-  h->SetMarkerSize(0.8);
+  h->SetMarkerSize(0.9);
   h->SetMarkerColor(col);
   h->SetStats(0);
   h->SetFillStyle(0);
@@ -269,11 +266,8 @@ void DrawHistograms(TH1D** h, Int_t nhist) {
   for (int iH = 0; iH < nhist; ++iH) {
     
     MakeNiceHistogram(h[iH],colors[iH]);
+    h[iH]->Draw("E X0 hist same");
   }
-
-  h[Int]->Draw("E X0 same");
-  h[LowRT]->Draw("E X0 same");
-  h[HighRT]->Draw("E X0 same");
 
 }
 TH1D* MakeRatioHist(TH1D* hn, TH1D* hd) {
@@ -286,89 +280,69 @@ TH1D* MakeRatioHist(TH1D* hn, TH1D* hd) {
 
 void DrawHistogramsRatios(TH1D** hn, TH1D** hd, Int_t nhist, Int_t col) {
 
-  TH1D* hr[NRT];
+  TH1D* hr[nhist];
   for (int iH = 0; iH < nhist; ++iH) {
     
     hr[iH] = MakeRatioHist(hn[iH],hd[iH]);
+    hr[iH]->Draw("E X0 same");
   }
-
-  hr[Int]->Draw("E X0 same");
-  hr[LowRT]->Draw("E X0 same");
-  hr[HighRT]->Draw("E X0 same");
 }
 
 
 
-void plotKtoK_RT() {
+void plotInfoRT_ntDCA() {
 
   TH1::SetDefaultSumw2(1);
 
-  TH2F* hK0sNt[NREGIONS];
-  TH2F* hKNt[NREGIONS];
-  TH1D* hK0s[NREGIONS][NRT];
-  TH1D* hK[NREGIONS][NRT];
-  TH1D* hK_r[NREGIONS][NRT];
-  TH1D* hK0soverK[NREGIONS][NRT];
+  // DEFINE WORKING HISTOGRAMS HERE
+  TH1D* hNtMC;
+  TH1D* hNtRC;
+  TH1D* hNtUnf;
+  TH1D* hNtDCAMC;
+  TH1D* hNtDCARC;
+  TH1D* hNtDCAUnf;
 
-  // kpm
-  TFile* fIn = new TFile(Form("%s/outMC_221129.root",path.Data()),"READ");
-  TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0correct_2"); 
-  hK0sNt[Transverse]  = (TH2F*)dirCorr->Get("hV0PtNtFitCorr_K0s_RC_Trans");
-  hK0sNt[Near]        = (TH2F*)dirCorr->Get("hV0PtNtFitCorr_K0s_RC_Near");
-  hK0sNt[Away]        = (TH2F*)dirCorr->Get("hV0PtNtFitCorr_K0s_RC_Away");
+
+  // FETCH SOURCE HISTOGRAMS FROM FILES
+  TFile* fIn = new TFile(Form("%s/outMC_221219.root",path.Data()),"READ");
+  TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0correct_2");
+  hNtDCAMC = (TH1D*)dirCorr->Get("hNchTransMC");
+  hNtDCARC = (TH1D*)dirCorr->Get("hNchTrans");
+
+  fIn = new TFile(Form("%s/outMC_221128.root",path.Data()),"READ");
+  dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0correct_2");
+  hNtMC = (TH1D*)dirCorr->Get("hNchTransMC");
+  hNtRC = (TH1D*)dirCorr->Get("hNchTrans");
+
+  fIn = new TFile(Form("%s/results/1D_newClass_mc_1219.root",path.Data()),"READ");
+  hNtDCAUnf = (TH1D*)fIn->Get("hNT");
+
+  fIn = new TFile(Form("%s/results/1D_newClass_mc_1128.root",path.Data()),"READ");
+  hNtUnf = (TH1D*)fIn->Get("hNT");
   
-  hKNt[Transverse]  = (TH2F*)dirCorr->Get("hKpmPtNtRC_Trans");
-  hKNt[Near]        = (TH2F*)dirCorr->Get("hKpmPtNtRC_Near");
-  hKNt[Away]        = (TH2F*)dirCorr->Get("hKpmPtNtRC_Away");
-  /*hK0sNt[Transverse]  = (TH2F*)dirCorr->Get("hV0PtNt_K0s_MC_Trans");
-  hK0sNt[Near]        = (TH2F*)dirCorr->Get("hV0PtNt_K0s_MC_Near");
-  hK0sNt[Away]        = (TH2F*)dirCorr->Get("hV0PtNt_K0s_MC_Away");
+
+  // PROCESS HISTOGRAMS HERE
+  Double_t nEvRT = (hNtMC->GetEntries() > 0) ? hNtMC->GetEntries() : 1;
+  hNtMC->Scale(1./nEvRT); hNtRC->Scale(1./nEvRT); hNtUnf->Scale(1./nEvRT);
+  nEvRT = (hNtDCAMC->GetEntries() > 0) ? hNtDCAMC->GetEntries() : 1;
+  hNtDCAMC->Scale(1./nEvRT); hNtDCARC->Scale(1./nEvRT); hNtDCAUnf->Scale(1./nEvRT);
   
-  hKNt[Transverse]  = (TH2F*)dirCorr->Get("hKpmPtNtMC_Trans");
-  hKNt[Near]        = (TH2F*)dirCorr->Get("hKpmPtNtMC_Near");
-  hKNt[Away]        = (TH2F*)dirCorr->Get("hKpmPtNtMC_Away");*/
-  
-  
-  for (int iR = 0; iR < NREGIONS; ++iR)  {
-    
-    hK0s[iR][LowRT] = (TH1D*)hK0sNt[iR]->ProjectionX(Form("hK0s_%i_%i",iR,LowRT),1,6);
-    hK0s[iR][HighRT] = (TH1D*)hK0sNt[iR]->ProjectionX(Form("hK0s_%i_%i",iR,HighRT),15,50);
-    hK0s[iR][Int] = (TH1D*)hK0sNt[iR]->ProjectionX(Form("hK0s_%i_%i",iR,Int),0,50);
-
-    hK[iR][LowRT] = (TH1D*)hKNt[iR]->ProjectionX(Form("hK_%i_%i",iR,LowRT),1,6);
-    hK[iR][HighRT] = (TH1D*)hKNt[iR]->ProjectionX(Form("hK_%i_%i",iR,HighRT),15,50);
-    hK[iR][Int] = (TH1D*)hKNt[iR]->ProjectionX(Form("hK_%i_%i",iR,Int),0,50);
-
-  }
-
-
-
-  // CALCULATE RATIOS
-  for (int iR = 0; iR < NREGIONS; ++iR)  {
-  for (int iN = 0; iN < NRT; ++iN)  {
-
-    hK0soverK[iR][iN] = (TH1D*)hK0s[iR][iN]->Clone(Form("hK0soverK_%i_%i",iR,iN));
-    hK0soverK[iR][iN]->Divide(hK0soverK[iR][iN],hK[iR][iN],2.);
-    
-
-  } }
-
 
   // MAKE PLOTS
   SetStyle(kFALSE);
 
   TCanvas *C = (TCanvas*) gROOT->FindObject("C");
   if (C) delete C;
-  C = new TCanvas("C","canvas",1200,500);
+  C = new TCanvas("C","canvas",900,600);
   C->SetFillStyle(4000);
 
   // Number of PADS
-  const int Nx = 3;
+  const int Nx = 1;
   const int Ny = 1;
 
   // Margins
-  float lMargin = 0.03;
-  float rMargin = 0.03;
+  float lMargin = 0.06;
+  float rMargin = 0.05;
   float bMargin = 0.05;
   float tMargin = 0.05;
 
@@ -378,11 +352,11 @@ void plotKtoK_RT() {
   int latexTextSize = 18; 
   float legendTextSize = 0.05;
 
-  const double minYratio = 0.7;
-  const double maxYratio = 1.62;
+  const double minYratio = 0.000001;
+  const double maxYratio = 10.5*hNtMC->GetMaximum();
 
-  const double minXleft = 0.39;
-  const double maxXleft = 5.21;
+  const double minXleft = -0.1;
+  const double maxXleft = 35.7;
 
 
   // Left frames
@@ -391,7 +365,6 @@ void plotKtoK_RT() {
   hframeRatioLeft->GetXaxis()->SetMoreLogLabels(kTRUE);
   //hframeRatioLeft->GetYaxis()->SetMoreLogLabels(kTRUE);
   hframeRatioLeft->GetXaxis()->SetNoExponent(kTRUE);
-
 
   TLine* lineleft = new TLine(minXleft, 1., maxXleft, 1.);
   lineleft->SetLineStyle(2);
@@ -414,11 +387,13 @@ void plotKtoK_RT() {
   TLatex* latexSystem = new TLatex();
   TuneLatex(latexSystem,latexTextSize);
 
-  TLegend* legendLeft = new TLegend(0.45,0.71,0.91,0.90);
+  TLegend* legendLeft = new TLegend(0.15,0.151,0.451,0.45);
   myLegendSetUp(legendLeft,legendTextSize);
-  legendLeft->AddEntry(hK0soverK[Transverse][2],"N_{T}-integrated","P");
-  legendLeft->AddEntry(hK0soverK[Transverse][0],"N_{T} < 7","P");
-  legendLeft->AddEntry(hK0soverK[Transverse][1],"N_{T} > 14","P");
+  legendLeft->AddEntry(hNtMC,"True","PL");
+  legendLeft->AddEntry(hNtRC,"Uncorrected","P");
+  legendLeft->AddEntry(hNtUnf,"Unfolded","P");
+  legendLeft->AddEntry(hNtDCARC,"Uncorrected, DCA_{xy} cut","P");
+  legendLeft->AddEntry(hNtDCAUnf,"Unfolded, DCA_{xy} cut","P");
 
   TLegend* legendRight = new TLegend(0.8,0.7,0.95,0.85);
   myLegendSetUp(legendRight,legendTextSize);
@@ -454,58 +429,46 @@ void plotKtoK_RT() {
   C->cd(0);
   pad[0][0]->Draw();
   pad[0][0]->cd();
+  pad[0][0]->SetLogy(kTRUE);
   hframeRatioLeft->Draw();
-  lineleft->Draw("same");
-  DrawHistograms(hK0soverK[Transverse],NRT);
-
-  latexSystem->DrawLatex(0.15,0.92,"pp, #sqrt{s} = 13 TeV");
-  latexSystem->DrawLatex(0.15,0.86,"|#eta|<0.8");
-  latexSystem->DrawLatex(0.15,0.80,"ALICE");
-
-  latexSp->DrawLatex(0.15,0.7,"Transverse");
-
-  C->cd(0);
-  pad[1][0]->Draw();
-  pad[1][0]->cd();
-  hframeRatioLeft->Draw();
-  lineleft->Draw("same");
-  DrawHistograms(hK0soverK[Near],NRT);
-  latexSp->DrawLatex(0.15,0.7,"Near");
-
-  C->cd(0);
-  pad[2][0]->Draw();
-  pad[2][0]->cd();
-  hframeRatioLeft->Draw();
-  lineleft->Draw("same");
-  DrawHistograms(hK0soverK[Away],NRT);
-  latexSp->DrawLatex(0.15,0.7,"Away");
-  legendLeft->Draw();
-
-  C->cd(0);
-
   
-  legendRight->Draw();
+  MakeNiceHistogram(hNtMC, colors[0]); hNtMC->SetMarkerStyle(24);
+  MakeNiceHistogram(hNtUnf, colors[2]); hNtUnf->SetMarkerStyle(24);
+  MakeNiceHistogram(hNtRC, colors[1]); hNtRC->SetMarkerStyle(24);
+  MakeNiceHistogram(hNtDCAMC, colors[0]);
+  MakeNiceHistogram(hNtDCAUnf, colors[2]);
+  MakeNiceHistogram(hNtDCARC, colors[1]);
+
+  hNtMC->Draw("E X0 hist same");
+  hNtUnf->Draw("E X0 same");
+  hNtRC->Draw("E X0  same");
+  hNtDCAMC->Draw("E X0  same");
+  hNtDCAUnf->Draw("E X0  same");
+  hNtDCARC->Draw("E X0  same");
+
+  latexSystem->DrawLatex(0.75,0.92,"pp, #sqrt{s} = 13 TeV");
+  latexSystem->DrawLatex(0.75,0.86,"|#eta|<0.8");
+  latexSystem->DrawLatex(0.75,0.80,"ALICE");
+
+  legendLeft->Draw();
+  //latexSp->DrawLatex(0.15,0.7,"Transverse");
 
   C->cd(0);
   padTitleX->Draw();
   padTitleX->cd();
-  const char* TitleX = "#it{p}_{T} (GeV/#it{c})";
-  latexTitleX->DrawLatex(0.45, 0.5, TitleX);
+  const char* TitleX = "N_{T}";
+  latexTitleX->DrawLatex(0.9, 0.6, TitleX);
 
-  C->cd(0);
-  padTitleY1->Draw();
-  padTitleY1->cd();
-  const char* TitleY1 = "2x K_{S}^{0} /";
-  latexTitleY1->SetTextAngle(90);
-  latexTitleY1->DrawLatex(0.5, 0.65, TitleY1);
   C->cd(0);
   padTitleY2->Draw();
   padTitleY2->cd();
-  const char* TitleY2 = " K^{#pm}";
+  const char* TitleY2 = "P(N_{T})";
   latexTitleY2->SetTextAngle(90);
   latexTitleY2->DrawLatex(0.5, 0.0, TitleY2);
+  
 
-  C->SaveAs(Form("./KtoK.pdf"));
+  C->SaveAs(Form("./InfoRT_ntDCA.pdf"));
+  C->SaveAs(Form("./InfoRT_ntDCA.png"));
 
 
 }
