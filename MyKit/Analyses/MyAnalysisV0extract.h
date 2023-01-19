@@ -112,6 +112,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		TH2F* hV0IMvPtBackground[V0consts::NSPECIES];
 
 		TH3F* hV0IMvPtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH3F* hV0IMvPtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0IMvPtRt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 
 

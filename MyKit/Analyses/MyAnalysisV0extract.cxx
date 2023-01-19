@@ -100,8 +100,12 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 		
 		hV0IMvPtNt[iSp][iType][iReg] 
 			= (TH3F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hV0IMvPtNtMin[iSp][iType][iReg] 
+			= (TH3F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
 	
 		hV0IMvPtNt[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH3(hV0IMvPtNt[iSp][iType][iReg]);
+		hV0IMvPtNtMin[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH3(hV0IMvPtNtMin[iSp][iType][iReg]);
+
 
 	} } } 
 
