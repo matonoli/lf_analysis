@@ -692,7 +692,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 			
 				// ACTUAL RAW YIELDS
 				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
-					Form("Rt_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
+					Form("Nt_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
 					iBin,iBin));
 
 				hV0PtNtFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
@@ -715,6 +715,49 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 				float bine = hV0PtNtFit[iSp][iType][iReg]->GetBinError(iX,iY);
 				if (binwidth>0) hV0PtNtFit[iSp][iType][iReg]->SetBinContent(iX,iY,binc/binwidth);
 				if (binwidth>0) hV0PtNtFit[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
+			}
+		}
+
+	} } }
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		for (int iNt = 1; iNt < hV0IMvPtNtMin[iSp][iType][iReg]->GetZaxis()->GetNbins()+1; iNt++)	{
+
+			hV0IMvPtNtMin[iSp][iType][iReg]->GetZaxis()->SetRange(iNt,iNt);
+			TH2F* hXY = (TH2F*)hV0IMvPtNtMin[iSp][iType][iReg]->Project3D("yx");			
+
+			printf("Extracting yield for pt spectrum NtMin iSp%i_iType%i_iReg%i_iNtBin%i \n",iSp,iType,iReg,iNt);
+			
+			Double_t* yield = 0;
+			Int_t binCounter = 1;
+
+
+			for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
+			
+				// ACTUAL RAW YIELDS
+				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
+					Form("NtMin_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
+					iBin,iBin));
+
+				hV0PtNtMinFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
+				hV0PtNtMinFit[iSp][iType][iReg]->SetBinError(iBin,iNt,*(yield+1));
+				binCounter++;
+
+			}
+
+		} 
+
+		// SCALE BY BIN WIDTH
+		for (int iX = 1; iX < hV0PtNtMinFit[iSp][iType][iReg]->GetNbinsX()+1; iX++) {
+			for (int iY = 1; iY < hV0PtNtMinFit[iSp][iType][iReg]->GetNbinsY()+1; iY++) {	
+				float binwidth = hV0PtNtMinFit[iSp][iType][iReg]->GetXaxis()->GetBinWidth(iX);
+				float binc = hV0PtNtMinFit[iSp][iType][iReg]->GetBinContent(iX,iY);
+				float bine = hV0PtNtMinFit[iSp][iType][iReg]->GetBinError(iX,iY);
+				if (binwidth>0) hV0PtNtMinFit[iSp][iType][iReg]->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) hV0PtNtMinFit[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
 			}
 		}
 

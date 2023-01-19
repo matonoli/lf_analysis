@@ -594,7 +594,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			MyParticle p(mHandler->particle(iP)); p.SetHandler(mHandler); p.SetLabel(iP);
 
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
-				&& p.GetSign() != 0 && p.IsPrimary() && TMath::Abs(p.GetPdgCode()) != 3312)	{
+				&& p.GetSign() != 0 && p.IsPrimary() && 
+					( TMath::Abs(p.GetPdgCode()) == 211 || TMath::Abs(p.GetPdgCode()) == 321 
+					|| TMath::Abs(p.GetPdgCode()) == 2212 || TMath::Abs(p.GetPdgCode()) == 11 )
+				)	{
 
 				if (p.GetPt() > ptLeadMC) {
 					ptLeadMC = p.GetPt();

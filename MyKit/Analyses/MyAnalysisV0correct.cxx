@@ -1268,7 +1268,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 			Double_t NormEv = 0;
 			NormEv = hNchTrans->Integral(1,50);
 
-			TH1F* hpt = (TH1F*)hPiPtNtRC[iReg]->ProjectionX(Form("%s_%i",hPiPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
+			TH1F* hpt = (TH1F*)hPiPtNtRC[iReg]->ProjectionX(Form("pt_%s_%i",hPiPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1277,7 +1277,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hPiPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hPiPtNtMinRC[iReg]->ProjectionX("pt_",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1286,7 +1286,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMinRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hKpmPtNtRC[iReg]->ProjectionX(Form("%s_%i",hKpmPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtRC[iReg]->ProjectionX(Form("pt_%s_%i",hKpmPtNtRC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1295,7 +1295,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtRC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hKpmPtNtMinRC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtMinRC[iReg]->ProjectionX("pt_",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1306,7 +1306,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 			NormEv = hNchTransMCTrigMC->Integral(1,50);
 
-			hpt = (TH1F*)hPiPtNtMC[iReg]->ProjectionX(Form("%s_%i",hPiPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
+			hpt = (TH1F*)hPiPtNtMC[iReg]->ProjectionX(Form("pt_%s_%i",hPiPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1315,7 +1315,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hPiPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hPiPtNtMinMC[iReg]->ProjectionX("pt_",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1324,7 +1324,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hPiPtNtMinMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hKpmPtNtMC[iReg]->ProjectionX(Form("%s_%i",hKpmPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtMC[iReg]->ProjectionX(Form("pt_%s_%i",hKpmPtNtMC[iReg]->GetName(),iNt),iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1333,7 +1333,7 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 				hKpmPtNtMC[iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 
-			hpt = (TH1F*)hKpmPtNtMinMC[iReg]->ProjectionX("",iNt,iNt);
+			hpt = (TH1F*)hKpmPtNtMinMC[iReg]->ProjectionX("pt_",iNt,iNt);
 			if (NormEta>0) hpt->Scale(1./NormEta);
 			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
 
@@ -1356,6 +1356,14 @@ void MyAnalysisV0correct::NormaliseSpectra() {
 
 	}
 	}
+
+	TIter objIt(mDirFile->GetList(),kIterForward);
+	TObject* obj = 0;
+	while ( (obj = objIt()) ) {
+		TString objName(obj->GetName());
+		if (!objName.BeginsWith("h") && !objName.BeginsWith("c") && !objName.BeginsWith("t") ) {
+			mDirFile->Remove(obj);	}
+		}
 
 
 	//hNchTrans->Write();
@@ -1654,6 +1662,7 @@ void MyAnalysisV0correct::CorrectSpectra() {
 				hV0PtNtFitCorr[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hV0PtNtFitCorr[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
+			delete hpt;
 
 			hpt = (TH1F*)hV0PtNtMinFitCorr[iSp][iType][iReg]->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
 			hpt->Divide(hV0Efficiency[iSp]);
@@ -1664,6 +1673,7 @@ void MyAnalysisV0correct::CorrectSpectra() {
 				hV0PtNtMinFitCorr[iSp][iType][iReg]->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
 				hV0PtNtMinFitCorr[iSp][iType][iReg]->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
+			delete hpt;
 
 		}
 
