@@ -744,7 +744,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 				// ACTUAL RAW YIELDS
 				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
 					Form("NtMin_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
-					iBin,iBin));
+					iBin,iBin),false);
 
 				hV0PtNtMinFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
 				hV0PtNtMinFit[iSp][iType][iReg]->SetBinError(iBin,iNt,*(yield+1));
@@ -981,7 +981,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 	mHandler->root()->SetBatch(kFALSE);*/
 }
 
-Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist) {
+Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw = 1) {
 
 
 	static Double_t val[2];
@@ -1123,6 +1123,8 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist) {
 	//cout << NPTBINS << " " << nBins << endl;
 	//cout << isRt << " " << cFitsRt[canCounterRt/nBins] << " " << canCounterRt/nBins << " " << canCounterRt%nBins << endl;
 	//cout << "aa " << canCounterRt << " " << nBins << endl;
+
+	if (!willDraw) return val;
 
 	if (!isRt) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 	else cFitsRt[canCounterRt/nBins]->cd(1+canCounterRt%nBins);

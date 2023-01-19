@@ -44,7 +44,7 @@ class MyAnalysisV0extract: public MyAnalysis {
 		Int_t Finish();
 		Bool_t BorrowHistograms();
 		Bool_t CreateHistograms();
-		Double_t* ExtractYieldSB(TH1F* hist = 0);
+		Double_t* ExtractYieldSB(TH1F* hist = 0, Bool_t willDraw = 1);
 		Double_t* ExtractYieldSBVarySigma(Double_t nsig = 6., TH1F* hist = 0);
 		Double_t* ExtractYieldFit(TH1F* hist = 0, Int_t Type = 0, Int_t MB = 0);
 		Double_t* ExtractYieldFitRt(TTree* tree = 0, Int_t Type = 0);
