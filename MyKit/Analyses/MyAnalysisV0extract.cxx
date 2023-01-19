@@ -733,7 +733,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 			hV0IMvPtNtMin[iSp][iType][iReg]->GetZaxis()->SetRange(iNt,iNt);
 			TH2F* hXY = (TH2F*)hV0IMvPtNtMin[iSp][iType][iReg]->Project3D("yx");			
 
-			printf("Extracting yield for pt spectrum NtMin iSp%i_iType%i_iReg%i_iNtBin%i \n",iSp,iType,iReg,iNt);
+			printf("Extracting yield for pt spectrum RtMin iSp%i_iType%i_iReg%i_iNtBin%i \n",iSp,iType,iReg,iNt);
 			
 			Double_t* yield = 0;
 			Int_t binCounter = 1;
@@ -981,7 +981,7 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 	mHandler->root()->SetBatch(kFALSE);*/
 }
 
-Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw = 1) {
+Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 
 	cout << "ERR GOT HERE " << hist << endl;
 
