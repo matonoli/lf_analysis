@@ -743,7 +743,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 			
 				// ACTUAL RAW YIELDS
 				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
-					Form("NtMin_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
+					Form("RtMin_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
 					iBin,iBin),false);
 
 				hV0PtNtMinFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
@@ -983,6 +983,8 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
 Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw = 1) {
 
+	cout << "ERR GOT HERE " << hist << endl;
+
 
 	static Double_t val[2];
 	val[0] = 0; val[1] = 0;
@@ -1074,7 +1076,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw = 1) {
 
 
 	Double_t N 	= hist->Integral(hist->FindBin(Mean-NSig*Sigma),hist->FindBin(Mean+NSig*Sigma));
-	//cout << "N 1 " << N << endl;
+	cout << "N 1 " << N << endl;
 	N = DT_set.sumEntries(0,"sigR");
 	//cout << "N 2 " << N << endl;
 	//Double_t Bg = hist->Integral(hist->FindBin(Mean-2*NSig*Sigma),hist->FindBin(Mean-NSig*Sigma));
@@ -1125,7 +1127,11 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw = 1) {
 	//cout << isRt << " " << cFitsRt[canCounterRt/nBins] << " " << canCounterRt/nBins << " " << canCounterRt%nBins << endl;
 	//cout << "aa " << canCounterRt << " " << nBins << endl;
 
+	cout << "ERR GOT HERE3 " << hist << endl;
+
 	if (!willDraw) return val;
+
+	cout << "ERR GOT HERE4 " << hist << endl;
 
 	if (!isRt) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
 	else cFitsRt[canCounterRt/nBins]->cd(1+canCounterRt%nBins);
