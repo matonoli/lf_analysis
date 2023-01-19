@@ -696,7 +696,7 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 			
 				// ACTUAL RAW YIELDS
 				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
-					Form("Nt_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
+					Form("Rt_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
 					iBin,iBin));
 
 				hV0PtNtFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
@@ -998,6 +998,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw = 1) {
 
 	Bool_t isRt = histName.Contains("Rt");
 
+	cout << "ERR GOT HERE " << hist << endl;
 
 	/*TString muName(histName(histName.Index("iMu")+3,1));
 	Int_t muNumber = muName.Atoi();*/
