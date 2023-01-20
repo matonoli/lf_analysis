@@ -508,6 +508,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		meanPtTransMin = meanPtTransA;
 		meanPtTransMax = meanPtTransB;
 	}
+	if (nChTransA == nChTransB && meanPtTransA < meanPtTransB) {
+		isSideAMin = 1;
+		nChTransMin = nChTransA;
+		nChTransMax = nChTransB;	
+		meanPtTransMin = meanPtTransA;
+		meanPtTransMax = meanPtTransB;	
+	}
 
 	meanPtTrans0 = (nChTrans0>0) ? meanPtTrans0/nChTrans0 : 0;
 	meanPtTransMin = (nChTransMin>0) ? meanPtTransMin/nChTransMin : 0;
@@ -586,6 +593,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 	Bool_t isSideAMinMC = 0;
 	Int_t nChTransMinMC = 0;
 	Int_t nChTransMaxMC = 0;
+	Double_t meanPtTrans0MC = 0;
+	Double_t meanPtTransAMC = 0;
+	Double_t meanPtTransBMC = 0;
 	
 	if (mFlagMC) {
 		for (int iP = 0; iP < nParticles; ++iP)		{
@@ -618,8 +628,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
 				nChTransMC++;
 
-				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==1) nChTransAMC++;
-				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==2) nChTransBMC++;
+				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==1) {
+					nChTransAMC++;
+					meanPtTransAMC += p.GetPt();
+				}
+				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==2) {
+					nChTransBMC++;
+					meanPtTransBMC += p.GetPt();
+				}
 
 
 				if (ptLeadMC<5.0) continue;
@@ -632,6 +648,11 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		nChTransMinMC = nChTransBMC;	// NT in the min transverse region
 		nChTransMaxMC = nChTransAMC;	// NT in the max transverse region
 		if (nChTransAMC < nChTransBMC) {
+			isSideAMinMC = 1;
+			nChTransMinMC = nChTransAMC;
+			nChTransMaxMC = nChTransBMC;	}
+
+		if (nChTransAMC == nChTransBMC && meanPtTransAMC < meanPtTransBMC) {
 			isSideAMinMC = 1;
 			nChTransMinMC = nChTransAMC;
 			nChTransMaxMC = nChTransBMC;	}
@@ -711,10 +732,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[region]->Fill(p.GetPt(),nChTransMinMC);
 					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 					if (!region) {
-						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMC);
-						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMinMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
-						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMC);
-						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMinMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 					}
 				}
 
@@ -796,8 +817,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						
 						Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 						if (!region) {
-							hV0PtNt[iSp][MC][IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMC);
-							hV0PtNtMin[iSp][MC][IsMinOrMax(isSideAMin,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+							hV0PtNt[iSp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
+							hV0PtNtMin[iSp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 						}
 					}
 				}
