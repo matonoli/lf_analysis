@@ -2133,9 +2133,11 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 Bool_t MyAnalysisV0::BorrowHistograms() {
 
+	cout << "mdir is " << mDirFile << endl;
 	if (mHandler->filehist()->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
 		cout << "Borrowing histograms from a TDirectoryFile" << endl;
-		mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");}
+		mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");
+		cout << "mdir is " << mDirFile << endl;}
 	if (mHandler->filehist()->Get("MyAnalysisV0_0")->ClassName() == string("THashList")) {
 		cout << "Borrowing histograms from a THashList" << endl;
 		THashList* hashList = (THashList*)mHandler->filehist()->Get("MyAnalysisV0_0");
@@ -2145,7 +2147,8 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 		}
 	}
 	
-	//mDirFile->ls();
+	mDirFile->ls();
+	cout << "mdir is " << mDirFile << endl;
 
 	// MONITORS
 	hEventMonitor 				= (TH1D*)mDirFile->Get("hEventMonitor");
@@ -2226,13 +2229,14 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 		tV0massRCMB[iSp]	= (TNtuple*)mDirFile->Get(TString::Format("tV0massRCMB_%s",SPECIES[iSp]));
 	}		
 
+	return true;
 }
 
 Int_t MyAnalysisV0::Finish() {
 	
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
-	mDirFile->Write();
+//	mDirFile->Write();
 
 	TH1F* hLeadPt = (TH1F*)hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);
@@ -2256,11 +2260,11 @@ Int_t MyAnalysisV0::Finish() {
 
 	if (mFlagMC) DoEfficiency();
 
-	if (mFlagMC) {
+	/*if (mFlagMC) {
 		for (int iSp = 1; iSp < NSPECIES; ++iSp)		{	
 			hV0PtNoTrigger[iSp]->Divide(hV0Pt[iSp][2][0][0]);
 		}
-	}
+	}*/
 
 	printf("Analysis %s finished.\n",this->GetName());
 	return 0;	

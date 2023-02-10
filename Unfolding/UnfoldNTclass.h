@@ -62,6 +62,7 @@ class UnfoldNTclass {
 		TH1F* GetUnfoldedDistH();
 		void GetMCclosureinNchBins(const TH2F* );
 		void GetMCclosureinRTBins(const TH2F*, const TH2F*);
+		void GetMCclosureinRTMinBins(const TH2F*, const TH2F*);
 		TH1F* RebinNT2RT(const TH1F* , bool);
 		TH1F* RebinPtAxis(const TH1F* );
 		void DrawNchClosure(const TH1F* ,const TH1F* ,const double& ,const double& ,const char* ,const char* ,const char*);
@@ -117,6 +118,7 @@ class UnfoldNTclass {
 
 		void FillHistoVsRT(TH2F*, TH2F*);
 		int GetRTBin(const int&,bool);
+		int GetRTMinBin(const int&,bool);
 
 
 		TObjArray* GetObjArray() { return ObjArray; }
@@ -203,14 +205,14 @@ class UnfoldNTclass {
 		/*const int nRTBins = 1;
 		double RTBins[1+1] = {0.0, 5.0};*/
 
-		const char* const PidArray[5]
-			= {"Charged","Pion","Kaon","Proton","K0s"};
-		const char* const ArrayPidLatex[5]
-			= {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}", "K^{0}_{S}"};
-		const char* const ArrayPidLatexPos[5]
-			= {"h^{+}","#pi^{+}","K^{+}","p", "K^{0}_{S}"};
-		const char* const ArrayPidLatexNeg[5]
-			= {"h^{-}","#pi^{-}","K^{-}","#bar{p}", "K^{0}_{S}"};
+		const char* const PidArray[6]
+			= {"Charged","Pion","Kaon","Proton","K0s","L"};
+		const char* const ArrayPidLatex[6]
+			= {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}", "K^{0}_{S}","#Lambda"};
+		const char* const ArrayPidLatexPos[6]
+			= {"h^{+}","#pi^{+}","K^{+}","p", "K^{0}_{S}","#Lambda"};
+		const char* const ArrayPidLatexNeg[6]
+			= {"h^{-}","#pi^{-}","K^{-}","#bar{p}", "K^{0}_{S}", "#Lambda"};
 		const char* const EtaArray[4]
 			= {"02","24","46","68"};
 

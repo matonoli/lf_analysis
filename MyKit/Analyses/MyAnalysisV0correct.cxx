@@ -56,13 +56,19 @@ Int_t MyAnalysisV0correct::Init() {
 	printf("Initialising analysis %s  \n", 
 		this->GetName());
 
+	cout << "mdirfile " << mDirFile << endl;
+
 	TH1::SetDefaultSumw2(1);
+	cout << "mdirfile " << mDirFile << endl;
 	BorrowHistograms();
+	cout << "mdirfile " << mDirFile << endl;
 	CreateHistograms();
+	cout << "mdirfile " << mDirFile << endl;
 	
 
 
 	mList = (TList*)mHandler->directory()->GetList();
+	cout << "mdirfile " << mDirFile << endl;
 
 	return 0;
 }
@@ -200,12 +206,13 @@ Bool_t MyAnalysisV0correct::BorrowHistograms() {
 		}
 	}	
 
-
+	return true;
 
 }
 
 Bool_t MyAnalysisV0correct::CreateHistograms() {
 	
+	return true;
 }
 
 
@@ -286,6 +293,7 @@ Bool_t MyAnalysisV0correct::CloneHistograms() {
 		}	
 	}
 
+	return true;
 }
 
 Int_t MyAnalysisV0correct::Finish() {
@@ -293,16 +301,30 @@ Int_t MyAnalysisV0correct::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
+	cout << "mdirfileee " << mDirFile << endl;
 	CloneHistograms();
-	hNchTrans->Write();
-	hNchTransMC->Write();
-	hNchTransMCTrigMC->Write();
-	hNchTransRC->Write();
-	hNchTransRCvMC->Write();
-	hNchTransMinMC->Write();
-	hNchTransMinMCTrigMC->Write();
-	hNchTransMinRC->Write();
-	hNchTransMinRCvMC->Write();
+	cout << "mdirfileee " << mDirFile << endl;
+	cout << hNchTrans << " " <<
+	hNchTransMC << " " <<
+	hNchTransMCTrigMC << " " <<
+	hNchTransRC << " " <<
+	hNchTransRCvMC << " " <<
+	hNchTransMinMC << " " <<
+	hNchTransMinMCTrigMC << " " <<
+	hNchTransMinRC << " " <<
+	hNchTransMinRCvMC << " " << endl;
+	cout << " wrote " << hNchTrans->Write();
+	cout << " wrote " << hNchTransMC->Write();
+	cout << " wrote " << hNchTransMCTrigMC->Write();
+	cout << " wrote " << hNchTransRC->Write();
+	cout << " wrote " << hNchTransRCvMC->Write();
+	cout << " wrote " << hNchTransMinMC->Write();
+	cout << " wrote " << hNchTransMinMCTrigMC->Write();
+	cout << " wrote " << hNchTransMinRC->Write();
+	cout << " wrote " << 	hNchTransMinRCvMC->Write();
+
+
+	cout << "3mdirfileee " << mDirFile << endl;
 
 	if (mHandler->GetFlagMC()) {
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
@@ -334,6 +356,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	}	}	}
 	}
 
+	cout << "mdirfileee " << mDirFile << endl;
 
 	// CORRECT PI AND KPM
 	if (mHandler->GetFlagMC()) {
@@ -423,7 +446,8 @@ Int_t MyAnalysisV0correct::Finish() {
 		}
 	}
 
-	
+	cout << "5mdirfileee " << mDirFile << endl;
+
 	if (MAKE_EXCLUSIVE) MakeExclusiveS0Bins(); 
 	NormaliseSpectra();
 	//CorrectForFeeddown();
@@ -437,6 +461,7 @@ Int_t MyAnalysisV0correct::Finish() {
 	//if (NMULTI>2) DoXCheckV0M();
 	//if (mHandler->GetFlagMC()) DoClosureTest(0);
 
+	cout << "mdirfileee " << mDirFile << endl;
 
 	CreateOutputFile("k0s_spherocity.root",1);
 
@@ -550,6 +575,7 @@ Int_t MyAnalysisV0correct::Finish() {
 		
 	}
 
+	cout << "7mdirfileee " << mDirFile << endl;
 
 	return 0;	
 }
@@ -1425,10 +1451,14 @@ void MyAnalysisV0correct::LoadEfficiency() {
 		return;
 	}
 
+	cout << "mfilemc is " << mFileMC << endl;
 	TDirectoryFile* dirFile1 = new TDirectoryFile("mcFile","mcFile","",mHandler->file());
 	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
 		cout << "Doing efficiency from a TDirectoryFile" << endl;
-		dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");}
+		cout << "mdirfilemc is " << dirFile1 << endl;
+		dirFile1 = (TDirectoryFile*)mFileMC->Get("MyAnalysisV0_0");
+		cout << "mdirfilemc is " << dirFile1 << endl;
+	}
 	if (mFileMC->Get("MyAnalysisV0_0")->ClassName() == string("THashList")) {
 		cout << "Doing efficiency from a THashList" << endl;
 		THashList* hashList = (THashList*)mFileMC->Get("MyAnalysisV0_0");
@@ -1437,6 +1467,10 @@ void MyAnalysisV0correct::LoadEfficiency() {
 			hashList->RemoveFirst();
 		}
 	}
+
+	cout << "mdirfilemc is " << dirFile1 << endl;
+	dirFile1->ls();
+
 
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{

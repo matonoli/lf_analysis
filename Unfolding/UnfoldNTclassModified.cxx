@@ -136,6 +136,7 @@ void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRec
 	_hCovMatrix = new TH3F("_hCovMatrix",";#it{N}_{ch};#it{N}_{acc};#it{p}_{T}",nNchBins,NchBins,nNchBins,NchBins,nPtBins,ptBins);
 
 	ObjArray->AddLast(_hPtvsNacc);
+	ObjArray->AddLast(hPtPIDvsNacc);
 	ObjArray->AddLast(_hPtvsNch);
 
 	//! Only for the Transverse region
@@ -148,13 +149,15 @@ void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRec
 
 	TH2F* hRM = (TH2F*)hIniRM->Clone("hRM");
 
-	if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0)) LoadSolutionNT();
+	if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0) || (strcmp(_Region,"Trans1D")==0)) LoadSolutionNT();
 	//if((strcmp(_Region,"Transverse")==0)) LoadSolutionNT();
 
 	if(strcmp(_Region,"Transverse")==0){
 		for(int binx = 1; binx <= hIniRM->GetNbinsX(); binx++){
 			for(int biny = 1; biny <= hIniRM->GetNbinsY(); biny++){
-				hRM->SetBinContent(binx,biny,hIniRM->GetBinContent(binx,biny)*(binx-1));
+				//hRM->SetBinContent(binx,biny,hIniRM->GetBinContent(binx,biny)*1.);
+				//hRM->SetBinContent(binx,biny,hIniRM->GetBinContent(binx,biny)*(binx-1));
+				hRM->SetBinContent(binx,biny,hIniRM->GetBinContent(binx,biny)*( binx>1 ? binx-1 : 0.000)); // careful: here nt=0 bin alsogets emptied!
 			}
 		}
 	}
@@ -202,7 +205,7 @@ void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRec
 		if(strcmp(_Region,"Transverse")==0) { Unfold(); }		// Unfolding matrix is calculated from Nch
 		if (hPIDProj) UnfoldPID(hPIDProj, hMultGen, hRM);	// Recalculating unfolded distribution from PID spectra instead of Nch
 		
-		if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0)) {
+		if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0) || (strcmp(_Region,"Trans1D")==0)) {
 			//Setup(hProj, hMultGen, hRM );
 			UnfoldTowardAway();
 		}
@@ -264,7 +267,7 @@ void UnfoldNTclass::Unfold2D(TH2F* hIniRM, TH2F* hPtRecvsNacc)
 
 	TH2F* hRM = (TH2F*)hIniRM->Clone("hRM");
 
-	if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0)) LoadSolutionNT();
+	if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0) || (strcmp(_Region,"Trans1D")==0 )) LoadSolutionNT();
 
 	if(strcmp(_Region,"Transverse")==0){
 
@@ -294,7 +297,7 @@ void UnfoldNTclass::Unfold2D(TH2F* hIniRM, TH2F* hPtRecvsNacc)
 
 		Setup(hProj, hMultGen, hRM );
 		if(strcmp(_Region,"Transverse")==0) Unfold();
-		if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0)) UnfoldTowardAway();
+		if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0) || (strcmp(_Region,"Trans1D")==0)) UnfoldTowardAway();
 
 		V2H();
 		TH1F* hUnfolded = (TH1F*)GetUnfoldedDistH();
@@ -472,7 +475,7 @@ void UnfoldNTclass::FillMatrixFromNTSolution()
 void UnfoldNTclass::GetUnfoldedDist()
 {
 
-	if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0))// || (strcmp(_Region,"Transverse")==0))
+	if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0) || (strcmp(_Region,"Trans1D")==0 ))// || (strcmp(_Region,"Transverse")==0))
 		FillMatrixFromNTSolution();
 
 	//if(strcmp(_Region,"Toward")==0)
@@ -649,7 +652,28 @@ void UnfoldNTclass::GetMCclosureinRTBins(const TH2F* hGen, const TH2F* hUnf)
 
 		//	if((strcmp(_Region,"Toward")==0)||(strcmp(_Region,"Transverse")==0)){
 		//DrawClosureRatios(hg,hu,0.0,10.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",RTBins[binrt-1],RTBins[binrt],binrt,kFALSE,kTRUE,"results");
-		DrawClosureRatios(hg,hu,0.0,5.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",(binrt>0)?RTBins[binrt-1]:RTBins[binrt],(binrt>0)?RTBins[binrt]:RTBins[binrt+1],binrt,kFALSE,kTRUE,"results");
+		DrawClosureRatios(hg,hu,0.0,5.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",(binrt>0)?RTBins[binrt-1]:RTBins[0],(binrt>0)?RTBins[binrt]:RTBins[nRTBins],binrt,kFALSE,kTRUE,"results");
+		//}
+	}
+}
+
+void UnfoldNTclass::GetMCclosureinRTMinBins(const TH2F* hGen, const TH2F* hUnf)
+{
+
+	for(int binrt = 0; binrt <= nRTBins; binrt++){
+
+		int lowedge = GetRTBin(binrt,kTRUE);
+		int upedge  = GetRTBin(binrt,kFALSE);
+
+		TH1F* hg = (TH1F*)hGen->ProjectionX(Form("hPtGen_RT_%d",binrt),lowedge,upedge);
+		
+		TH1F* hu = (TH1F*)hUnf->ProjectionX(Form("hPtUnf_RT_%d",binrt),lowedge,upedge);
+
+		cout << "2 Finding " << hg << " and " << hu << "\n";
+
+		//	if((strcmp(_Region,"Toward")==0)||(strcmp(_Region,"Transverse")==0)){
+		//DrawClosureRatios(hg,hu,0.0,10.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",RTBins[binrt-1],RTBins[binrt],binrt,kFALSE,kTRUE,"results");
+		DrawClosureRatios(hg,hu,0.0,5.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",(binrt>0)?RTBins[binrt-1]:RTBins[0],(binrt>0)?RTBins[binrt]:RTBins[nRTBins],binrt,kFALSE,kTRUE,"results");
 		//}
 	}
 }
@@ -1083,12 +1107,50 @@ int UnfoldNTclass::GetRTBin(const int& binRt, bool isLowEdge)
 		if(isLowEdge) binNch = 13;
 		else binNch = 19;
 	}
-	else if( binRt == 4 ){//! From NT = 19 to NT = 30
+	else if( binRt == 4 ){//! From NT = 19 to NT = 36
 		if(isLowEdge) binNch = 20;
-		else binNch = 26;
+		else binNch = 37;
 	}
 	else{
 		if(isLowEdge) binNch = 39;
+		else binNch = 50;
+	}
+
+	return binNch;
+
+}
+
+//_____________________________________________________________________________
+
+int UnfoldNTclass::GetRTMinBin(const int& binRt, bool isLowEdge)
+{
+
+	int binNch = -1;
+
+	//! <NT> = 2.559
+	
+	if( binRt == 0 ){
+		if(isLowEdge) binNch = 1;
+		else binNch = 50;
+	}
+	else if( binRt == 1 ){ //! From NT = 0 to NT = 1
+		if(isLowEdge) binNch = 1;
+		else binNch = 2;
+	}
+	else if( binRt == 2 ){ //! From NT = 2 to NT = 3
+		if(isLowEdge) binNch = 3;
+		else binNch = 4;
+	}
+	else if( binRt == 3 ){//! From NT = 4 to NT = 6
+		if(isLowEdge) binNch = 5;
+		else binNch = 7;
+	}
+	else if( binRt == 4 ){//! From NT = 7 to NT = 12
+		if(isLowEdge) binNch = 8;
+		else binNch = 13;
+	}
+	else{
+		if(isLowEdge) binNch = 14;
 		else binNch = 50;
 	}
 

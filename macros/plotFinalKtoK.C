@@ -5,9 +5,9 @@ using namespace std;
 
 
 //// UNCOMMENT A LINE TO CHOOSE THE MULTIPLICITY SELECTION
-//TString mult("V0M01"); int multInt = 0; int multOmar = 0; TString multPlot("V0M I");
+TString mult("V0M01"); int multInt = 0; int multOmar = 0; TString multPlot("V0M I");
 //TString mult("NCharged01"); int multInt = 1; int multOmar = 0; TString multPlot("#it{N}_{SPD} I (|#eta|<0.8)");
-TString mult("V0M"); int multInt = 2; int multOmar = 1; TString multPlot("V0M III");
+//TString mult("V0M"); int multInt = 2; int multOmar = 1; TString multPlot("V0M III");
 //TString mult("NCharged"); int multInt = 3; int multOmar = 1; TString multPlot("#it{N}_{SPD} III (|#eta|<0.8)");
 
 //// UNCOMMENT A LINE TO CHOOSE THE SPHEROCITY SELECTION
@@ -30,131 +30,8 @@ Int_t colors[3] = {kBlack, kRed, kBlue};
 
 
 // PLOTTING FUNCTIONS
-void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx, const char* opt) {
-  
-  c->cd();
-  TString strOpt(opt);
 
-  // check for an already existent ratio plot
-  Bool_t hasRatio = false;
-  TObject* obj;
-  TIter next(c->GetListOfPrimitives());
-  while ( (obj = next()) ) {
-    TString objName = obj->GetName();
-    if (objName == Form("p2_%s",c->GetName())) {
-      TVirtualPad* prat = (TVirtualPad*)obj;
-      prat->cd();
-      hasRatio = true;
-    }
-  }
 
-  if (!hasRatio) {
-
-    TCanvas* ctop = (TCanvas*)c->Clone("ctop");
-    c->Clear();
-    ctop->SetBottomMargin(0.005);
-    c->cd();
-
-    TPad* p1 = new TPad(Form("p1_%s",c->GetName()),"",0.,0.3,1.,1.);
-    p1->SetBottomMargin(0.);
-    p1->Draw();
-    p1->cd();
-    ctop->DrawClonePad();
-
-    c->cd();
-    TPad* p2 = new TPad(Form("p2_%s",c->GetName()),"",0.,0.00,1.,0.28);
-    p2->SetTopMargin(0);
-    p2->SetBottomMargin(0.32);
-    p2->Draw();
-    p2->cd();
-  }
-
-  TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
-  hr->SetMinimum(low);
-  hr->SetMaximum(high);
-  hr->GetXaxis()->SetRangeUser(lowx,highx);
-  hr->Divide(hd);
-
-  hr->GetYaxis()->SetTitle("ratio to ref.");
-  hr->GetYaxis()->CenterTitle();
-  hr->GetYaxis()->SetNdivisions(505);
-  hr->GetYaxis()->SetTitleSize(20);
-  hr->GetYaxis()->SetTitleFont(43);
-  hr->GetYaxis()->SetLabelFont(43); 
-
-  hr->GetYaxis()->SetTitleOffset(1.6);
-  hr->GetYaxis()->SetLabelOffset(0.0025);
-  hr->GetYaxis()->SetLabelSize(20);
-
-  hr->GetXaxis()->SetTitleSize(25);
-  hr->GetXaxis()->SetTitleFont(43);
-  hr->GetXaxis()->SetTitleOffset(4.);
-  hr->GetXaxis()->SetLabelFont(43); 
-  hr->GetXaxis()->SetLabelSize(25);
-  hr->GetXaxis()->SetTickLength(0.09);
-
-  if (!hasRatio)  hr->Draw(strOpt.Data());
-  else      hr->Draw(Form("same %s", strOpt.Data()));
-  TString hrname(hr->GetName());
-  if (! hrname.Contains("hBlank")) hr->Write();
-
-  //c->SetCanvasSize()
-  c->cd();
-
-}
-
-TH1D* GetFrame(const char* name, double min, double max, bool isRatios)
-{
-    
-    TH1D* hframe = new TH1D(Form("%s",name),Form("%s",name),(int)max-(int)min,min,max);
-    
-    hframe->GetYaxis()->SetTitleOffset(2);
-    hframe->GetYaxis()->SetNdivisions(510,kTRUE);
-    hframe->GetXaxis()->SetNdivisions(505,kTRUE);
-    hframe->GetXaxis()->SetLabelFont(63);
-    hframe->GetYaxis()->SetLabelFont(63);
-    hframe->GetXaxis()->SetTitleFont(63);
-    hframe->GetYaxis()->SetTitleFont(63);
-    hframe->GetYaxis()->SetTitleSize( 30 );
-    hframe->GetXaxis()->SetTitleSize( 30 );
-    hframe->GetYaxis()->SetLabelSize( 25 );
-    
-    if(isRatios){
-        hframe->GetYaxis()->SetNdivisions(505,kTRUE);
-        hframe->GetYaxis()->SetTitleOffset(1.5);
-        hframe->GetYaxis()->SetLabelSize( 20 );
-        hframe->GetYaxis()->SetTitleSize( 30 );
-    }
-    
-    if(strstr(name,"frame2")!=0){
-        hframe->GetXaxis()->SetLabelSize( 25 );
-        hframe->GetYaxis()->SetLabelSize( 25 );
-        
-        hframe->GetYaxis()->SetTitleOffset(2);
-        hframe->GetXaxis()->SetTitleOffset(3);
-        hframe->GetYaxis()->SetRangeUser(0.0,2.82);
-        hframe->GetYaxis()->SetNdivisions(505,kTRUE);
-        hframe->GetXaxis()->SetNdivisions(505,kTRUE);
-        hframe->GetYaxis()->SetTitle("Ratio to #it{N}_{ch} #geq 10");
-        hframe->GetXaxis()->SetTitle(titleX);
-        
-        if(isRatios){
-            
-            hframe->GetYaxis()->SetNdivisions(505,kTRUE);
-            hframe->GetXaxis()->SetNdivisions(505,kTRUE);
-            hframe->GetXaxis()->SetLabelSize( 20 );
-            hframe->GetYaxis()->SetLabelSize( 20 );
-            hframe->GetXaxis()->SetTitleSize( 24 );
-            hframe->GetYaxis()->SetTitleSize( 25 );
-            hframe->GetYaxis()->SetRangeUser(0.65,1.35);
-            hframe->GetXaxis()->SetTitleOffset(3);
-            hframe->GetYaxis()->SetTitleOffset(1.5);
-            
-        }
-        
-    }
-    return hframe;
-}
 //______________________________________________________________
 void myLegendSetUp(TLegend *currentLegend,float currentTextSize){
     
@@ -240,36 +117,6 @@ void MakeNiceHistogram(TH1D* h, Int_t col) {
   //h->SetTopMargin(0.055);
 }
 
-TH1D* DivideSpline(TH1D* hn, TH1D* hd, Double_t scale) {
-
-  // replaces the denominator with a spline and creates a clone with the numerator's binning
-  // returns the ratio
-  
-
-  Int_t hd_nbins = hd->GetNbinsX();
-  
-  Double_t hd_x[400], hd_err[400]; 
-  for (int iB = 0; iB < hd_nbins; ++iB)   {
-    hd_x[iB]  = hd->GetBinCenter(iB+1);
-    hd_err[iB]  = hd->GetBinError(iB+1);    }
-  
-
-  TSpline3* hd_spl    = new TSpline3(hd, 0, 1, 0);
-  TSpline3* hd_splerr = new TSpline3(Form("splerr_%s",hd->GetName()), hd_x, hd_err, hd_nbins, 0, 1, 0);
-
-  TH1D* hd2 = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
-  for (int iB = 1; iB <= hd2->GetNbinsX(); ++iB)         {
-    hd2->SetBinContent(iB, hd_spl->Eval(hd2->GetBinCenter(iB)));  
-    hd2->SetBinError(iB, hd_splerr->Eval(hd2->GetBinCenter(iB))); }
-
-  hn->Divide(hn,hd2,scale);
-  delete hd_spl;
-  delete hd_splerr;
-  delete hd2;
-  
-  return hn;
-}
-
 void DrawHistograms(TH1D** h, Int_t nhist, Int_t col) {
 
   Int_t lineMonash = 1;
@@ -299,6 +146,15 @@ void DrawHistograms(TH1D** h, Int_t nhist, Int_t col) {
 
 }
 
+
+TH1D* MakeRatioHist(TH1D* hn, TH1D* hd) {
+
+  TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
+  hr->Divide(hd);
+
+  return hr;
+}
+
 void DrawHistogramsRatios(TH1D** hn, TH1D** hd, Int_t nhist, Int_t col) {
 
   TH1D* hr[NHIST];
@@ -318,13 +174,6 @@ void DrawHistogramsRatios(TH1D** hn, TH1D** hd, Int_t nhist, Int_t col) {
 
 }
 
-TH1D* MakeRatioHist(TH1D* hn, TH1D* hd) {
-
-  TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
-  hr->Divide(hd);
-
-  return hr;
-}
 
 
 void plotFinalKtoK() {
@@ -381,6 +230,9 @@ void plotFinalKtoK() {
   hK0s[Jetty][Ropes] = (TH1D*)fRopes->Get(Form("fK0s_%s_%s_Jetty_%s",strM_MC[multInt],multInt>1?"10":"01",strS_MC[sphInt]));
   hK0s[Iso][Ropes]   = (TH1D*)fRopes->Get(Form("fK0s_%s_%s_Iso_%s",strM_MC[multInt],multInt>1?"10":"01",strS_MC[sphInt]));
   //fRopes->Close();
+
+
+  TFile* fout = new TFile(Form("./KtoK_%s_spher%s.root",mult.Data(),spher.Data()),"RECREATE");
 
 
   // REBIN KPM
@@ -583,7 +435,9 @@ void plotFinalKtoK() {
   latexTitleY2->SetTextAngle(90);
   latexTitleY2->DrawLatex(0.5, 0.0, TitleY2);
 
+  fout->Write();
   C->SaveAs(Form("./KtoK_%s_spher%s.pdf",mult.Data(),spher.Data()));
+  C->SaveAs(Form("./KtoK_%s_spher%s.png",mult.Data(),spher.Data()));
 
 
 }

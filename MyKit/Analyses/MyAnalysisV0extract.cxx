@@ -58,6 +58,8 @@ Int_t MyAnalysisV0extract::Init() {
 	printf("Initialising analysis %s  \n", 
 		this->GetName());
 
+	cout << "ex mdir is " << mDirFile << endl;
+
 	TH1::SetDefaultSumw2(1);
 	CreateHistograms();
 	BorrowHistograms();
@@ -139,7 +141,7 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 
 	}	}
 
-		
+	return true;		
 
 }
 
@@ -223,6 +225,8 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 
 	} } } }
 
+	return true;
+
 }
 
 
@@ -248,7 +252,7 @@ Int_t MyAnalysisV0extract::Finish() {
 	//DrawPad(0,0);
 
 	//DrawConstraints();
-	
+
 	return 0;	
 }
 

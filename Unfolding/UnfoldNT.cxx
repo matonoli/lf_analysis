@@ -24,7 +24,7 @@ void UnfoldNT(const char* fData, const char* fMC, const char* dOut, const bool i
 
 	if(strcmp(charge.c_str(),"Charged")==0) Undolf1D(dOut,isMC);
 	std::cout << "Unfolding 1D performed \n";
-	UndolfV02D(dOut);
+	//UndolfV02D(dOut);
 	//if(isMC) Undolf2DMC(dOut);
 	//if(!isMC) Undolf2D(dOut,trackcuts,detector,charge);
 
@@ -89,7 +89,7 @@ void UndolfV02D(const char* dirOut)
 
 	TGraph* gYieldvsNT = nullptr;
 
-	const char* Regions[3] = {"Toward","Away","Transverse"};
+	const char* Regions[3] = {"Toward","Away","Trans1D"};
 	const char* V0RegNames[3] = {"Near","Away","Trans"};
 	//const char* Regions[3] = {"Transverse","Toward","Away"};
 	//const char* V0RegNames[3] = {"Trans","Near","Away"};
@@ -110,17 +110,36 @@ void UndolfV02D(const char* dirOut)
 		TH2F* h2DGe = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNt_K0s_MC_%s",V0RegNames[region]));
 		TH2F* h2DMC = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtFitCorr_K0s_RC_%s",V0RegNames[region]));
 
+		TH2F* hLGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNt_L_MC_%s",V0RegNames[region]));
+		TH2F* hLRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtFitCorr_L_RC_%s",V0RegNames[region]));
+		TH2F* hLbarGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNt_Lbar_MC_%s",V0RegNames[region]));
+		TH2F* hLbarRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtFitCorr_Lbar_RC_%s",V0RegNames[region]));
+		hLGen->Add(hLbarGen); hLRec->Add(hLbarRec);
+
 		TH2F* hPiGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtMC_%s",V0RegNames[region]));
 		TH2F* hPiRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtRC_%s",V0RegNames[region]));
 		TH2F* hKpmGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMC_%s",V0RegNames[region]));
 		TH2F* hKpmRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtRC_%s",V0RegNames[region]));
 
+		/*if (region == 2) {
+			hPiGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtMC_%s","Trans"));
+			hPiRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtRC_%s","Trans"));
+			hKpmGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMC_%s","Trans"));
+			hKpmRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtRC_%s","Trans"));
+		}*/
+
 		TH2F* hNchGen = (TH2F*)hPiGen->Clone("hNchGen"); hNchGen->Add(hKpmGen);
 		TH2F* hNchRec = (TH2F*)hPiRec->Clone("hNchRec"); hNchRec->Add(hKpmRec);
+
+		/*if (region == 2) {
+			hKpmGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMC_%s","TransMin"));
+			hKpmRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtRC_%s","TransMin"));
+		}*/
 
 		//h2DGe = hNchGen; h2DMC = hNchRec;
 		//h2DGe = hKpmGen; h2DMC = hKpmRec;
 		//h2DGe = hPiGen; h2DMC = hPiRec;
+		//h2DGe = hLGen; h2DMC = hLRec;
 
 		//TH2F* h2DGe = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMC_%s",V0RegNames[region]));
 		//TH2F* h2DMC = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtRC_%s",V0RegNames[region]));
@@ -140,12 +159,12 @@ void UndolfV02D(const char* dirOut)
 
 		TObjArray* Arr = (TObjArray*)obj->GetObjArray();
 		cout << "1 Finding " << h2DGe << " and " << (TH2F*)Arr->FindObject("_hPtvsNch") << "\n";
-		obj->GetMCclosureinRTBins(h2DGe,(TH2F*)Arr->FindObject("_hPtvsNch"));
+		obj->GetMCclosureinRTBins(h2DGe,(TH2F*)Arr->FindObject("_hPtvsNch"));	// first is Gen, second is Unf
 
 		fOut->cd();
 
 
-		TDirectory* dir = fOut->mkdir(Form("%s_Charged",Regions[region]));
+		TDirectory* dir = fOut->mkdir(Form("%s",Regions[region]));
 		dir->cd();
 		(obj->GetObjArray())->Write();
 
