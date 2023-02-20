@@ -1385,6 +1385,8 @@ Bool_t MyAnalysisV0::ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph) {
 	hTrackPt[Type][Mu][Sph]->Fill(t.GetPt());
 	hTrackEtavPhi[Type][Mu][Sph]->Fill(t.GetPhi(),t.GetEta());
 
+	return true;
+
 }
 
 Bool_t MyAnalysisV0::IsV0(MyV0 &v0, Int_t Sp, Int_t Type) {
