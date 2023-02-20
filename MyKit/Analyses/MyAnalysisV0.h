@@ -319,7 +319,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t BorrowHistograms();
 
 		Bool_t ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
-		Bool_t ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin);
+		Bool_t ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin, Int_t NtMax);
 		Bool_t ProcessV0toTree(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu);
 		Bool_t ProcessTrack(MyTrack &t, Int_t Type, Int_t Mu, Int_t Sph);
 		Int_t ClassifyEvent(MyEvent &event, Int_t ntracks);
@@ -422,6 +422,10 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1F* hNchTransMinMC;
 		TH1F* hNchTransMinMCTrigMC;
 		TH2F* hNchTransMinRCvMC;
+		TH1F* hNchTransMaxRC;
+		TH1F* hNchTransMaxMC;
+		TH1F* hNchTransMaxMCTrigMC;
+		TH2F* hNchTransMaxRCvMC;
 		TH2F* hNtvNtMin;
 		TH2F* hNtvNtMax;
 		TH2F* hNtMaxvNtMin;
@@ -475,12 +479,16 @@ class MyAnalysisV0: public MyAnalysis {
 		TH1D* hKpmPtRC;
 		TH2F* hPiPtNtMC[V0consts::NREGIONS];
 		TH2F* hPiPtNtMinMC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMaxMC[V0consts::NREGIONS];
 		TH2F* hPiPtNtRC[V0consts::NREGIONS];
 		TH2F* hPiPtNtMinRC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMaxRC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtMC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtMinMC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMaxMC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtRC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtMinRC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMaxRC[V0consts::NREGIONS];
 
 		// V0 HISTOGRAMS
 		TH1F* hV0Radius;
@@ -502,10 +510,12 @@ class MyAnalysisV0: public MyAnalysis {
 		// V0 RT HISTOGRAMS
 		TH2F* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0PtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMax[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0EtaNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0PhiNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH3F* hV0IMvPtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH3F* hV0IMvPtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH3F* hV0IMvPtNtMax[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
 		TH1F* hV0PtNoTrigger[V0consts::NSPECIES];
 

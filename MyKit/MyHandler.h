@@ -115,7 +115,7 @@ class MyHandler: public TObject {
 
 	protected:
 		
-		MyAnalysis* mAnalysis[5];
+		MyAnalysis* mAnalysis[10];
 		Int_t nAnalyses = 0;
 		TChain* mChain;
 		TFile* mFile;

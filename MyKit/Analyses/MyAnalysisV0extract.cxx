@@ -50,9 +50,6 @@ MyAnalysisV0extract::MyAnalysisV0extract() {
 
 Int_t MyAnalysisV0extract::Init() {
 
-	TString dfName(this->GetName());
-	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());
 	mDirFile->cd();
 
 	printf("Initialising analysis %s  \n", 

@@ -8,6 +8,8 @@ ESDS=2
 # COPY FILES
 cp ../TransverseSpherocity/TransverseSpherocity.cxx .
 cp ../TransverseSpherocity/TransverseSpherocity.h .		# extra classes
+cp ../Unfolding/UnfoldNTclassModified.cxx .
+cp ../Unfolding/UnfoldNTclass.h .
 
 cp ../MyKit/MyAnalysis.cxx .
 cp ../MyKit/MyAnalysis.h .								# MyKit
@@ -27,6 +29,8 @@ cp ../MyKit/Analyses/MyAnalysisV0extract.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0extract.h .
 cp ../MyKit/Analyses/MyAnalysisV0correct.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0correct.h .
+cp ../MyKit/Analyses/MyAnalysisV0unfold.cxx .
+cp ../MyKit/Analyses/MyAnalysisV0unfold.h .
 cp ../MyKit/Analyses/MyAnalysisV0syst.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0syst.h .
 cp ../MyKit/Analyses/MyAnalysisV0plot.cxx .

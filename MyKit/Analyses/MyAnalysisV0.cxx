@@ -48,9 +48,6 @@ MyAnalysisV0::MyAnalysisV0() {
 
 Int_t MyAnalysisV0::Init() {
 
-	TString dfName(this->GetName());
-	dfName = TString::Format("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());		// removed mother dir -- unnecessary?
 	mDirFile->cd();
 
 	mFlagMC = mHandler->GetFlagMC();
@@ -61,7 +58,10 @@ Int_t MyAnalysisV0::Init() {
 
 	TH1::SetDefaultSumw2(1);
 	TH1::AddDirectory(kTRUE);
-	if (mFlagHist)	BorrowHistograms();
+	if (mFlagHist)	{
+		TakeoverHistograms("MyAnalysisV0_0");
+		BorrowHistograms();
+		mDirFile->cd();	}
 	else 			CreateHistograms();
 
 	// Initialising treebug checker
@@ -664,6 +664,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			hNchTransMinRC->Fill(nChTransMin);
 			hNchTransMinMC->Fill(nChTransMinMC);
 			hNchTransMinRCvMC->Fill(nChTransMinMC,nChTransMin);
+			hNchTransMaxRC->Fill(nChTransMax);
+			hNchTransMaxMC->Fill(nChTransMaxMC);
+			hNchTransMaxRCvMC->Fill(nChTransMaxMC,nChTransMax);
 			eventRtMC = (double)nChTransMC/RT_DEN_MC;
 			hRtMC->Fill(eventRtMC);
 			hRtRCvMC->Fill(eventRtMC,eventRt);		}
@@ -694,6 +697,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		isEventRTMC = true;
 		hNchTransMCTrigMC->Fill(nChTransMC);
 		hNchTransMinMCTrigMC->Fill(nChTransMinMC);
+		hNchTransMaxMCTrigMC->Fill(nChTransMaxMC);
 	}
 
 	if ( 0 && ( isEventRT || isEventRTMC) && nChTransMinMC==0 && nChTransMin>0) {
@@ -728,14 +732,18 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
 					if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMC[region]->Fill(p.GetPt(),nChTransMC);
 					if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMinMC[region]->Fill(p.GetPt(),nChTransMinMC);
+					if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMaxMC[region]->Fill(p.GetPt(),nChTransMaxMC);
 					if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMC[region]->Fill(p.GetPt(),nChTransMC);
 					if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[region]->Fill(p.GetPt(),nChTransMinMC);
+					if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMaxMC[region]->Fill(p.GetPt(),nChTransMaxMC);
 					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 					if (!region) {
 						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMinMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						if (TMath::Abs(p.GetPdgCode())==211) hPiPtNtMaxMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
 						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMinMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						if (TMath::Abs(p.GetPdgCode())==321) hKpmPtNtMaxMC[IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
 					}
 				}
 
@@ -814,11 +822,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
 						hV0PtNt[iSp][MC][region]->Fill(p.GetPt(),nChTransMC);
 						hV0PtNtMin[iSp][MC][region]->Fill(p.GetPt(),nChTransMinMC);
+						hV0PtNtMax[iSp][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
 						
 						Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 						if (!region) {
 							hV0PtNt[iSp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 							hV0PtNtMin[iSp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+							hV0PtNtMax[iSp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
 						}
 					}
 				}
@@ -842,14 +852,18 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					Int_t region = WhatRegion(t.GetPhi(),phiLead);
 					if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtRC[region]->Fill(t.GetPt(),nChTrans);
 					if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMinRC[region]->Fill(t.GetPt(),nChTransMin);
+					if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMaxRC[region]->Fill(t.GetPt(),nChTransMax);
 					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtRC[region]->Fill(t.GetPt(),nChTrans);
 					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMinRC[region]->Fill(t.GetPt(),nChTransMin);
+					if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMaxRC[region]->Fill(t.GetPt(),nChTransMax);
 					Int_t regionSide = WhatRegionSide(t.GetPhi(),phiLead);
 					if (!region) {
 						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
 						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMinRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
+						if (TMath::Abs(t.GetMCPdgCode())==211) hPiPtNtMaxRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMax);
 						if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
 						if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMinRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
+						if (TMath::Abs(t.GetMCPdgCode())==321) hKpmPtNtMaxRC[IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMax);
 					}
 				}
 			}
@@ -1031,9 +1045,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 
 					if (isEventRT) {
 						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
-						ProcessV0toHistRT(v0,iSp,RC,region,nChTrans,nChTransMin);
+						ProcessV0toHistRT(v0,iSp,RC,region,nChTrans,nChTransMin,nChTransMax);
 						Int_t regionSide = WhatRegionSide(v0.GetPhi(),phiLead);
-						if (!region) ProcessV0toHistRT(v0,iSp,RC,IsMinOrMax(isSideAMin,regionSide),nChTrans,nChTransMin);
+						if (!region) ProcessV0toHistRT(v0,iSp,RC,IsMinOrMax(isSideAMin,regionSide),nChTrans,nChTransMin,nChTransMax);
 					}
 				}
 			}
@@ -1196,10 +1210,10 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (isEventRT) {
 						
 						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
-						ProcessV0toHistRT(v0,iSp,D,region,nChTrans,nChTransMin);
+						ProcessV0toHistRT(v0,iSp,D,region,nChTrans,nChTransMin,nChTransMax);
 						
 						Int_t regionSide = WhatRegionSide(v0.GetPhi(),phiLead);
-						if (!region) ProcessV0toHistRT(v0,iSp,D,IsMinOrMax(isSideAMin,regionSide),nChTrans,nChTransMin);
+						if (!region) ProcessV0toHistRT(v0,iSp,D,IsMinOrMax(isSideAMin,regionSide),nChTrans,nChTransMin,nChTransMax);
 						
 					}
 
@@ -1334,7 +1348,7 @@ Bool_t MyAnalysisV0::ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, I
 	return true;	
 }
 
-Bool_t MyAnalysisV0::ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin) {
+Bool_t MyAnalysisV0::ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin, Int_t NtMax) {
 	
 	//printf("V0 p_{T} is %f, args are %i , %i , %i \n", v0.GetPt(), Sp, Mu, Sph);
 
@@ -1342,11 +1356,13 @@ Bool_t MyAnalysisV0::ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg
 	hV0EtaNt[Sp][Type][Reg]->Fill(v0.GetEta(),Nt);
 	hV0PhiNt[Sp][Type][Reg]->Fill(v0.GetPhi(),Nt);
 	hV0PtNtMin[Sp][Type][Reg]->Fill(v0.GetPt(),NtMin);
+	hV0PtNtMax[Sp][Type][Reg]->Fill(v0.GetPt(),NtMax);
 	
 	if (Type==2) return true;
 	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
 	hV0IMvPtNt[Sp][Type][Reg]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 	hV0IMvPtNtMin[Sp][Type][Reg]->Fill(v0.GetPt(),v0mass[Sp],NtMin);
+	hV0IMvPtNtMax[Sp][Type][Reg]->Fill(v0.GetPt(),v0mass[Sp],NtMax);
 
 	return true;	
 }
@@ -1818,6 +1834,10 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 	hNchTransMinMC 			= new TH1F("hNchTransMinMC","; MC N_ch [trans.,min]; Entries",50, -0.5, 49.5);
 	hNchTransMinMCTrigMC		= new TH1F("hNchTransMinMCTrigMC","; MC N_ch [trans.,min]; Entries",50, -0.5, 49.5);
 	hNchTransMinRCvMC		= new TH2F("hNchTransMinRCvMC", ";MC N_ch [trans.,min]; RC N_ch [trans.,min]",50,-0.5,49.5,50,-0.5,49.5);
+	hNchTransMaxRC 			= new TH1F("hNchTransMaxRC","; RC N_ch [trans.,max]; Entries",50, -0.5, 49.5);
+	hNchTransMaxMC 			= new TH1F("hNchTransMaxMC","; MC N_ch [trans.,max]; Entries",50, -0.5, 49.5);
+	hNchTransMaxMCTrigMC		= new TH1F("hNchTransMaxMCTrigMC","; MC N_ch [trans.,max]; Entries",50, -0.5, 49.5);
+	hNchTransMaxRCvMC		= new TH2F("hNchTransMaxRCvMC", ";MC N_ch [trans.,max]; RC N_ch [trans.,max]",50,-0.5,49.5,50,-0.5,49.5);
 	hNtvNtMin				= new TH2F("hNtvNtMin","; N_ch [trans.,min]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
 	hNtvNtMax				= new TH2F("hNtvNtMax","; N_ch [trans.,max]; N_ch [trans.]",50, -0.5, 49.5,50, -0.5, 49.5);
 	hNtMaxvNtMin			= new TH2F("hNtMaxvNtMin","; N_ch [trans.,min]; N_ch [trans.,max]",50, -0.5, 49.5,50, -0.5, 49.5);
@@ -1877,18 +1897,26 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hPiPtNtMinMC[iReg]			= new TH2F(TString::Format("hPiPtNtMinMC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hPiPtNtMaxMC[iReg]			= new TH2F(TString::Format("hPiPtNtMaxMC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., max.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hPiPtNtRC[iReg]				= new TH2F(TString::Format("hPiPtNtRC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hPiPtNtMinRC[iReg]			= new TH2F(TString::Format("hPiPtNtMinRC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hPiPtNtMaxRC[iReg]			= new TH2F(TString::Format("hPiPtNtMaxRC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., max.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hKpmPtNtMC[iReg]				= new TH2F(TString::Format("hKpmPtNtMC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hKpmPtNtMinMC[iReg]			= new TH2F(TString::Format("hKpmPtNtMinMC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hKpmPtNtMaxMC[iReg]			= new TH2F(TString::Format("hKpmPtNtMaxMC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., max.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hKpmPtNtRC[iReg]				= new TH2F(TString::Format("hKpmPtNtRC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 			hKpmPtNtMinRC[iReg]			= new TH2F(TString::Format("hKpmPtNtMinRC_%s",REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans., min.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+			hKpmPtNtMaxRC[iReg]			= new TH2F(TString::Format("hKpmPtNtMaxRC_%s",REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [trans., max.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 
 		}
 	}
@@ -1965,6 +1993,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 		hV0PtNtMin[iSp][iType][iReg]			= new TH2F(TString::Format("hV0PtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
+		hV0PtNtMax[iSp][iType][iReg]			= new TH2F(TString::Format("hV0PtNtMax_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,max]; Entries",	NPTBINS,XBINS, 50, -0.5, 49.5);
 		
 		hV0EtaNt[iSp][iType][iReg]			= new TH2F(TString::Format("hV0EtaNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 #eta; N_{ch} [trans.]; Entries", 		200, -1., 1., 50, -0.5, 49.5);
@@ -1975,6 +2005,8 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
 		hV0IMvPtNtMin[iSp][iType][iReg]		= new TH3F(TString::Format("hV0IMvPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.,min]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtMax[iSp][iType][iReg]		= new TH3F(TString::Format("hV0IMvPtNtMax_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{ch} [trans.,max]; Entries",		NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
 
 	} } } 
 
@@ -2133,7 +2165,7 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 
 Bool_t MyAnalysisV0::BorrowHistograms() {
 
-	cout << "mdir is " << mDirFile << endl;
+	/*cout << "mdir is " << mDirFile << endl;
 	if (mHandler->filehist()->Get("MyAnalysisV0_0")->ClassName() == string("TDirectoryFile")) {
 		cout << "Borrowing histograms from a TDirectoryFile" << endl;
 		mDirFile = (TDirectoryFile*)mHandler->filehist()->Get("MyAnalysisV0_0");
@@ -2145,9 +2177,9 @@ Bool_t MyAnalysisV0::BorrowHistograms() {
 			mDirFile->Append(hashList->First());
 			hashList->RemoveFirst();
 		}
-	}
+	}*/
 	
-	mDirFile->ls();
+	//mDirFile->ls();
 	cout << "mdir is " << mDirFile << endl;
 
 	// MONITORS
@@ -2237,6 +2269,7 @@ Int_t MyAnalysisV0::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 //	mDirFile->Write();
+	
 
 	TH1F* hLeadPt = (TH1F*)hLeadPhivPt->ProjectionX();
 	hNchvLeadPt->Divide(hLeadPt);

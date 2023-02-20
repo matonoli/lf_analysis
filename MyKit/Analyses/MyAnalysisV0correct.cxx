@@ -48,9 +48,6 @@ MyAnalysisV0correct::MyAnalysisV0correct() {
 
 Int_t MyAnalysisV0correct::Init() {
 
-	TString dfName(this->GetName());
-	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());
 	mDirFile->cd();
 
 	printf("Initialising analysis %s  \n", 

@@ -28,7 +28,7 @@ MyHandler::MyHandler() : mOutName(""), mFile(0), mDir(0), mChain(0) {
 	mFlagMC 	= false;
 	mFlagHist	= false;
 	
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		mAnalysis[i] = 0;
 	}
@@ -55,7 +55,12 @@ Int_t MyHandler::Init() {
 	printf("nAnalyses is %i \n", nAnalyses);
 	for (Int_t iAna = 0; iAna < nAnalyses; iAna++) {
 		nAna = iAna;
-		mAnalysis[iAna]->Init();
+
+		mAnalysis[iAna]->SetDirectory();
+
+		if (mAnalysis[iAna]->IsRun()) mAnalysis[iAna]->Init();
+			else mAnalysis[iAna]->TakeoverHistograms(Form("%s_%i",mAnalysis[iAna]->GetName(),iAna));
+
 		if (mFile) mFile->cd();
 	}
 	return 0;
@@ -135,7 +140,9 @@ Int_t MyHandler::Finish() {
 	
 	printf("Finishing handler \n");
 	for (Int_t iAna = 0; iAna < nAnalyses; iAna++) {
-		mAnalysis[iAna]->Finish();
+		
+		if (mAnalysis[iAna]->IsRun()) mAnalysis[iAna]->Finish();
+		
 	}
 
 	if (mFile) {
