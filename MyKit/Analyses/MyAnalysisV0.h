@@ -335,6 +335,7 @@ class MyAnalysisV0: public MyAnalysis {
 		Bool_t SelectTrack(MyTrack &tr);
 		Bool_t IsGeometricalCut(Float_t phiprime, Float_t pt);
 		void ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
+		void ProcessV0SystVarNt(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt);
 
 
 		void DoEfficiency();
@@ -559,5 +560,7 @@ class MyAnalysisV0: public MyAnalysis {
 
 		TH2F* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 
+		// SYSTEMATICS STUDY NT
+		TH3F* hV0IMvPtSysNt[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 };
 #endif

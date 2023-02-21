@@ -958,7 +958,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 					if (!properDaughters) continue;
 					if (!v0.IsMCPrimary()) continue;	// considering only primaries for efficiency
 					if (!MCfound) continue;
-					ProcessV0SystVar(v0,iSp,RC,multMB,sphMB);	
+					ProcessV0SystVar(v0,iSp,RC,multMB,sphMB);
+					ProcessV0SystVarNt(v0,iSp,RC,0,0);	
 
 				}
 			}
@@ -1145,6 +1146,14 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 						ProcessV0SystVar(v0,iSp,D,NCharged01,sphMB);
 						for (Int_t iSph = 1; iSph < NSPHERO; iSph++) if (isEventSphero[D][NCharged01][iSph]) ProcessV0SystVar(v0,iSp,D,NCharged01,iSph);
 					}
+
+					if (isEventRT) {
+						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
+						ProcessV0SystVarNt(v0,iSp,D,region,nChTrans);
+						//Int_t regionSide = WhatRegionSide(v0.GetPhi(),phiLead);
+						//if (!region) ProcessV0SystVarNt(v0,iSp,D,IsMinOrMax(isSideAMin,regionSide),nChTrans);
+					}
+
 				} 
 
 				if (IsV0(v0,iSp,D)) {
@@ -1663,6 +1672,54 @@ void MyAnalysisV0::ProcessV0SystVar(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, In
 
 }
 
+void MyAnalysisV0::ProcessV0SystVarNt(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt) {
+
+	Double_t v0mass[] 	= {0., v0.GetIMK0s(), v0.GetIML(), v0.GetIMLbar()};
+
+	for (Int_t iV = 0; iV < sysVarsSizeof; iV++) {
+	
+		if (IsV0VaryCut(v0,Sp,Type,RadiusL,sysVar[Sp-1][sysRadiusL][iV])) hV0IMvPtSysNt[Sp][Reg][sysRadiusL][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,DCAdd,sysVar[Sp-1][sysDCAdd][iV])) hV0IMvPtSysNt[Sp][Reg][sysDCAdd][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,CPA,sysVar[Sp-1][sysCPA][iV])) hV0IMvPtSysNt[Sp][Reg][sysCPA][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,FastSignal,sysVar[Sp-1][sysFastSignal][iV])) hV0IMvPtSysNt[Sp][Reg][sysFastSignal][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+
+		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,CompMassL,sysVar[Sp-1][sysCompMass][iV])
+					 && IsV0VaryCut(v0,Sp,Type,CompMassLbar,sysVar[Sp-1][sysCompMass][iV]) )
+			|| (Sp>1 && IsV0VaryCut(v0,Sp,Type,CompMassK0s,sysVar[Sp-1][sysCompMass][iV]) ) )
+			hV0IMvPtSysNt[Sp][Reg][sysCompMass][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+
+		if ( (Sp==2 && IsV0VaryCut(v0,Sp,Type,LifetimeL,sysVar[Sp-1][sysLifetime][iV]) )
+			|| (Sp==3 && IsV0VaryCut(v0,Sp,Type,LifetimeLbar,sysVar[Sp-1][sysLifetime][iV]) ) )
+			hV0IMvPtSysNt[Sp][Reg][sysLifetime][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+
+		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiH,sysVar[Sp-1][sysNSigmaTPC][iV])		)
+		  || (Sp==2 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPrL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPrH,sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPiH,sysVar[Sp-1][sysNSigmaTPC][iV])		)
+		  || (Sp==3 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
+					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrH,sysVar[Sp-1][sysNSigmaTPC][iV])		)	)
+			hV0IMvPtSysNt[Sp][Reg][sysNSigmaTPC][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVpos,sysVar[Sp-1][sysDCAPVpos][iV])) hV0IMvPtSysNt[Sp][Reg][sysDCAPVpos][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVneg,sysVar[Sp-1][sysDCAPVneg][iV])) hV0IMvPtSysNt[Sp][Reg][sysDCAPVneg][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+
+		if (IsV0VaryCut(v0,Sp,Type,NClusterpos,sysVar[Sp-1][sysNCluster][iV])
+			&& IsV0VaryCut(v0,Sp,Type,NClusterneg,sysVar[Sp-1][sysNCluster][iV]) ) 
+			hV0IMvPtSysNt[Sp][Reg][sysNCluster][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+
+		if (IsV0VaryCut(v0,Sp,Type,NClusterFpos,sysVar[Sp-1][sysNClusterF][iV])
+			&& IsV0VaryCut(v0,Sp,Type,NClusterFneg,sysVar[Sp-1][sysNClusterF][iV]) ) 
+			hV0IMvPtSysNt[Sp][Reg][sysNClusterF][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+	}
+
+}
+
 Bool_t MyAnalysisV0::IsTrans(Double_t phi1, Double_t phiTrig) {
 
 	Double_t dphi = mHandler->DeltaPhi(phi1,phiTrig);
@@ -2159,6 +2216,38 @@ Bool_t MyAnalysisV0::CreateHistograms() {
 			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); Entries",		NPTBINS, XBINS, 1000, -0.2, 0.2);
 
 	}	}	}	}
+
+	// RT systematics
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iReg = 0; iReg < 3; ++iReg)			{		// syst for transmin and transmax are taken over from trans
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+
+		if (mFlagMC) if (iReg!=0) continue;		// efficiency is varied only in MB
+
+		hV0IMvPtNtSys[iSp][iReg][sysRadiusL][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysRadiusL],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysDCAdd][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysDCAdd],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysCPA][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysCPA],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysFastSignal][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysFastSignal],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysCompMass][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysCompMass],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysLifetime][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysLifetime],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysNSigmaTPC][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysNSigmaTPC],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysDCAPVpos][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysDCAPVpos],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysDCAPVneg][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysDCAPVneg],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysNCluster][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysNCluster],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+		hV0IMvPtNtSys[iSp][iReg][sysNClusterF][iVar] = new TH3F(TString::Format("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[sysNClusterF],SYSTVAR[iVar]),
+			";V0 p_{T} (GeV/#it{c}); V0 m (GeV/#it{c}^{2}); N_{T}; Entries", NPTBINS, XBINS, NBINS_IM, XBINS_IM, NBINS_NT, XBINS_NT);
+
+	}	}	}
 
 	printf("Histograms in analysis %s created \n", 
 		this->GetName());
