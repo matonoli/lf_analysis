@@ -1678,19 +1678,19 @@ void MyAnalysisV0::ProcessV0SystVarNt(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg,
 
 	for (Int_t iV = 0; iV < sysVarsSizeof; iV++) {
 	
-		if (IsV0VaryCut(v0,Sp,Type,RadiusL,sysVar[Sp-1][sysRadiusL][iV])) hV0IMvPtSysNt[Sp][Reg][sysRadiusL][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
-		if (IsV0VaryCut(v0,Sp,Type,DCAdd,sysVar[Sp-1][sysDCAdd][iV])) hV0IMvPtSysNt[Sp][Reg][sysDCAdd][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
-		if (IsV0VaryCut(v0,Sp,Type,CPA,sysVar[Sp-1][sysCPA][iV])) hV0IMvPtSysNt[Sp][Reg][sysCPA][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
-		if (IsV0VaryCut(v0,Sp,Type,FastSignal,sysVar[Sp-1][sysFastSignal][iV])) hV0IMvPtSysNt[Sp][Reg][sysFastSignal][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,RadiusL,sysVar[Sp-1][sysRadiusL][iV])) hV0IMvPtNtSys[Sp][Reg][sysRadiusL][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,DCAdd,sysVar[Sp-1][sysDCAdd][iV])) hV0IMvPtNtSys[Sp][Reg][sysDCAdd][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,CPA,sysVar[Sp-1][sysCPA][iV])) hV0IMvPtNtSys[Sp][Reg][sysCPA][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,FastSignal,sysVar[Sp-1][sysFastSignal][iV])) hV0IMvPtNtSys[Sp][Reg][sysFastSignal][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 
 		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,CompMassL,sysVar[Sp-1][sysCompMass][iV])
 					 && IsV0VaryCut(v0,Sp,Type,CompMassLbar,sysVar[Sp-1][sysCompMass][iV]) )
 			|| (Sp>1 && IsV0VaryCut(v0,Sp,Type,CompMassK0s,sysVar[Sp-1][sysCompMass][iV]) ) )
-			hV0IMvPtSysNt[Sp][Reg][sysCompMass][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+			hV0IMvPtNtSys[Sp][Reg][sysCompMass][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 
 		if ( (Sp==2 && IsV0VaryCut(v0,Sp,Type,LifetimeL,sysVar[Sp-1][sysLifetime][iV]) )
 			|| (Sp==3 && IsV0VaryCut(v0,Sp,Type,LifetimeLbar,sysVar[Sp-1][sysLifetime][iV]) ) )
-			hV0IMvPtSysNt[Sp][Reg][sysLifetime][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+			hV0IMvPtNtSys[Sp][Reg][sysLifetime][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 
 		if ( (Sp==1 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
@@ -1704,18 +1704,18 @@ void MyAnalysisV0::ProcessV0SystVarNt(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg,
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCposPiH,sysVar[Sp-1][sysNSigmaTPC][iV])
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrL,-1.*sysVar[Sp-1][sysNSigmaTPC][iV])
 					 && IsV0VaryCut(v0,Sp,Type,NSigmaTPCnegPrH,sysVar[Sp-1][sysNSigmaTPC][iV])		)	)
-			hV0IMvPtSysNt[Sp][Reg][sysNSigmaTPC][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+			hV0IMvPtNtSys[Sp][Reg][sysNSigmaTPC][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 
-		if (IsV0VaryCut(v0,Sp,Type,DCAPVpos,sysVar[Sp-1][sysDCAPVpos][iV])) hV0IMvPtSysNt[Sp][Reg][sysDCAPVpos][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
-		if (IsV0VaryCut(v0,Sp,Type,DCAPVneg,sysVar[Sp-1][sysDCAPVneg][iV])) hV0IMvPtSysNt[Sp][Reg][sysDCAPVneg][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVpos,sysVar[Sp-1][sysDCAPVpos][iV])) hV0IMvPtNtSys[Sp][Reg][sysDCAPVpos][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+		if (IsV0VaryCut(v0,Sp,Type,DCAPVneg,sysVar[Sp-1][sysDCAPVneg][iV])) hV0IMvPtNtSys[Sp][Reg][sysDCAPVneg][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 
 		if (IsV0VaryCut(v0,Sp,Type,NClusterpos,sysVar[Sp-1][sysNCluster][iV])
 			&& IsV0VaryCut(v0,Sp,Type,NClusterneg,sysVar[Sp-1][sysNCluster][iV]) ) 
-			hV0IMvPtSysNt[Sp][Reg][sysNCluster][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+			hV0IMvPtNtSys[Sp][Reg][sysNCluster][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 
 		if (IsV0VaryCut(v0,Sp,Type,NClusterFpos,sysVar[Sp-1][sysNClusterF][iV])
 			&& IsV0VaryCut(v0,Sp,Type,NClusterFneg,sysVar[Sp-1][sysNClusterF][iV]) ) 
-			hV0IMvPtSysNt[Sp][Reg][sysNClusterF][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
+			hV0IMvPtNtSys[Sp][Reg][sysNClusterF][iV]->Fill(v0.GetPt(),v0mass[Sp],Nt);
 	}
 
 }

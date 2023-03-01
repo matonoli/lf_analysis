@@ -8,7 +8,9 @@ using namespace std;
 
 
 // COMMON PATH FOR INPUTS
-TString path("../Unfolding/results");
+//TString path("results_unfolding"); TString RMname("hNtRM_flip");
+//TString path("results_unfolding_min"); TString RMname("hNtMinRM_flip");
+TString path("results_unfolding_max"); TString RMname("hNtMaxRM_flip");
 
 // HELPER GLOBAL VARIABLES
 
@@ -300,9 +302,11 @@ void plotInfoRT_matrix() {
 
   // FETCH SOURCE HISTOGRAMS FROM FILES
   TFile* fIn = new TFile(Form("%s/1D_newClass_mc.root",path.Data()),"READ");
+  cout << "File found " << fIn << endl;
 
-  hRM  = (TH2D*)fIn->Get("hRes");
+  hRM  = (TH2D*)fIn->Get(RMname.Data());
   hUnf  = (TH2D*)fIn->Get("_hSolutionNT");
+  cout << "Histograms found " << hRM << " " << hUnf << endl;
 
   // PROCESS HISTOGRAMS HERE
   Int_t nCols = hRM->GetNbinsX();

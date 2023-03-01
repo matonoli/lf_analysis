@@ -151,12 +151,18 @@ namespace V0consts {
 		2.20, 2.80, 3.40, 4.00, 5.50, 
 		7.00, 9.00,	11.00, 14.00 };*/
 
-	const Int_t NRTBINS = 13;
+	const int NRTBINS = 5;
+	//const double RTBINS[NRTBINS+1] = {0.0, 0.5, 1.5, 2.5, 5.0};
+	const double RTBINS[NRTBINS+1] = {5.0,0.0, 0.8, 1.5, 2.5, 5.0};
+
+
+
+	/*const Int_t NRTBINS = 13;
 	const Double_t RTBINS[NRTBINS+1] = {
 		-0.1, 0.3, 0.7, 1.1, 1.5,
 		1.9, 2.3, 2.7, 3.1, 3.5,
 		3.9, 4.3, 4.7, 5.1	};
-
+	*/
 
 	/*const Int_t NRTBINS0 = 6;
 	const Double_t RTBINS0[NRTBINS0+1] = {
@@ -561,6 +567,6 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2F* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 
 		// SYSTEMATICS STUDY NT
-		TH3F* hV0IMvPtSysNt[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof];
+		TH3F* hV0IMvPtNtSys[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 };
 #endif
