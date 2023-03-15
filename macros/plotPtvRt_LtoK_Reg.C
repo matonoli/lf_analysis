@@ -18,6 +18,131 @@ const char* strH[NHIST] = {"Stat", "Syst", "SystUnc", "Monash", "Ropes"};
 
 
 // PLOTTING FUNCTIONS
+void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx, const char* opt) {
+  
+  c->cd();
+  TString strOpt(opt);
+
+  // check for an already existent ratio plot
+  Bool_t hasRatio = false;
+  TObject* obj;
+  TIter next(c->GetListOfPrimitives());
+  while ( (obj = next()) ) {
+    TString objName = obj->GetName();
+    if (objName == Form("p2_%s",c->GetName())) {
+      TVirtualPad* prat = (TVirtualPad*)obj;
+      prat->cd();
+      hasRatio = true;
+    }
+  }
+
+  if (!hasRatio) {
+
+    TCanvas* ctop = (TCanvas*)c->Clone("ctop");
+    c->Clear();
+    ctop->SetBottomMargin(0.005);
+    c->cd();
+
+    TPad* p1 = new TPad(Form("p1_%s",c->GetName()),"",0.,0.3,1.,1.);
+    p1->SetBottomMargin(0.);
+    p1->Draw();
+    p1->cd();
+    ctop->DrawClonePad();
+
+    c->cd();
+    TPad* p2 = new TPad(Form("p2_%s",c->GetName()),"",0.,0.00,1.,0.28);
+    p2->SetTopMargin(0);
+    p2->SetBottomMargin(0.32);
+    p2->Draw();
+    p2->cd();
+  }
+
+  TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
+  hr->SetMinimum(low);
+  hr->SetMaximum(high);
+  hr->GetXaxis()->SetRangeUser(lowx,highx);
+  hr->Divide(hd);
+
+  hr->GetYaxis()->SetTitle("ratio to ref.");
+  hr->GetYaxis()->CenterTitle();
+  hr->GetYaxis()->SetNdivisions(505);
+  hr->GetYaxis()->SetTitleSize(20);
+  hr->GetYaxis()->SetTitleFont(43);
+  hr->GetYaxis()->SetLabelFont(43); 
+
+  hr->GetYaxis()->SetTitleOffset(1.6);
+  hr->GetYaxis()->SetLabelOffset(0.0025);
+  hr->GetYaxis()->SetLabelSize(20);
+
+  hr->GetXaxis()->SetTitleSize(25);
+  hr->GetXaxis()->SetTitleFont(43);
+  hr->GetXaxis()->SetTitleOffset(4.);
+  hr->GetXaxis()->SetLabelFont(43); 
+  hr->GetXaxis()->SetLabelSize(25);
+  hr->GetXaxis()->SetTickLength(0.09);
+
+  if (!hasRatio)  hr->Draw(strOpt.Data());
+  else      hr->Draw(Form("same %s", strOpt.Data()));
+  TString hrname(hr->GetName());
+  if (! hrname.Contains("hBlank")) hr->Write();
+
+  //c->SetCanvasSize()
+  c->cd();
+
+}
+
+TH1D* GetFrame(const char* name, double min, double max, bool isRatios)
+{
+    
+    TH1D* hframe = new TH1D(Form("%s",name),Form("%s",name),(int)max-(int)min,min,max);
+    
+    hframe->GetYaxis()->SetTitleOffset(2);
+    hframe->GetYaxis()->SetNdivisions(510,kTRUE);
+    hframe->GetXaxis()->SetNdivisions(505,kTRUE);
+    hframe->GetXaxis()->SetLabelFont(63);
+    hframe->GetYaxis()->SetLabelFont(63);
+    hframe->GetXaxis()->SetTitleFont(63);
+    hframe->GetYaxis()->SetTitleFont(63);
+    hframe->GetYaxis()->SetTitleSize( 30 );
+    hframe->GetXaxis()->SetTitleSize( 30 );
+    hframe->GetYaxis()->SetLabelSize( 25 );
+    
+    if(isRatios){
+        hframe->GetYaxis()->SetNdivisions(505,kTRUE);
+        hframe->GetYaxis()->SetTitleOffset(1.5);
+        hframe->GetYaxis()->SetLabelSize( 20 );
+        hframe->GetYaxis()->SetTitleSize( 30 );
+    }
+    
+    if(strstr(name,"frame2")!=0){
+        hframe->GetXaxis()->SetLabelSize( 25 );
+        hframe->GetYaxis()->SetLabelSize( 25 );
+        
+        hframe->GetYaxis()->SetTitleOffset(2);
+        hframe->GetXaxis()->SetTitleOffset(3);
+        hframe->GetYaxis()->SetRangeUser(0.0,2.82);
+        hframe->GetYaxis()->SetNdivisions(505,kTRUE);
+        hframe->GetXaxis()->SetNdivisions(505,kTRUE);
+        hframe->GetYaxis()->SetTitle("Ratio to #it{N}_{ch} #geq 10");
+        //hframe->GetXaxis()->SetTitle(titleX);
+        
+        if(isRatios){
+            
+            hframe->GetYaxis()->SetNdivisions(505,kTRUE);
+            hframe->GetXaxis()->SetNdivisions(505,kTRUE);
+            hframe->GetXaxis()->SetLabelSize( 20 );
+            hframe->GetYaxis()->SetLabelSize( 20 );
+            hframe->GetXaxis()->SetTitleSize( 24 );
+            hframe->GetYaxis()->SetTitleSize( 25 );
+            hframe->GetYaxis()->SetRangeUser(0.65,1.35);
+            hframe->GetXaxis()->SetTitleOffset(3);
+            hframe->GetYaxis()->SetTitleOffset(1.5);
+            
+        }
+        
+    }
+    return hframe;
+}
 //______________________________________________________________
 void myLegendSetUp(TLegend *currentLegend,float currentTextSize){
     
@@ -103,6 +228,35 @@ void MakeNiceHistogram(TH1D* h, Int_t col) {
   //h->SetTopMargin(0.055);
 }
 
+TH1D* DivideSpline(TH1D* hn, TH1D* hd, Double_t scale) {
+
+  // replaces the denominator with a spline and creates a clone with the numerator's binning
+  // returns the ratio
+  
+
+  Int_t hd_nbins = hd->GetNbinsX();
+  
+  Double_t hd_x[400], hd_err[400]; 
+  for (int iB = 0; iB < hd_nbins; ++iB)   {
+    hd_x[iB]  = hd->GetBinCenter(iB+1);
+    hd_err[iB]  = hd->GetBinError(iB+1);    }
+  
+
+  TSpline3* hd_spl    = new TSpline3(hd, 0, 1, 0);
+  TSpline3* hd_splerr = new TSpline3(Form("splerr_%s",hd->GetName()), hd_x, hd_err, hd_nbins, 0, 1, 0);
+
+  TH1D* hd2 = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
+  for (int iB = 1; iB <= hd2->GetNbinsX(); ++iB)         {
+    hd2->SetBinContent(iB, hd_spl->Eval(hd2->GetBinCenter(iB)));  
+    hd2->SetBinError(iB, hd_splerr->Eval(hd2->GetBinCenter(iB))); }
+
+  hn->Divide(hn,hd2,scale);
+  delete hd_spl;
+  delete hd_splerr;
+  delete hd2;
+  
+  return hn;
+}
 
 void DrawHistograms(TH1D** h, Int_t nhist) {
 
@@ -137,7 +291,7 @@ TH1D* MakeRatioHist(TH1D* hn, TH1D* hd) {
 
 
 
-void plotPtvRt_LtoK() {
+void plotPtvRt_LtoK_Reg() {
 
   //TH1::SetDefaultSumw2(1);
 
@@ -179,13 +333,13 @@ void plotPtvRt_LtoK() {
 
   // FETCH SOURCE HISTOGRAMS FROM FILES
   //TFile* fIn = new TFile(Form("%s/outMC_230123.root",path.Data()),"READ");
-  TFile* fIn = new TFile(Form("%s/outD_230301_0xcsu_hist.root",path.Data()),"READ");
+  TFile* fIn = new TFile(Form("%s/outD_230220_0xcu_hist.root",path.Data()),"READ");
   //Bool_t isRC = true; Bool_t isRTMin = false; TString part("K0s" ); TString partL("K^{0}_{S}"); TString dmc("D");
   Bool_t isRC = true; Bool_t isRTMin = false; TString part("L" ); TString partL("#Lambda");TString dmc("D");
   //Bool_t isRC = true; Bool_t isRTMin = false; TString part("Pion" ); TString partL("#pi^{#pm}");
   //Bool_t isRC = true; Bool_t isRTMin = false; TString part("Kaon" ); TString partL("K^{#pm}");
 
-  TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0unfold_4");
+  TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0unfold_3");
 
   for (int i = 0; i<NRT+1; i++) {
     hPtT[i][Stat]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnf_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
@@ -195,19 +349,6 @@ void plotPtvRt_LtoK() {
     hPtA[i][Stat]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnf_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
 
     cout << "h is " << hPtT[i][Stat] << endl;
-
-    hPtT[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
-    hPtTMin[i][Syst] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnfSyst_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
-    hPtTMax[i][Syst] = (TH1D*)dirCorr->Get(Form("hV0PtRtMaxFitCorrUnfSyst_%s_%s_TransMax_%i",part.Data(),dmc.Data(),i));
-    hPtN[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
-    hPtA[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
-
-    hPtT[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
-    hPtTMin[i][SystUnc] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnfSystUnc_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
-    hPtTMax[i][SystUnc] = (TH1D*)dirCorr->Get(Form("hV0PtRtMaxFitCorrUnfSystUnc_%s_%s_TransMax_%i",part.Data(),dmc.Data(),i));
-    hPtN[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
-    hPtA[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
-
   }
 
   part = TString("K0s"); partL = TString("#Lambda / K^{0}_{S}");
@@ -219,25 +360,6 @@ void plotPtvRt_LtoK() {
     hKPtA[i][Stat]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnf_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
 
     cout << "h is " << hPtT[i][Stat] << endl;
-
-    hKPtT[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
-    hKPtTMin[i][Syst] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnfSyst_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
-    hKPtTMax[i][Syst] = (TH1D*)dirCorr->Get(Form("hV0PtRtMaxFitCorrUnfSyst_%s_%s_TransMax_%i",part.Data(),dmc.Data(),i));
-    hKPtN[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
-    hKPtA[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
-
-    hKPtT[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
-    hKPtTMin[i][SystUnc] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnfSystUnc_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
-    hKPtTMax[i][SystUnc] = (TH1D*)dirCorr->Get(Form("hV0PtRtMaxFitCorrUnfSystUnc_%s_%s_TransMax_%i",part.Data(),dmc.Data(),i));
-    hKPtN[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
-    hKPtA[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
-
-    cout << "hh is " << hPtT[i][Syst] << endl;
-    cout << "hh is " << hPtT[i][SystUnc] << endl;
-    cout << "hh is " << hPtTMin[i][Syst] << endl;
-    cout << "hh is " << hPtTMin[i][SystUnc] << endl;
-    cout << "hh is " << hPtTMax[i][Syst] << endl;
-    cout << "hh is " << hPtTMax[i][SystUnc] << endl;
   }
 
   // PROCESS HISTOGRAMS
@@ -254,30 +376,6 @@ void plotPtvRt_LtoK() {
     hPtN[i][Stat]->Scale(0.5);
     hPtA[i][Stat]->Scale(0.5);
     cout << "h is " << hPtT[i][Stat] << endl;
-
-    hPtT[i][Syst]->Divide(hKPtT[i][Syst]);
-    hPtTMin[i][Syst]->Divide(hKPtTMin[i][Syst]);
-    hPtTMax[i][Syst]->Divide(hKPtTMax[i][Syst]);
-    hPtN[i][Syst]->Divide(hKPtN[i][Syst]);
-    hPtA[i][Syst]->Divide(hKPtA[i][Syst]);
-    
-    hPtT[i][Syst]->Scale(0.5);
-    hPtTMin[i][Syst]->Scale(0.5);
-    hPtTMax[i][Syst]->Scale(0.5);
-    hPtN[i][Syst]->Scale(0.5);
-    hPtA[i][Syst]->Scale(0.5);
-
-    hPtT[i][SystUnc]->Divide(hKPtT[i][SystUnc]);
-    hPtTMin[i][SystUnc]->Divide(hKPtTMin[i][SystUnc]);
-    hPtTMax[i][SystUnc]->Divide(hKPtTMax[i][SystUnc]);
-    hPtN[i][SystUnc]->Divide(hKPtN[i][SystUnc]);
-    hPtA[i][SystUnc]->Divide(hKPtA[i][SystUnc]);
-    
-    hPtT[i][SystUnc]->Scale(0.5);
-    hPtTMin[i][SystUnc]->Scale(0.5);
-    hPtTMax[i][SystUnc]->Scale(0.5);
-    hPtN[i][SystUnc]->Scale(0.5);
-    hPtA[i][SystUnc]->Scale(0.5);
   }
 
   // MAKE PLOTS
@@ -288,13 +386,9 @@ void plotPtvRt_LtoK() {
   C = new TCanvas("C","canvas",1000,600);
   C->SetFillStyle(4000);
 
-  TCanvas *C2 = (TCanvas*) gROOT->FindObject("C2");
-  if (C2) delete C2;
-  C2 = new TCanvas("C2","canvas",1000,600);
-  C2->SetFillStyle(4000);
 
   // Number of PADS
-  const int Nx = 3;
+  const int Nx = 4;
   const int Ny = 2;
 
   // Margins
@@ -305,16 +399,15 @@ void plotPtvRt_LtoK() {
 
   // Canvas setup
   CanvasPartition(C,Nx,Ny,lMargin,rMargin,bMargin,tMargin);
-  CanvasPartition(C2,Nx,Ny,lMargin,rMargin,bMargin,tMargin);
 
   int latexTextSize = 18; 
-  float legendTextSize = 0.06;
+  float legendTextSize = 0.07;
 
   const double minYspectra = 0.01;
   const double maxYspectra = 1.01;
 
-  const double minYratio = 0.35;
-  const double maxYratio = 2.05;
+  const double minYratio = 0.65;
+  const double maxYratio = 1.45;
 
   const double minXleft = -0.2;
   const double maxXleft = 8.2;
@@ -357,12 +450,12 @@ void plotPtvRt_LtoK() {
 
   TLegend* legendLeft = new TLegend(0.04,0.7,0.55,0.93);
   myLegendSetUp(legendLeft,legendTextSize);
-  legendLeft->AddEntry(hPtT[1][Stat],"0.0 < R_{T} < 0.8","PL");
-  legendLeft->AddEntry(hPtT[2][Stat],"0.8 < R_{T} < 1.5","PL");
-  legendLeft->AddEntry(hPtT[3][Stat],"1.5 < R_{T} < 2.5","PL");
-  legendLeft->AddEntry(hPtT[4][Stat],"2.5 < R_{T} < 5.0","PL");
+  legendLeft->AddEntry(hPtT[2][Stat],"Transverse","PL");
+  legendLeft->AddEntry(hPtTMin[2][Stat],"Trans., min","PL");
+  legendLeft->AddEntry(hPtTMax[2][Stat],"Trans., max","PL");
 
-  TLegend* legendLeft2 = new TLegend(0.04,0.7,0.55,0.93);
+
+  TLegend* legendLeft2 = new TLegend(0.04,0.67,0.75,0.93);
   myLegendSetUp(legendLeft2,legendTextSize);
   legendLeft2->AddEntry(hPtT[1][Stat],"0.0 < R_{T,(-,min,max)} < 0.8","PL");
   legendLeft2->AddEntry(hPtT[2][Stat],"0.8 < R_{T,(-,min,max)} < 1.5","PL");
@@ -388,7 +481,6 @@ void plotPtvRt_LtoK() {
       pad[i][j]->SetFillStyle(1001);
       //if(j) pad[i][j]->SetLogy(kTRUE);
       pad[i][j]->SetLogz(kTRUE);
-      //pad[i][j]->SetLogx(kTRUE);
       
     }
   }
@@ -401,90 +493,114 @@ void plotPtvRt_LtoK() {
   //pad[0][0]->SetLogy(kFALSE);
   hframeSpectraLeft->Draw();
   
+  MakeNiceHistogram(hPtT[1][Stat], colors[1]);
+  MakeNiceHistogram(hPtTMin[1][Stat], colors[1]);
+  MakeNiceHistogram(hPtTMax[1][Stat], colors[1]);
+  hPtTMin[1][Stat]->SetMarkerStyle(24);
+  hPtTMax[1][Stat]->SetMarkerStyle(25);
+  hPtT[1][Stat]->Draw("same");
+  hPtTMin[1][Stat]->Draw("same");
+  hPtTMax[1][Stat]->Draw("same");
   
-  for (int iRt = NRT; iRt > 0; --iRt)  {
-    MakeNiceHistogram(hPtN[iRt][Stat], colors[iRt]);
-    MakeNiceHistogram(hPtN[iRt][Syst], colors[iRt]);
-    MakeNiceHistogram(hPtN[iRt][SystUnc], colors[iRt]);
-    hPtN[iRt][Stat]->Draw("E X0 same");
-    hPtN[iRt][Syst]->Draw("E2 same");
-  }
 
   
-  latexR->DrawLatex(0.20,0.75,"Toward");
-  latexSp->DrawLatex(0.65,0.75,Form("#bf{%s}",partL.Data()));
+  //latexR->DrawLatex(0.20,0.75,"Toward");
+  //latexSp->DrawLatex(0.65,0.75,Form("#bf{%s}",partL.Data()));
 
   C->cd(0);
   pad[1][1]->Draw();
   pad[1][1]->cd();
   //pad[0][1]->SetLogy(kFALSE);
   hframeSpectraLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {
-    MakeNiceHistogram(hPtA[iRt][Stat], colors[iRt]);
-    MakeNiceHistogram(hPtA[iRt][Syst], colors[iRt]);
-    MakeNiceHistogram(hPtA[iRt][SystUnc], colors[iRt]);
-    hPtA[iRt][Stat]->Draw("E X0 same");
-    hPtA[iRt][Syst]->Draw("E2 same");
-  }
+
+  MakeNiceHistogram(hPtT[2][Stat], colors[2]);
+  MakeNiceHistogram(hPtTMin[2][Stat], colors[2]);
+  MakeNiceHistogram(hPtTMax[2][Stat], colors[2]);
+  hPtTMin[2][Stat]->SetMarkerStyle(24);
+  hPtTMax[2][Stat]->SetMarkerStyle(25);
+  hPtT[2][Stat]->Draw("same");
+  hPtTMin[2][Stat]->Draw("same");
+  hPtTMax[2][Stat]->Draw("same");
   
-  latexR->DrawLatex(0.2,0.75,"Away");
 
   C->cd(0);
   pad[2][1]->Draw();
   pad[2][1]->cd();
   //pad[0][2]->SetLogy(kFALSE);
   hframeSpectraLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {
-    MakeNiceHistogram(hPtT[iRt][Stat], colors[iRt]);
-    MakeNiceHistogram(hPtT[iRt][Syst], colors[iRt]);
-    MakeNiceHistogram(hPtT[iRt][SystUnc], colors[iRt]);
-    hPtT[iRt][Stat]->Draw("E X0 same");
-    hPtT[iRt][Syst]->Draw("E2 same");
-  }
-  latexR->DrawLatex(0.2,0.75,"Transverse");
+
+  MakeNiceHistogram(hPtT[3][Stat], colors[3]);
+  MakeNiceHistogram(hPtTMin[3][Stat], colors[3]);
+  MakeNiceHistogram(hPtTMax[3][Stat], colors[3]);
+  hPtTMin[3][Stat]->SetMarkerStyle(24);
+  hPtTMax[3][Stat]->SetMarkerStyle(25);
+  hPtT[3][Stat]->Draw("same");
+  hPtTMin[3][Stat]->Draw("same");
+  hPtTMax[3][Stat]->Draw("same");
+
+  C->cd(0);
+  pad[3][1]->Draw();
+  pad[3][1]->cd();
+  //pad[0][2]->SetLogy(kFALSE);
+  hframeSpectraLeft->Draw();
+
+  MakeNiceHistogram(hPtT[4][Stat], colors[4]);
+  MakeNiceHistogram(hPtTMin[4][Stat], colors[4]);
+  MakeNiceHistogram(hPtTMax[4][Stat], colors[4]);
+  hPtTMin[4][Stat]->SetMarkerStyle(24);
+  hPtTMax[4][Stat]->SetMarkerStyle(25);
+  hPtT[4][Stat]->Draw("same");
+  hPtTMin[4][Stat]->Draw("same");
+  hPtTMax[4][Stat]->Draw("same");
 
   C->cd(0);
   pad[0][0]->Draw();
   pad[0][0]->cd();
   hframeRatioLeft->Draw();
   TH1D* hr[NRT];
-  TH1D* hrs[NRT];
-  for (int iRt = NRT; iRt > 0; --iRt)  {    
-    hr[iRt] = MakeRatioHist(hPtN[iRt][Stat],hPtN[0][Stat]);
-    hr[iRt]->Draw("E X0 same");
-    
-    hrs[iRt] = MakeRatioHist(hPtN[iRt][SystUnc],hPtN[0][SystUnc]);
-    hrs[iRt]->Draw("E2 same");
-  }
-  latexSystem->DrawLatex(0.15,0.92,"pp, #sqrt{s} = 13 TeV");
-  latexSystem->DrawLatex(0.15,0.85,"|#eta|<0.8");
-  latexSystem->DrawLatex(0.15,0.78,"ALICE Data");
+  hr[1] = MakeRatioHist(hPtTMin[1][Stat],hPtT[1][Stat]);
+  hr[2] = MakeRatioHist(hPtTMax[1][Stat],hPtT[1][Stat]);
+  hr[1]->Draw("same");
+  hr[2]->Draw("same");
+  //hr[1]->Fit("pol0");hr[2]->Fit("pol0");
+  latexSystem->DrawLatex(0.2,0.92,"pp, #sqrt{s} = 13 TeV");
+  latexSystem->DrawLatex(0.2,0.85,"|#eta|<0.8");
+  latexSystem->DrawLatex(0.2,0.78,"ALICE Data");
 
 
   C->cd(0);
   pad[1][0]->Draw();
   pad[1][0]->cd();
   hframeRatioLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {    
-    hr[iRt] = MakeRatioHist(hPtA[iRt][Stat],hPtA[0][Stat]);
-    hr[iRt]->Draw("same");
+  hr[1] = MakeRatioHist(hPtTMin[2][Stat],hPtT[2][Stat]);
+  hr[2] = MakeRatioHist(hPtTMax[2][Stat],hPtT[2][Stat]);
+  hr[1]->Draw("same");
+  hr[2]->Draw("same");
+  //hr[1]->Fit("pol0");hr[2]->Fit("pol0");
 
-    hrs[iRt] = MakeRatioHist(hPtA[iRt][SystUnc],hPtA[0][SystUnc]);
-    hrs[iRt]->Draw("E2 same");
-  }
-  legendLeft->Draw();
+  legendLeft2->Draw();
 
   C->cd(0);
   pad[2][0]->Draw();
   pad[2][0]->cd();
   hframeRatioLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {    
-    hr[iRt] = MakeRatioHist(hPtT[iRt][Stat],hPtT[0][Stat]);
-    hr[iRt]->Draw("E X0same");
+  hr[1] = MakeRatioHist(hPtTMin[3][Stat],hPtT[3][Stat]);
+  hr[2] = MakeRatioHist(hPtTMax[3][Stat],hPtT[3][Stat]);
+  hr[1]->Draw("same");
+  hr[2]->Draw("same");
+  //hr[1]->Fit("pol0");hr[2]->Fit("pol0");
 
-    hrs[iRt] = MakeRatioHist(hPtT[iRt][SystUnc],hPtT[0][SystUnc]);
-    hrs[iRt]->Draw("E2 same");
-  }
+  legendLeft->Draw();
+
+  C->cd(0);
+  pad[3][0]->Draw();
+  pad[3][0]->cd();
+  hframeRatioLeft->Draw();
+  hr[1] = MakeRatioHist(hPtTMin[4][Stat],hPtT[4][Stat]);
+  hr[2] = MakeRatioHist(hPtTMax[4][Stat],hPtT[4][Stat]);
+  hr[1]->Draw("same");
+  hr[2]->Draw("same");
+  //hr[1]->Fit("pol0");hr[2]->Fit("pol0");
 
 
   C->cd(0);
@@ -496,9 +612,9 @@ void plotPtvRt_LtoK() {
    C->cd(0);
   padTitleY1->Draw();
   padTitleY1->cd();
-  const char* TitleY1 = "Ratio to R_{T} > 0";
+  const char* TitleY1 = "Ratio to Transverse";
   latexTitleY1->SetTextAngle(90);
-  latexTitleY1->DrawLatex(0.6, 0.27, TitleY1);
+  latexTitleY1->DrawLatex(0.6, 0.1, TitleY1);
 
   C->cd(0);
   padTitleY2->Draw();
@@ -507,139 +623,10 @@ void plotPtvRt_LtoK() {
   latexTitleY2->SetTextAngle(90);
   latexTitleY2->DrawLatex(0.6, 0.2, TitleY2);
 
-  C->SaveAs(Form("./PtvRt_LtoK_%s.pdf",part.Data()));
-  C->SaveAs(Form("./PtvRt_LtoK_%s.png",part.Data()));
+  C->SaveAs(Form("./PtvRt_LtoK_Reg_%s.pdf",part.Data()));
+  C->SaveAs(Form("./PtvRt_LtoK_Reg_%s.png",part.Data()));
 
 
-  ///////////////////
-  // SECOND CANVAS
-
-  for (Int_t i=0;i<Nx;i++) {
-    for (Int_t j=0;j<Ny;j++) {
-      C2->cd(0);
-
-      // Get the pads previously created.
-      char pname[16];
-      sprintf(pname,"pad_%i_%i",i,j);
-      pad[i][j] = (TPad*) gROOT->FindObject(pname);
-      pad[i][j]->Draw();
-      pad[i][j]->SetFillStyle(1001);
-      //if(j) pad[i][j]->SetLogy(kTRUE);
-      pad[i][j]->SetLogz(kTRUE);
-      //pad[i][j]->SetLogx(kTRUE);
-      
-    }
-  }
-
-  C2->cd(0);
-  pad[0][1]->Draw();
-  pad[0][1]->cd();
-  //pad[0][0]->SetLogy(kFALSE);
-  hframeSpectraLeft->Draw();
   
-  
-  for (int iRt = NRT; iRt > 0; --iRt)  {
-    MakeNiceHistogram(hPtT[iRt][Stat], colors[iRt]);
-    hPtT[iRt][Stat]->Draw("E X0 same");
-    hPtT[iRt][Syst]->Draw("E2 same");
-  }
-
-
-  latexR->DrawLatex(0.20,0.75,"Transverse");
-  latexSp->DrawLatex(0.65,0.75,Form("#bf{%s}",partL.Data()));
-
-  C2->cd(0);
-  pad[1][1]->Draw();
-  pad[1][1]->cd();
-  //pad[0][1]->SetLogy(kFALSE);
-  hframeSpectraLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {
-    MakeNiceHistogram(hPtTMin[iRt][Stat], colors[iRt]);
-    MakeNiceHistogram(hPtTMin[iRt][Syst], colors[iRt]);
-    MakeNiceHistogram(hPtTMin[iRt][SystUnc], colors[iRt]);
-    hPtTMin[iRt][Stat]->Draw("E X0 same");
-    hPtTMin[iRt][Syst]->Draw("E2 same");
-  }
-  
-  latexR->DrawLatex(0.2,0.75,"Trans., min");
-
-  C2->cd(0);
-  pad[2][1]->Draw();
-  pad[2][1]->cd();
-  //pad[0][2]->SetLogy(kFALSE);
-  hframeSpectraLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {
-    MakeNiceHistogram(hPtTMax[iRt][Stat], colors[iRt]);
-    MakeNiceHistogram(hPtTMax[iRt][Syst], colors[iRt]);
-    MakeNiceHistogram(hPtTMax[iRt][SystUnc], colors[iRt]);
-    hPtTMax[iRt][Stat]->Draw("E X0 same");
-    hPtTMax[iRt][Stat]->Draw("E2 same");
-  }
-  latexR->DrawLatex(0.2,0.75,"Trans., max");
-
-  C2->cd(0);
-  pad[0][0]->Draw();
-  pad[0][0]->cd();
-  hframeRatioLeft->Draw();
-  
-  for (int iRt = NRT; iRt > 0; --iRt)  {    
-    hr[iRt] = MakeRatioHist(hPtT[iRt][Stat],hPtT[0][Stat]);
-    hr[iRt]->Draw("E X0 same");
-    hrs[iRt] = MakeRatioHist(hPtT[iRt][SystUnc],hPtT[0][SystUnc]);
-    hrs[iRt]->Draw("E2 same");
-  }
-
-  latexSystem->DrawLatex(0.15,0.92,"pp, #sqrt{s} = 13 TeV");
-  latexSystem->DrawLatex(0.15,0.85,"|#eta|<0.8");
-  latexSystem->DrawLatex(0.15,0.78,"ALICE Data");
-
-  C2->cd(0);
-  pad[1][0]->Draw();
-  pad[1][0]->cd();
-  hframeRatioLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {    
-    hr[iRt] = MakeRatioHist(hPtTMin[iRt][Stat],hPtTMin[0][Stat]);
-    hr[iRt]->Draw("E X0 same");
-    hrs[iRt] = MakeRatioHist(hPtTMin[iRt][SystUnc],hPtTMin[0][SystUnc]);
-    hrs[iRt]->Draw("E2 same");
-  }
-  legendLeft2->Draw();
-
-  C2->cd(0);
-  pad[2][0]->Draw();
-  pad[2][0]->cd();
-  hframeRatioLeft->Draw();
-  for (int iRt = NRT; iRt > 0; --iRt)  {    
-    hr[iRt] = MakeRatioHist(hPtTMax[iRt][Stat],hPtTMax[0][Stat]);
-    hr[iRt]->Draw("E X0 same");
-    hrs[iRt] = MakeRatioHist(hPtTMax[iRt][SystUnc],hPtTMax[0][SystUnc]);
-    hrs[iRt]->Draw("E2 same");
-  }
-
-
-  C2->cd(0);
-  padTitleX->Draw();
-  padTitleX->cd();
-  const char* TitleX2 = "#it{p}_{T} (GeV/#it{c})";
-  latexTitleX->DrawLatex(0.80, 0.65, TitleX2);
-
-  C2->cd(0);
-  padTitleY1->Draw();
-  padTitleY1->cd();
-  const char* TitleY12 = "Ratio to R_{T} > 0";
-  latexTitleY1->SetTextAngle(90);
-  latexTitleY1->DrawLatex(0.6, 0.27, TitleY12);
-
-  C2->cd(0);
-  padTitleY2->Draw();
-  padTitleY2->cd();
-  const char* TitleY22 = "(#Lambda + #bar{#Lambda}) / 2K^{0}_{S}";
-  latexTitleY2->SetTextAngle(90);
-  latexTitleY2->DrawLatex(0.6, 0.2, TitleY22);
-
-  C2->SaveAs(Form("./PtvRt_LtoK2_%s.pdf",part.Data()));
-  C2->SaveAs(Form("./PtvRt_LtoK2_%s.png",part.Data()));
-
-
 }
 

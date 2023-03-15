@@ -47,13 +47,22 @@ class MyAnalysisV0syst: public MyAnalysis {
 		void MakeCorrectedYields();
 		void MakeBarlowChecks();
 		void MakeBarlowChecksPt();
+		void BinHistogramsIntoRTrec();
+		Int_t GetRTBinRec(const int& binRt, bool isLowEdge);
+
 		void MakeDeviations();
+		void CalculateAndPlotMaxDeviations();
+		void CalculateMaxDeviationsNt();
 		void AddDeviations();
+		void AddDeviationsNt();
 		TH1F* DivideAndComputeRogerBarlow(TH1F* h1, TH1F *h2);
 
 		void CalculateSignalExSys();
+		void CalculateSignalExSysNt();
 		void CalculateFeeddownSys();
 		void DrawMirrored(TH1F* hist, const char* opt = "");
+		TH1F* CalculateRatiosRBSigmas(TH1F* ha, TH1F* hd);
+		TH1F* CalculateSigExMaxD(TH1F* hm, TH1F* h1, TH1F* h2, TH1F* hd);
 
 		ClassDef(MyAnalysisV0syst,1);
 
@@ -64,7 +73,7 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TFile* mFileMC;
 		TList* mList;
 
-		Double_t nRBsigmas = 2.;
+		Double_t nRBsigmas = 1.;
 
 		// V0 HISTOGRAMS
 		//borrowed
@@ -95,6 +104,8 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TH2F* hV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 		TH2F* hMCV0IMvPtSys[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 		TH1F* hMCV0Pt[V0consts::NSPECIES];
+
+		TH3F* hV0IMvPtNtSys[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof];
 
 		TH1F* hV0PtFeeddown[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtFeeddownXi0[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
@@ -133,6 +144,31 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TH1F* hV0PtSysSum[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtSysSumUnc[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 
+		// NT SYSTEMATICS
+		TH2F* hV0PtNtSys[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof];
+		TH2F* hV0PtNtSysRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof];
+		TH2F* hV0PtNtSysMaxD[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof];
+		TH2F* hV0PtNtSysSum[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtSysSumUnc[V0consts::NSPECIES][V0consts::NREGIONS];
+
+		// RT SYSTEMATICS
+		TH1F* hV0PtRtSys[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::sysVarsSizeof][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysMaxDRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysMaxD[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::sysSizeof][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSum[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSumUnc[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSigExLoose[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSigExDeflt[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSigExTight[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysMaxDSigEx[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSigExLooseRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSigExDefltRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysSigExTightRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		TH1F* hV0PtRtSysMaxDSigExRatioToHM[V0consts::NSPECIES][V0consts::NREGIONS][V0consts::NRTBINS];
+		
+
+
 		TH1F* hV0PtSysSigExLoose[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtSysSigExTight[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtSysMaxDSigEx[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
@@ -153,6 +189,8 @@ class MyAnalysisV0syst: public MyAnalysis {
 		TH1F* hV0PtSysFeeddownXiErrRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtSysMaxDFeeddownXiErrRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtSysMaxDFeeddownTotalRatioToHM[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
+
+
 
 
 		TH1F* hFracBudget[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];

@@ -2474,3 +2474,44 @@ TH3F* MyAnalysisV0::RebinTH3(TH3F* h) {
 
 }
 
+TH2F* MyAnalysisV0::ScaleWidthTH2(TH2F* h) {
+
+	if (!h) {
+		printf("No histogram to scale \n");
+		return 0x0; }
+
+	for (int iX = 1; iX < h->GetNbinsX()+1; iX++) {
+		for (int iY = 1; iY < h->GetNbinsY()+1; iY++) {	
+			float binwidth = h->GetXaxis()->GetBinWidth(iX);
+			float binc = h->GetBinContent(iX,iY);
+			float bine = h->GetBinError(iX,iY);
+			if (binwidth>0) h->SetBinContent(iX,iY,binc/binwidth);
+			if (binwidth>0) h->SetBinError(iX,iY,bine/binwidth);
+		}
+	}
+
+	return h;
+}
+
+TH2F* MyAnalysisV0::DivideTH2ByTH1(TH2F* h, TH1F* d) {
+
+	if (!h || !d) {
+		printf("Input parameters empty \n");
+		return 0x0; }
+
+	for (int iY = 1; iY < h->GetNbinsY()+1; iY++) {
+
+		TH1F* hx = (TH1F*)h->ProjectionX("",iY,iY);
+		hx->Divide(d);
+
+		for (int iX = 1; iX < h->GetNbinsX()+1; iX++) {
+			h->SetBinContent(iX,iY,hx->GetBinContent(iX));
+			h->SetBinError(iX,iY,hx->GetBinError(iX));
+		}
+
+		delete hx;
+	}
+
+	return h;
+}
+

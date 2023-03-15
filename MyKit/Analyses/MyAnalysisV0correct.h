@@ -87,6 +87,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		void DoEfficiencyFromFile();
 		void DoEfficiencyFromTrees();
 		void CorrectForFeeddown();
+		void CorrectForFeeddownNt();
 		void CorrectSpectra();
 		void StudyCuts();
 		void DoClosureTest(Int_t opt = 0);
@@ -135,6 +136,10 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH2F* hPiPtNtMinRC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtMinMC[V0consts::NREGIONS];
 		TH2F* hKpmPtNtMinRC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMaxMC[V0consts::NREGIONS];
+		TH2F* hPiPtNtMaxRC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMaxMC[V0consts::NREGIONS];
+		TH2F* hKpmPtNtMaxRC[V0consts::NREGIONS];
 
 		TH1F* hRt;
 		TH1F* hRt2;
@@ -143,6 +148,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1F* hV0PtRtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH2F* hV0PtNtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0PtNtMinFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMaxFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH1F* hV0RtFit[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1F* hV0EfficiencyRt[V0consts::NSPECIES][V0consts::NREGIONS];
 		TH1F* hV0PtCut[25];
@@ -150,6 +156,7 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1D* hV0Pt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2F* hV0PtNt[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0PtNtMin[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMax[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 
 
 		TH1F* hClosureTestCorr[V0consts::NSPECIES];
@@ -175,6 +182,24 @@ class MyAnalysisV0correct: public MyAnalysis {
 		TH1F* hV0PtRtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTBINS0];
 		TH2F* hV0PtNtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
 		TH2F* hV0PtNtMinFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtMaxFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS];
+		TH2F* hV0PtNtFeeddown[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtFeeddownContr[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtFeeddownXi0[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtFeeddownXiErr[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2D* hXiPtNt[V0consts::NREGIONS];
+		TH2F* hV0PtNtMinFeeddown[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtMinFeeddownContr[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtMinFeeddownXi0[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtMinFeeddownXiErr[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2D* hXiPtNtMin[V0consts::NREGIONS];
+		TH2F* hV0PtNtMaxFeeddown[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtMaxFeeddownContr[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtMaxFeeddownXi0[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2F* hV0PtNtMaxFeeddownXiErr[V0consts::NSPECIES][V0consts::NREGIONS];
+		TH2D* hXiPtNtMax[V0consts::NREGIONS];
+		
+
 		TH1F* hV0RtFitCorr[V0consts::NSPECIES][V0consts::NTYPE][V0consts::NREGIONS][V0consts::NRTPTBINS];
 		TH1F* hV0PtFeeddown[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];
 		TH1F* hV0PtFeeddownContr[V0consts::NSPECIES][V0consts::NMULTI][V0consts::NSPHERO];

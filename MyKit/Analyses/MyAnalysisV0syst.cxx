@@ -1,5 +1,6 @@
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <TChain.h>
 #include <TBranch.h>
 #include <TCanvas.h>
@@ -49,9 +50,6 @@ MyAnalysisV0syst::MyAnalysisV0syst() {
 
 Int_t MyAnalysisV0syst::Init() {
 
-	TString dfName(this->GetName());
-	dfName = Form("%s_%i",dfName.Data(),mHandler->nAnalysis());
-	mDirFile = new TDirectoryFile(dfName,dfName,"",mHandler->file());
 	mDirFile->cd();
 
 	printf("Initialising analysis %s  \n", 
@@ -148,6 +146,19 @@ Bool_t MyAnalysisV0syst::BorrowHistograms() {
 		
 	}	}	}	}
 
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+
+		hV0IMvPtNtSys[iSp][iReg][iSo][iVar] 
+			= (TH3F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],SYSTVAR[iVar]));
+
+		hV0IMvPtNtSys[iSp][iReg][iSo][iVar] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH3(hV0IMvPtNtSys[iSp][iReg][iSo][iVar]);	
+
+	}	}	}	}
+
 	// LOAD FROM MC
 	if (!mFileMC) {
 		printf("No MC file loaded! Comparisons of systematics with MC not performed.\n");
@@ -190,11 +201,12 @@ Bool_t MyAnalysisV0syst::BorrowHistograms() {
 			= (TH2F*)dirFile1->Get(Form("hV0IMvNCluster_%s",SPECIES[iSp]));
 		hMCV0IMvNClusterF[iSp]			
 			= (TH2F*)dirFile1->Get(Form("hV0IMvNClusterF_%s",SPECIES[iSp]));
+
 	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
-	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	for (int iMu = 0; iMu < 1; ++iMu)	{
+	for (int iSph = 0; iSph < 1; ++iSph)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
 	if (iMu == 0 && iSph > 0) continue;
 
@@ -232,6 +244,7 @@ Bool_t MyAnalysisV0syst::BorrowHistograms() {
 			= (TH2F*)dirFile1->Get(Form("hV0IMvPtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[sysNClusterF],SYSTVAR[iVar]));
 		hMCV0IMvPtSys[iSp][iMu][iSph][sysNClusterF][iVar]	= ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH2(hMCV0IMvPtSys[iSp][iMu][iSph][sysNClusterF][iVar]);	
 		
+
 	}	}	}	}
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -239,8 +252,11 @@ Bool_t MyAnalysisV0syst::BorrowHistograms() {
 
 		if (hMCV0Pt[iSp]->GetNbinsX() != NPTBINS) 
 			hMCV0Pt[iSp] = (TH1F*)hMCV0Pt[iSp]->Rebin(NPTBINS,hMCV0Pt[iSp]->GetName(),XBINS);
+
 	
 	}
+
+	return true;
 
 }
 
@@ -283,7 +299,7 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 
 		TH1F* hpt = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
 		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1F*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
-		cout << "aaaawraw " << hpt << endl;
+		
 		hV0PtSys[iSp][iMu][iSph][iSo][iVar] = (TH1F*)hpt->Clone(Form("hV0PtSys_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo],SYSTVAR[iVar]));
 		hV0PtSysRatioToHM[iSp][iMu][iSph][iSo][iVar] = (TH1F*)hpt->Clone(Form("hV0PtSysRatioToHM_%s_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo],SYSTVAR[iVar]));
 
@@ -360,7 +376,7 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 
 		TH1F* hpt = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
 		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1F*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
-		cout << "aaaawraw " << hpt << endl;
+		
 		hV0PtSysMaxD[iSp][iMu][iSph][iSo] = (TH1F*)hpt->Clone(Form("hV0PtSysMaxD_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo]));
 		hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo] = (TH1F*)hpt->Clone(Form("hV0PtSysMaxDRatioToHM_%s_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph],SYSTS[iSo]));
 
@@ -424,13 +440,93 @@ Bool_t MyAnalysisV0syst::CreateHistograms() {
 		hV0PtSysSumUnc[iSp][iMu][iSph]->GetYaxis()->SetTitle("Uncorrelated syst (w.r.t. spherocity)");
 
 	}	}	}
-	
+
+
+	return true;
 }
 
 
 Bool_t MyAnalysisV0syst::CloneHistograms() {
 
 	Int_t nType = (mHandler->GetFlagMC()) ? 2 : 1;
+
+
+	// NT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+		
+		TH2F* hptnt = (TH2F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtNtFit_%s_D_Trans",SPECIES[iSp]));
+		hV0PtNtSys[iSp][iReg][iSo][iVar] = (TH2F*)hptnt->Clone(Form("hV0PtNtSys_%s_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],SYSTVAR[iVar]));
+
+	}	}	}	}
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+		
+		TH2F* hptnt = (TH2F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtNtFit_%s_D_Trans",SPECIES[iSp]));
+		hV0PtNtSysMaxD[iSp][iReg][iSo] = (TH2F*)hptnt->Clone(Form("hV0PtNtSysMaxD_%s_%s_%s",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo]));
+
+	}	}	}
+
+	// RT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; iRtBin++) {
+		
+		TH1F* hpt = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
+		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1F*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
+
+		//hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin] = (TH1F*)hpt->Clone(Form("hV0PtRtSys_%s_%s_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],SYSTVAR[iVar],iRtBin));
+		//hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->Reset();
+
+	}	}	}	}	}
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; iRtBin++) {
+		
+		TH1F* hpt = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
+		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1F*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
+		hpt->Reset();
+
+		hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin] = (TH1F*)hpt->Clone(Form("hV0PtRtSysMaxD_%s_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],iRtBin));
+		hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin] = (TH1F*)hpt->Clone(Form("hV0PtRtSysMaxDRatioToHM_%s_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],iRtBin));
+
+
+	}	}	}	}
+
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; iRtBin++) {
+
+		TH1F* hpt = (TH1F*)mHandler->analysis(1)->dirFile()->Get(Form("hV0PtFit_%s_D_MB_MB",SPECIES[iSp]));
+		if (hpt->GetNbinsX() != NPTBINS) hpt = (TH1F*)hpt->Rebin(NPTBINS,hpt->GetName(),XBINS);
+		hpt->Reset();
+
+		hV0PtRtSysSigExLoose[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSigExLoose_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSigExDeflt_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSigExTight[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSigExTight_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysMaxDSigEx[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysMaxDSigEx_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSigExLooseRatioToHM[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSigExLooseRatioToHM_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSigExDefltRatioToHM[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSigExDefltRatioToHM_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSigExTightRatioToHM[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSigExTightRatioToHM_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysMaxDSigExRatioToHM[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysMaxDSigExRatioToHM_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+
+		hV0PtRtSysSum[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSum_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSumUnc[iSp][iReg][iRtBin]	= (TH1F*)hpt->Clone(Form("hV0PtRtSysSumUnc_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],iRtBin));
+
+
+	}	}	}
+
+
+	return true;
 
 
 }
@@ -451,18 +547,34 @@ Int_t MyAnalysisV0syst::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
+	cout << "GGothere 1" << endl;
+	if (!((MyAnalysisV0extract*)mHandler->analysis(2))->IsRun()) {
+		cout << "Taking over sidebands" << endl;
+		((MyAnalysisV0extract*)mHandler->analysis(2))->TakeoverSidebands();
+		mDirFile->cd();	
+	}
+
 	CloneHistograms();
+
 	
-	StudyRawYieldLoss();
+	//StudyRawYieldLoss();
 	MakeEfficiencies();
+
 	MakeCorrectedYields();
-	MakeBarlowChecksPt();
+	BinHistogramsIntoRTrec();
+
+	//MakeBarlowChecksPt();
 	MakeDeviations();
+	//CalculateAndPlotMaxDeviations();
+	CalculateMaxDeviationsNt();
 
-	CalculateSignalExSys();
-	CalculateFeeddownSys();
+	//CalculateSignalExSys();
+	CalculateSignalExSysNt();
+	
+	//CalculateFeeddownSys();
 
-	AddDeviations();
+	//AddDeviations();
+	AddDeviationsNt();
 
 
 	TIter objIt(mDirFile->GetList(),kIterForward);
@@ -495,6 +607,7 @@ void MyAnalysisV0syst::StudyRawYieldLoss() {
 		ProcessRawYieldLossHist(hV0IMvNCluster[iSp],hV0YieldvNCluster[iSp],iSp,70.,sinking);
 		ProcessRawYieldLossHist(hV0IMvNClusterF[iSp],hV0YieldvNClusterF[iSp],iSp,0.8,sinking);
 	}
+
 
 	if (!mFileMC) {
 		printf("No MC file loaded! Comparisons of systematics with MC not performed.\n");
@@ -648,6 +761,7 @@ void MyAnalysisV0syst::MakeEfficiencies() {
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
 
+
 		if (iSp==1 && iSo==sysLifetime) continue;
 		hV0EfficiencySys[iSp][iSo][iVar] = ProcessEfficiency(hMCV0IMvPtSys[iSp][iMu][iSph][iSo][iVar],hMCV0Pt[iSp],iSp);
 		hV0EfficiencySys[iSp][iSo][iVar]->Write();
@@ -681,20 +795,22 @@ TH1F* MyAnalysisV0syst::ProcessEfficiency(TH2F* hist, TH1F* hmc, Int_t Sp) {
 
 void MyAnalysisV0syst::MakeCorrectedYields() {
 
+	// SPHEROCITY ANALYSIS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
 	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
 	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+		continue;
 	if (iSp==1 && iSo==sysLifetime) continue;
 	if (iMu == 0 && iSph > 0) continue;
 
 		Double_t* yield = 0;
 		cout << "Extracting histogram " << hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar] << " " << hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar]->GetName() << endl;
-		for (int iBin = 0; iBin < NPTBINS+1; ++iBin)	{
+		for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
 			cout << "Extracting pt bin " << iBin << " of " << hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar]->GetName() << endl;
 			yield = ((MyAnalysisV0extract*)mHandler->analysis(1))->ExtractYieldSB((TH1F*)hV0IMvPtSys[iSp][iMu][iSph][iSo][iVar]->ProjectionY(
-					Form("Sys_iSp%i_iBin%i", iSp, iBin), iBin,iBin));
+					Form("Sys_iSp%i_iBin%i", iSp, iBin), iBin,iBin), false);
 				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->SetBinContent(iBin,*(yield+0));
 				hV0PtSys[iSp][iMu][iSph][iSo][iVar]->SetBinError(iBin,*(yield+1));
 		}
@@ -704,6 +820,55 @@ void MyAnalysisV0syst::MakeCorrectedYields() {
 
 	}	}	}	}	}
 
+
+	// NT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	if (iSp==1 && iSo==sysLifetime) continue;
+
+		for (int iNt = 1; iNt < hV0IMvPtNtSys[iSp][iReg][iSo][iVar]->GetZaxis()->GetNbins(); ++iNt)	{
+
+			hV0IMvPtNtSys[iSp][iReg][iSo][iVar]->GetZaxis()->SetRange(iNt,iNt);
+			TH2F* hXY = (TH2F*)hV0IMvPtNtSys[iSp][iReg][iSo][iVar]->Project3D("yx");
+
+			Double_t* yield = 0;
+			cout << "Extracting histogram NtBin " << iNt << " " << hV0IMvPtNtSys[iSp][iReg][iSo][iVar] << " " << hV0IMvPtNtSys[iSp][iReg][iSo][iVar]->GetName() << endl;
+			for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
+			
+				yield = ((MyAnalysisV0extract*)mHandler->analysis(1))->ExtractYieldSB((TH1F*)hXY->ProjectionY(
+						Form("Sys_iNt%i_iSp%i_iBin%i", iNt, iSp, iBin), iBin,iBin),false);
+					hV0PtNtSys[iSp][iReg][iSo][iVar]->SetBinContent(iBin,iNt,*(yield+0));
+					hV0PtNtSys[iSp][iReg][iSo][iVar]->SetBinError(iBin,iNt,*(yield+1));
+			}
+
+			delete hXY;
+
+		}
+
+		//SCALE BY BIN WIDTH
+		hV0PtNtSys[iSp][iReg][iSo][iVar] 
+			= ((MyAnalysisV0*)mHandler->analysis(0))->ScaleWidthTH2(hV0PtNtSys[iSp][iReg][iSo][iVar]);
+
+		// CORRECT W EFFICIENCY
+		hV0PtNtSys[iSp][iReg][iSo][iVar] 
+			= ((MyAnalysisV0*)mHandler->analysis(0))->DivideTH2ByTH1(hV0PtNtSys[iSp][iReg][iSo][iVar],hV0EfficiencySys[iSp][iSo][iVar]);
+
+		// MEMORY OVERLOAD
+		if (iSp == 2 && !iReg && !iSo && !iVar) {
+			TIter objIt(mDirFile->GetList(),kIterForward);
+			TObject* obj = 0;
+			while ( (obj = objIt()) ) {
+				TString objName(obj->GetName());
+				if (!objName.BeginsWith("h") && !objName.BeginsWith("c") && !objName.BeginsWith("t") ) {
+					mDirFile->Remove(obj);	}
+			}
+			
+		}
+
+	}	}	}	}
+
 	// Remove junk from the file memory
 	TIter objIt(mDirFile->GetList(),kIterForward);
 	TObject* obj = 0;
@@ -712,6 +877,77 @@ void MyAnalysisV0syst::MakeCorrectedYields() {
 		if (!objName.BeginsWith("h") && !objName.BeginsWith("c") && !objName.BeginsWith("t") ) {
 			mDirFile->Remove(obj);	}
 		}
+
+
+
+}
+
+void MyAnalysisV0syst::BinHistogramsIntoRTrec() {
+
+	mDirFile->cd();
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	if (iSp==1 && iSo==sysLifetime) continue;
+	
+		for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+
+			// REBIN
+			int lowedge = GetRTBinRec(iRtBin,kTRUE);
+			int upedge  = GetRTBinRec(iRtBin,kFALSE);
+			Double_t NormScaleNt = 1.;//hNtUnf->Integral(lowedge,upedge)/hNtUnf->Integral(1,51);
+
+			if (hV0PtNtSys[iSp][iReg][iSo][iVar]) {
+				hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]
+					= (TH1F*)hV0PtNtSys[iSp][iReg][iSo][iVar]->ProjectionX(Form("hV0PtRtSys_%s_%s_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],SYSTVAR[iVar],iRtBin),lowedge,upedge);
+				hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->Scale(1./NormScaleNt);
+			}
+
+
+			hV0PtRtSysRatioToHM[iSp][iReg][iSo][iVar][iRtBin] 
+				= (TH1F*)hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->Clone(Form("hV0PtRtSysRatioToHM_%s_%s_%s_%s_%i",SPECIES[iSp],REGIONS[iReg],SYSTS[iSo],SYSTVAR[iVar],iRtBin));
+
+		}
+
+	}	}	}	}
+
+
+}
+
+Int_t MyAnalysisV0syst::GetRTBinRec(const int& binRt, bool isLowEdge)
+{
+
+	int binNch = -1;
+
+	//! <NT> = 5.742
+	
+	if( binRt == 0 ){
+		if(isLowEdge) binNch = 1;
+		else binNch = 50;
+	}
+	else if( binRt == 1 ){ //! From NT = 0 to NT = 4
+		if(isLowEdge) binNch = 1;
+		else binNch = 5;//else binNch = 4;
+	}
+	else if( binRt == 2 ){ //! From NT = 5 to NT = 8
+		if(isLowEdge) binNch = 6;
+		else binNch = 9;
+	}
+	else if( binRt == 3 ){//! From NT = 9 to NT = 14
+		if(isLowEdge) binNch = 10;
+		else binNch = 15;
+	}
+	else if( binRt == 4 ){//! From NT = 15 to NT = 28
+		if(isLowEdge) binNch = 16;
+		else binNch = 29;
+	}
+	else{
+		if(isLowEdge) binNch = 30;
+		else binNch = 50;
+	}
+
+	return binNch;
 
 }
 
@@ -914,8 +1150,7 @@ TH1F* MyAnalysisV0syst::DivideAndComputeRogerBarlow( TH1F* h1, TH1F *h2 ){
 
 void MyAnalysisV0syst::MakeDeviations() {
 
-	mHandler->root()->SetBatch(kTRUE);
-
+	// SPHERO ANALYSIS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
 	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
 	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{	
@@ -970,6 +1205,100 @@ void MyAnalysisV0syst::MakeDeviations() {
 	}	}	}	}	}
 
 
+	// NT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	if (iVar==deflt) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+
+		Double_t lSigmaDelta[100][100]; 
+		for (int iNt = 1; iNt < hV0PtNtSys[iSp][iReg][iSo][iVar]->GetYaxis()->GetNbins(); ++iNt)	{
+  			for( Int_t iPt=1; iPt<hV0PtNtSys[iSp][iReg][iSo][iVar]->GetNbinsX()+1; iPt++){ 
+    			//Computation of roger barlow sigma_{delta} 
+    			lSigmaDelta[iPt][iNt] = TMath::Sqrt( TMath::Abs( TMath::Power(hV0PtNtSys[iSp][iReg][iSo][iVar]->GetBinError(iPt,iNt),2) - TMath::Power(hV0PtNtSys[iSp][iReg][iSo][deflt]->GetBinError(iPt,iNt),2) ) );
+ 		   		//Computation of relationship to h2 for plotting in ratio plot 
+    			if ( hV0PtNtSys[iSp][iReg][iSo][deflt]->GetBinContent(iPt,iNt) > 1e-12 )	{ 
+    				lSigmaDelta[iPt][iNt] /= hV0PtNtSys[iSp][iReg][iSo][deflt]->GetBinContent(iPt,iNt);		}
+    			else	{ 
+    				lSigmaDelta[iPt][iNt] = 0; 	}
+  			} 
+		}
+
+		// dividing corrected varied yields by default
+		hV0PtNtSys[iSp][iReg][iSo][iVar]->Divide(hV0PtNtSys[iSp][iReg][iSo][deflt]);
+		// apply RB sigmas as errors
+  		for (int iNt = 1; iNt < hV0PtNtSys[iSp][iReg][iSo][iVar]->GetYaxis()->GetNbins(); ++iNt)	{
+  			for( Int_t iPt=1; iPt<hV0PtNtSys[iSp][iReg][iSo][iVar]->GetNbinsX()+1; iPt++){ 
+    			hV0PtNtSys[iSp][iReg][iSo][iVar]->SetBinError(iPt, iNt, lSigmaDelta[iPt][iNt]);
+  			}
+  		}
+
+	}	}	}	}
+
+	// RT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+	if (iVar==deflt) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+
+
+		Double_t lSigmaDelta[100]; 
+		for( Int_t iPt=1; iPt<hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->GetNbinsX()+1; iPt++){ 
+    		//Computation of roger barlow sigma_{delta} 
+    		lSigmaDelta[iPt] = TMath::Sqrt( TMath::Abs( TMath::Power(hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->GetBinError(iPt),2) - TMath::Power(hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]->GetBinError(iPt),2) ) );
+ 			//Computation of relationship to h2 for plotting in ratio plot 
+    		if ( hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]->GetBinContent(iPt) > 1e-12 )	{ 
+    			lSigmaDelta[iPt] /= hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]->GetBinContent(iPt);		}
+    		else	{ 
+    			lSigmaDelta[iPt] = 0; 	}
+  		}
+
+		// dividing corrected varied yields by default
+		hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->Divide(hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]);
+		// apply RB sigmas as errors
+  		for( Int_t iPt=1; iPt<hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->GetNbinsX()+1; iPt++){ 
+    		hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->SetBinError(iPt, lSigmaDelta[iPt]);
+  		}
+
+	}	}	}	}	}
+
+	// MAKE RATIOS TO STUDY CORRELATIONS OF UNCERTAINTIES
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+	if (iVar==deflt) continue;
+	if (iSp==1 && iSo==sysLifetime) continue;
+	
+		for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+
+			hV0PtRtSysRatioToHM[iSp][iReg][iSo][iVar][iRtBin]->Divide(hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin],hV0PtRtSys[iSp][iReg][iSo][iVar][0],1,1,"");
+		
+			// and calculate uncertainties
+			for( Int_t i=1; i<hV0PtRtSysRatioToHM[iSp][iReg][iSo][iVar][iRtBin]->GetNbinsX()+1; i++){ 
+				Double_t err1 = hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->GetBinError(i);
+				Double_t errHM = hV0PtRtSys[iSp][iReg][iSo][iVar][0]->GetBinError(i);
+				Double_t errR = TMath::Sqrt(TMath::Abs(err1*err1 - errHM*errHM));
+				errR = (hV0PtRtSys[iSp][iReg][iSo][iVar][0]->GetBinContent(i) > 0) ? errR / hV0PtRtSys[iSp][iReg][iSo][iVar][0]->GetBinContent(i) : 0;
+				hV0PtRtSysRatioToHM[iSp][iReg][iSo][iVar][iRtBin]->SetBinError(i,errR);
+			}
+
+		}
+
+	}	}	}	}
+
+
+	return;
+}
+
+void MyAnalysisV0syst::CalculateAndPlotMaxDeviations() {
+
+	mHandler->root()->SetBatch(kTRUE);
 	Int_t colors[] = { kBlue, kGreen+3, kBlack, kCyan+1, kMagenta};
 
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
@@ -1172,6 +1501,8 @@ void MyAnalysisV0syst::MakeDeviations() {
 			padC++;
 		}
 
+		return;
+
 		cDev->Write();
 		cDev->SaveAs(Form("plotsys/cDev_%s_%s_%s.png",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
 
@@ -1183,303 +1514,88 @@ void MyAnalysisV0syst::MakeDeviations() {
 	}	}	}
 
 	mHandler->root()->SetBatch(kFALSE);
-
 }
 
+void MyAnalysisV0syst::CalculateMaxDeviationsNt() {
 
-void MyAnalysisV0syst::AddDeviations() {
-
+	// NT ANALYSIS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
-	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
-	if (iMu == 0 && iSph > 0) continue;
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	if (iSp==1 && iSo==sysLifetime) continue;
 
-		cout << "Calculating relative systematic uncertainties from cut variations for " << hV0PtSysSum[iSp][iMu][iSph] << " " << hV0PtSysSum[iSp][iMu][iSph]->GetName() << endl;
-		for (int iBin = 1; iBin < hV0PtSysSum[iSp][iMu][iSph]->GetNbinsX()+1; iBin++) {
-			
-			Double_t sum = 0;
-			Double_t sumCuts = 0;
-			Double_t sumUnc = 0;
-			Double_t sumCutsUnc = 0;
+		for (int iNt = 1; iNt < hV0PtNtSys[iSp][iReg][iSo][deflt]->GetYaxis()->GetNbins(); ++iNt)	{
+  			for( Int_t iPt=1; iPt<hV0PtNtSys[iSp][iReg][iSo][deflt]->GetNbinsX()+1; iPt++){ 
+    	
+    			hV0PtNtSysMaxD[iSp][iReg][iSo]->SetBinContent(iPt,iNt,0);
+    			hV0PtNtSysMaxD[iSp][iReg][iSo]->SetBinError(iPt,iNt,0);
 
-			// sources from cut variations
-			for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
-			if (iSp==1 && iSo==sysLifetime) continue;
-				cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo] << endl;
-				cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetName() << endl;
-					
-				sum 	+= hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
-				sumCuts += hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+    			Double_t maxD = 0;
+				for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+				if (iVar==deflt) continue;
 
-				sumUnc 	+= hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
-				sumCutsUnc 	+= hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
-				// sum unc denote the uncorrelated uncertainty on ratios to HM, e.g unc of f = S0-biased/HM
-			}
-
-			// from material budget, fully correlated between s0
-			sum += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
-			
-			// from using MB efficiency
-			if (sum>0) {
-				sum += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
-				sumUnc += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
-				// factor 2. comes from propagation on ratios
-				// for f = A/B, (s_f/f)^2 = (s_A/A)^2 + (s_B/B)^2
-				// but (s_A/A) == (s_B/B)
-				//// decided to use more liberal 1.0 similarly to other ALICE analyses
-			}
-
-			// from experimental bias due to not unfolding s0 distribution
-			TH1F* hexpbias = (iSph%2) ? hV0PtSysExpBiasJetty : hV0PtSysExpBiasIso;
-			if (sum>0 && iSph>0) {
-				sum += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
-				sumUnc += 1.*hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
-			}	
-
-			// from signal extraction
-			if (sum>0) {
-				sum += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
-				sumUnc += hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
-			}
-
-			// from feeddown correction
-			if (iSp>1 && sum>0) {
-				sum += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
-				sumUnc += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
-			}
-
-			
-
-
-			hV0PtSysSum[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(sum));
-			hV0PtSysSum[iSp][iMu][iSph]->SetFillStyle(3005);
-			hV0PtSysSum[iSp][iMu][iSph]->SetFillColor(kBlack);
-			hV0PtSysSum[iSp][iMu][iSph]->SetTitle(Form("%s %s %s; V0 p_{T} (GeV/#it{c}); Relative syst. uncertainty",SPECNAMES[iSp],PLOTS_MULTI[iMu],PLOTS_SPHERO[iSph]));
-			hV0PtSysSum[iSp][iMu][iSph]->GetYaxis()->SetTitleOffset(1.52);
-			hV0PtSysSum[iSp][iMu][iSph]->SetStats(0);
-
-			hV0PtSysSumUnc[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(sumUnc));
-			hV0PtSysSumUnc[iSp][iMu][iSph]->SetFillStyle(3005);
-			hV0PtSysSumUnc[iSp][iMu][iSph]->SetFillColor(kBlack);
-			hV0PtSysSumUnc[iSp][iMu][iSph]->SetTitle(Form("%s %s %s; V0 p_{T} (GeV/#it{c}); Unc. syst. uncertainty (w.r.t. S_{0})",SPECNAMES[iSp],PLOTS_MULTI[iMu],PLOTS_SPHERO[iSph]));
-			hV0PtSysSumUnc[iSp][iMu][iSph]->GetYaxis()->SetTitleOffset(1.52);
-			hV0PtSysSumUnc[iSp][iMu][iSph]->SetStats(0);
-
-			Double_t part = 0;
-			if (sum>0) {
-				part += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
-				hFracBudget[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
-				
-				part += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
-				hFracEffi[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
-				
-				if (iSph>0) part += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
-				hFracExpBias[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
-				
-				part += sumCuts;
-				hFracCuts[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
-
-				part += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
-				hFracSigEx[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
-
-				if (iSp>1) {
-					part += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
-					hFracFD[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+					Double_t varD = TMath::Abs(hV0PtNtSys[iSp][iReg][iSo][iVar]->GetBinContent(iPt,iNt)-1.);
+					if (varD>maxD && varD>nRBsigmas*hV0PtNtSys[iSp][iReg][iSo][iVar]->GetBinError(iPt,iNt)) maxD=varD;
+					//applying only if dev larger than 1 RB sigma
 				}
+				if (hV0PtNtSys[iSp][iReg][iSo][deflt]->GetBinContent(iPt,iNt)>0) hV0PtNtSysMaxD[iSp][iReg][iSo]->SetBinContent(iPt,iNt,maxD);
 			}
-
-			// and ratios
-			Double_t partR = 0;
-			if (sumUnc>0) {
-				
-				partR += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
-				hFracEffiRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
-				
-				if (iSph>0) partR += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
-				hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
-				
-				partR += sumCutsUnc;
-				hFracCutsRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
-
-				partR += hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
-				hFracSigExRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
-
-				if (iSp>1) {
-					partR += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
-					hFracFDRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
-				}
-			}
-			
 		}
-
-		hFracBudget[iSp][iMu][iSph]->SetLineColor(kMagenta); hFracBudget[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracEffi[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffi[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracExpBias[iSp][iMu][iSph]->SetLineColor(kCyan+1); hFracExpBias[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracCuts[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCuts[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracSigEx[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigEx[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracFD[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFD[iSp][iMu][iSph]->SetLineWidth(3);
-
-		hFracEffiRatioToHM[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffiRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetLineColor(kCyan+1); hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracCutsRatioToHM[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCutsRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracSigExRatioToHM[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigExRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
-		hFracFDRatioToHM[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFDRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
-
 
 	}	}	}
 
+	// RT ANALYSIS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		if (NMULTI<4) continue;
-		if (NSPHERO<5) continue;
-		TCanvas* cTot = new TCanvas(Form("cTot_%s",SPECIES[iSp]),"",1400,1000);
-		cTot->Divide(3,2,5e-5,5e-5); 
-		Int_t padC = 1;
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+	if (iSp==1 && iSo==sysLifetime) continue;
 
-		TLegend* leg = new TLegend(0.13,.68,0.88,0.88);
-		mHandler->MakeNiceLegend(leg,0.027,2);	
-		leg->AddEntry(hFracBudget[iSp][3][0],"mat. budget","l");
-		leg->AddEntry(hFracEffi[iSp][3][0],"+ MB effi.","l");
-		leg->AddEntry(hFracExpBias[iSp][3][0],"+ exp. bias","l");
-		leg->AddEntry(hFracCuts[iSp][3][0],"+ cuts var.","l");
-		leg->AddEntry(hFracSigEx[iSp][3][0],"+ signal extr.","l");
-		if (iSp>1) leg->AddEntry(hFracFD[iSp][3][0],"+ feeddown corr.","l");
+		for( Int_t iPt=1; iPt<hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]->GetNbinsX()+1; iPt++){ 
+    	
+    		hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->SetBinContent(iPt,0);
+			hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->SetBinError(iPt,0);
 
+   			Double_t maxD = 0;
+			for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+			if (iVar==deflt) continue;
 
-		cTot->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][0]);
-		DrawMirrored(hFracBudget[iSp][3][0],"same ][");DrawMirrored(hFracEffi[iSp][3][0],"same ][");DrawMirrored(hFracCuts[iSp][3][0],"same ][");DrawMirrored(hFracSigEx[iSp][3][0],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][0],"same ][");
-		
-		leg->Draw();
+				Double_t varD = TMath::Abs(hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->GetBinContent(iPt)-1.);
+				if (varD>maxD && varD>nRBsigmas*hV0PtRtSys[iSp][iReg][iSo][iVar][iRtBin]->GetBinError(iPt)) maxD=varD;
+					//applying only if dev larger than 1 RB sigma
+			}
+			if (hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]->GetBinContent(iPt)>0) hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->SetBinContent(iPt,maxD);
+	
+		}
 
+	}	}	}	}
 
-		cTot->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][3]);
-		DrawMirrored(hFracBudget[iSp][3][3],"same ][");DrawMirrored(hFracEffi[iSp][3][3],"same ][");DrawMirrored(hFracExpBias[iSp][3][3],"same ][");DrawMirrored(hFracCuts[iSp][3][3],"same ][");DrawMirrored(hFracSigEx[iSp][3][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][3],"same ][");
-		cTot->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][4]);
-		DrawMirrored(hFracBudget[iSp][3][4],"same ][");DrawMirrored(hFracEffi[iSp][3][4],"same ][");DrawMirrored(hFracExpBias[iSp][3][4],"same ][");DrawMirrored(hFracCuts[iSp][3][4],"same ][");DrawMirrored(hFracSigEx[iSp][3][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][4],"same ][");
-		cTot->cd(4)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][0]);
-		DrawMirrored(hFracBudget[iSp][4][0],"same ][");DrawMirrored(hFracEffi[iSp][4][0],"same ][");DrawMirrored(hFracCuts[iSp][4][0],"same ][");DrawMirrored(hFracSigEx[iSp][4][0],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][0],"same ][");
-		cTot->cd(5)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][3]);
-		DrawMirrored(hFracBudget[iSp][4][3],"same ][");DrawMirrored(hFracEffi[iSp][4][3],"same ][");DrawMirrored(hFracExpBias[iSp][4][3],"same ][");DrawMirrored(hFracCuts[iSp][4][3],"same ][");DrawMirrored(hFracSigEx[iSp][4][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][3],"same ][");
-		cTot->cd(6)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][4]);
-		DrawMirrored(hFracBudget[iSp][4][4],"same ][");DrawMirrored(hFracEffi[iSp][4][4],"same ][");DrawMirrored(hFracExpBias[iSp][4][4],"same ][");DrawMirrored(hFracCuts[iSp][4][4],"same ][");DrawMirrored(hFracSigEx[iSp][4][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][4],"same ][");
-		cTot->Write();
-		cTot->SaveAs(Form("plotsys/cTot_%s.png",SPECIES[iSp]));
-	}
-
+	// RT ANALYSIS -- RATIOS
 	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		if (NMULTI<2) continue;
-		if (NSPHERO<3) continue;
-		TCanvas* cTotRatioToHM = new TCanvas(Form("cTotRatioToHM_%s",SPECIES[iSp]),"",1500,450);
-		cTotRatioToHM->Divide(3,1,5e-5,5e-5); 
-		Int_t padC = 1;
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+	if (iSp==1 && iSo==sysLifetime) continue;
 
-		TLegend* leg = new TLegend(0.13,.68,0.88,0.88);
-		mHandler->MakeNiceLegend(leg,0.027,2);	
-		
-		leg->AddEntry(hFracEffiRatioToHM[iSp][1][0],"MB effi.","l");
-		leg->AddEntry(hFracExpBiasRatioToHM[iSp][1][0],"+ exp. bias","l");
-		leg->AddEntry(hFracCutsRatioToHM[iSp][1][0],"+ cuts var.","l");
-		leg->AddEntry(hFracSigExRatioToHM[iSp][1][0],"+ signal extr.","l");
-		if (iSp>1) leg->AddEntry(hFracFDRatioToHM[iSp][1][0],"+ feeddown corr.","l");
+		for( Int_t iPt=1; iPt<hV0PtRtSysRatioToHM[iSp][iReg][iSo][deflt][iRtBin]->GetNbinsX()+1; iPt++){ 
+    	
+    		hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->SetBinContent(iPt,0);
+			hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->SetBinError(iPt,0);
 
+   			Double_t maxD = 0;
+			for (int iVar = 0; iVar < sysVarsSizeof; ++iVar)	{
+			if (iVar==deflt) continue;
 
-		cTotRatioToHM->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][0]);
-		DrawMirrored(hFracEffiRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][0],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][0],"same ][");
-		
-		leg->Draw();
+				Double_t varD = TMath::Abs(hV0PtRtSysRatioToHM[iSp][iReg][iSo][iVar][iRtBin]->GetBinContent(iPt)-1.);
+				if (varD>maxD && varD>nRBsigmas*hV0PtRtSysRatioToHM[iSp][iReg][iSo][iVar][iRtBin]->GetBinError(iPt)) maxD=varD;
+					//applying only if dev larger than 1 RB sigma
+			}
+			if (hV0PtRtSys[iSp][iReg][iSo][deflt][iRtBin]->GetBinContent(iPt)>0) hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->SetBinContent(iPt,maxD);
+	
+		}
 
-		cTotRatioToHM->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][1]);
-		DrawMirrored(hFracEffiRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][1],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][1],"same ][");
+	}	}	}	}
 
-		cTotRatioToHM->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][2]);
-		DrawMirrored(hFracEffiRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][2],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][2],"same ][");
-		
-		cTotRatioToHM->Write();
-		cTotRatioToHM->SaveAs(Form("plotsys/cTotRatioToHM_%s.png",SPECIES[iSp]));
-	}
-
-	// IF NOT DOING FULL 4(HM)x8(S0) SYSTEMATIC STUDY, USE HM_01 S0_10 AS REFERENCES
-	/*for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
-		Int_t iMu = 0; Int_t iSph = 0;
-		iMu=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=3;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=4;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iMu=3;	iSph=0; hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iMu=2;	iSph=0; hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=3;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=4;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iMu=4;	iSph=0; hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-
-		iSph = 0;
-		iMu=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=3;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=4;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iMu=3;	iSph=0; hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iMu=2;	iSph=0; hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=3;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=4;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iMu=4;	iSph=0; hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
-	}*/
-}
-
-void MyAnalysisV0syst::DrawMirrored(TH1F* hist, const char* opt)	{
-
-	TString hname(hist->GetName());
-	double range = (hname.Contains("K0s") ? 0.15 : 0.25);
-	if (hname.Contains("Unc") || hname.Contains("Ratio") ) range = 0.1; 
-	//hist->GetYaxis()->SetRangeUser(-1.5*hist->GetMaximum(),1.5*hist->GetMaximum());
-	hist->GetYaxis()->SetRangeUser(-1.*range,range);
-	hist->Draw(opt);
-	TH1F* htmpMir = (TH1F*)hist->Clone("dtmpMir");
-	htmpMir->Scale(-1.);
-	htmpMir->Draw(Form("same %s",opt));
 }
 
 void MyAnalysisV0syst::CalculateSignalExSys() {
@@ -1668,6 +1784,535 @@ void MyAnalysisV0syst::CalculateSignalExSys() {
 	mHandler->root()->SetBatch(kFALSE);
 
 }
+
+void MyAnalysisV0syst::CalculateSignalExSysNt() {
+
+	// RT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+
+		// RTREC BINS
+		int lowedge = GetRTBinRec(iRtBin,kTRUE);
+		int upedge  = GetRTBinRec(iRtBin,kFALSE);
+		Double_t NormScaleNt = 1.;//hNtUnf->Integral(lowedge,upedge)/hNtUnf->Integral(1,51);
+
+		hV0IMvPtNtSys[iSp][iReg][0][deflt]->GetZaxis()->SetRange(lowedge,upedge);
+		TH2F* hXY = (TH2F*)hV0IMvPtNtSys[iSp][iReg][0][deflt]->Project3D("yx");
+
+		// CALCULATE YIELDS WITH DIFFERENT SB SIGMAS
+		Double_t* yield = 0;
+		for (int iBin = 1; iBin < NPTBINS+1; ++iBin)	{
+
+			//cout << "Extracting pt bin " << iBin << " of " << hV0IMvPtNtSys[iSp][iReg][0][deflt]->GetName() << endl;
+			yield = ((MyAnalysisV0extract*)mHandler->analysis(1))->ExtractYieldSBVarySigma(7.,
+					(TH1F*)hXY->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, iBin), iBin,iBin));
+			hV0PtRtSysSigExLoose[iSp][iReg][iRtBin]->SetBinContent(iBin,*(yield+0));
+			hV0PtRtSysSigExLoose[iSp][iReg][iRtBin]->SetBinError(iBin,*(yield+1));
+
+			yield = ((MyAnalysisV0extract*)mHandler->analysis(1))->ExtractYieldSBVarySigma(6.,
+					(TH1F*)hXY->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, iBin), iBin,iBin));
+			hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]->SetBinContent(iBin,*(yield+0));
+			hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]->SetBinError(iBin,*(yield+1));
+
+
+			yield = ((MyAnalysisV0extract*)mHandler->analysis(1))->ExtractYieldSBVarySigma(5.,
+					(TH1F*)hXY->ProjectionY(
+					Form("iSp%i_iBin%i", iSp, iBin), iBin,iBin));
+			hV0PtRtSysSigExTight[iSp][iReg][iRtBin]->SetBinContent(iBin,*(yield+0));
+			hV0PtRtSysSigExTight[iSp][iReg][iRtBin]->SetBinError(iBin,*(yield+1));
+		}
+
+		delete hXY;
+
+		/*hV0PtRtSysSigExLoose[iSp][iReg][iRtBin]->Scale(1,"width");
+		hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]->Scale(1,"width");
+		hV0PtRtSysSigExTight[iSp][iReg][iRtBin]->Scale(1,"width");
+		hV0PtRtSysSigExLoose[iSp][iReg][iRtBin]->Divide(hV0EfficiencySys[iSp][0][deflt]);
+		hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]->Divide(hV0EfficiencySys[iSp][0][deflt]);
+		hV0PtRtSysSigExTight[iSp][iReg][iRtBin]->Divide(hV0EfficiencySys[iSp][0][deflt]);*/
+
+		mDirFile->cd();
+		// CALCULATE RATIOS W RB SIGMAS -- LOOSE
+		hV0PtRtSysSigExLoose[iSp][iReg][iRtBin] 
+			= CalculateRatiosRBSigmas(hV0PtRtSysSigExLoose[iSp][iReg][iRtBin],hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]);
+		hV0PtRtSysSigExTight[iSp][iReg][iRtBin] 
+			= CalculateRatiosRBSigmas(hV0PtRtSysSigExTight[iSp][iReg][iRtBin],hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]);
+
+
+  		// CALCULATE MAX DEVIATIONS
+		hV0PtRtSysMaxDSigEx[iSp][iReg][iRtBin]
+			= CalculateSigExMaxD(hV0PtRtSysMaxDSigEx[iSp][iReg][iRtBin],
+				hV0PtRtSysSigExLoose[iSp][iReg][iRtBin],
+				hV0PtRtSysSigExTight[iSp][iReg][iRtBin],
+				hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]);
+  		
+	}	}	}
+
+
+	// RT ANALYSIS -- RATIOS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+
+		hV0PtRtSysSigExLooseRatioToHM[iSp][iReg][iRtBin]->Divide(hV0PtRtSysSigExLoose[iSp][iReg][iRtBin],hV0PtRtSysSigExLoose[iSp][iReg][0],1,1,"");
+		hV0PtRtSysSigExTightRatioToHM[iSp][iReg][iRtBin]->Divide(hV0PtRtSysSigExTight[iSp][iReg][iRtBin],hV0PtRtSysSigExTight[iSp][iReg][0],1,1,"");
+		hV0PtRtSysSigExDefltRatioToHM[iSp][iReg][iRtBin]->Divide(hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin],hV0PtRtSysSigExDeflt[iSp][iReg][0],1,1,"");
+		
+		// and calculate uncertainties
+		for( Int_t i=1; i<hV0PtRtSysSigExDefltRatioToHM[iSp][iReg][iRtBin]->GetNbinsX()+1; i++){ 
+			Double_t err1 = hV0PtRtSysSigExLoose[iSp][iReg][iRtBin]->GetBinError(i);
+			Double_t errHM = hV0PtRtSysSigExLoose[iSp][iReg][0]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(err1*err1 - errHM*errHM));
+			errR = (hV0PtRtSysSigExLoose[iSp][iReg][0]->GetBinContent(i) > 0) ? errR / hV0PtRtSysSigExLoose[iSp][iReg][0]->GetBinContent(i) : 0;
+			hV0PtRtSysSigExLooseRatioToHM[iSp][iReg][iRtBin]->SetBinError(i,errR);
+
+			err1 = hV0PtRtSysSigExTight[iSp][iReg][iRtBin]->GetBinError(i);
+			errHM = hV0PtRtSysSigExTight[iSp][iReg][0]->GetBinError(i);
+			errR = TMath::Sqrt(TMath::Abs(err1*err1 - errHM*errHM));
+			errR = (hV0PtRtSysSigExTight[iSp][iReg][0]->GetBinContent(i) > 0) ? errR / hV0PtRtSysSigExTight[iSp][iReg][0]->GetBinContent(i) : 0;
+			hV0PtRtSysSigExTightRatioToHM[iSp][iReg][iRtBin]->SetBinError(i,errR);
+
+			err1 = hV0PtRtSysSigExDeflt[iSp][iReg][iRtBin]->GetBinError(i);
+			errHM = hV0PtRtSysSigExDeflt[iSp][iReg][0]->GetBinError(i);
+			errR = TMath::Sqrt(TMath::Abs(err1*err1 - errHM*errHM));
+			errR = (hV0PtRtSysSigExDeflt[iSp][iReg][0]->GetBinContent(i) > 0) ? errR / hV0PtRtSysSigExDeflt[iSp][iReg][0]->GetBinContent(i) : 0;
+			hV0PtRtSysSigExDefltRatioToHM[iSp][iReg][iRtBin]->SetBinError(i,errR);
+		}
+
+		// calculate max deviations
+		hV0PtRtSysMaxDSigExRatioToHM[iSp][iReg][iRtBin]
+			= CalculateSigExMaxD(hV0PtRtSysMaxDSigExRatioToHM[iSp][iReg][iRtBin],
+				hV0PtRtSysSigExLooseRatioToHM[iSp][iReg][iRtBin],
+				hV0PtRtSysSigExTightRatioToHM[iSp][iReg][iRtBin],
+				hV0PtRtSysSigExDefltRatioToHM[iSp][iReg][iRtBin]);
+
+
+	}	}	}
+
+}
+
+TH1F* MyAnalysisV0syst::CalculateRatiosRBSigmas(TH1F* ha, TH1F* hd) {
+
+	Double_t lSigmaDelta[100]; 
+  	for( Int_t i=1; i<ha->GetNbinsX()+1; i++){ 
+    		//Computation of roger barlow sigma_{delta} 
+    		lSigmaDelta[i] = TMath::Sqrt( TMath::Abs( TMath::Power(ha->GetBinError(i),2) - TMath::Power(hd->GetBinError(i),2) ) );
+ 		   //Computation of relationship to h2 for plotting in ratio plot 
+    		if ( hd->GetBinContent(i) > 1e-12 )	{ 
+    			lSigmaDelta[i] /= hd->GetBinContent(i);		}
+    		else	{ 
+    			lSigmaDelta[i] = 0; 	}
+  		} 
+		// dividing corrected varied yields by default
+		ha->Divide(hd);
+		// apply RB sigmas as errors
+  		for( Int_t i=1; i<ha->GetNbinsX()+1; i++){ 
+    		ha->SetBinError(i, lSigmaDelta[i]);
+  		}
+
+  	return ha;
+}
+
+TH1F* MyAnalysisV0syst::CalculateSigExMaxD(TH1F* hm, TH1F* h1, TH1F* h2, TH1F* hd) {
+
+	for (int iBin = 1; iBin<h1->GetNbinsX()+1;iBin++) {
+		Double_t maxD = 0;
+		Double_t varD = TMath::Abs(h1->GetBinContent(iBin)-1.);
+		//applying only if dev larger than 1 RB sigma
+		if (varD>maxD && varD>nRBsigmas*h1->GetBinError(iBin)) maxD=varD;
+		
+		varD = TMath::Abs(h2->GetBinContent(iBin)-1.);
+		if (varD>maxD && varD>nRBsigmas*h2->GetBinError(iBin)) maxD=varD;
+				
+		if (hd->GetBinContent(iBin)>0) hm->SetBinContent(iBin,maxD);
+		}
+
+  	return hm;
+}
+
+
+void MyAnalysisV0syst::AddDeviations() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iMu = 0; iMu < NMULTI; ++iMu)	{
+	for (int iSph = 0; iSph < NSPHERO; ++iSph)	{
+	if (iMu == 0 && iSph > 0) continue;
+
+		//cout << "Calculating relative systematic uncertainties from cut variations for " << hV0PtSysSum[iSp][iMu][iSph] << " " << hV0PtSysSum[iSp][iMu][iSph]->GetName() << endl;
+		for (int iBin = 1; iBin < hV0PtSysSum[iSp][iMu][iSph]->GetNbinsX()+1; iBin++) {
+			
+			Double_t sum = 0;
+			Double_t sumCuts = 0;
+			Double_t sumUnc = 0;
+			Double_t sumCutsUnc = 0;
+
+			// sources from cut variations
+			for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+			if (iSp==1 && iSo==sysLifetime) continue;
+				//cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo] << endl;
+				//cout << hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetName() << endl;
+					
+				sum 	+= hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+				sumCuts += hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxD[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+
+				sumUnc 	+= hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+				sumCutsUnc 	+= hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin)*hV0PtSysMaxDRatioToHM[iSp][iMu][iSph][iSo]->GetBinContent(iBin);
+				// sum unc denote the uncorrelated uncertainty on ratios to HM, e.g unc of f = S0-biased/HM
+			}
+
+			// from material budget, fully correlated between s0
+			sum += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
+			
+			// from using MB efficiency
+			if (sum>0) {
+				sum += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				sumUnc += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				// factor 2. comes from propagation on ratios
+				// for f = A/B, (s_f/f)^2 = (s_A/A)^2 + (s_B/B)^2
+				// but (s_A/A) == (s_B/B)
+				//// decided to use more liberal 1.0 similarly to other ALICE analyses
+			}
+
+			// from experimental bias due to not unfolding s0 distribution
+			TH1F* hexpbias = (iSph%2) ? hV0PtSysExpBiasJetty : hV0PtSysExpBiasIso;
+			if (sum>0 && iSph>0) {
+				sum += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+				sumUnc += 1.*hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+			}	
+
+			// from signal extraction
+			if (sum>0) {
+				sum += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
+				sumUnc += hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+			}
+
+			// from feeddown correction
+			if (iSp>1 && sum>0) {
+				sum += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
+				sumUnc += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+			}
+
+			
+
+
+			hV0PtSysSum[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(sum));
+			hV0PtSysSum[iSp][iMu][iSph]->SetFillStyle(3005);
+			hV0PtSysSum[iSp][iMu][iSph]->SetFillColor(kBlack);
+			hV0PtSysSum[iSp][iMu][iSph]->SetTitle(Form("%s %s %s; V0 p_{T} (GeV/#it{c}); Relative syst. uncertainty",SPECNAMES[iSp],PLOTS_MULTI[iMu],PLOTS_SPHERO[iSph]));
+			hV0PtSysSum[iSp][iMu][iSph]->GetYaxis()->SetTitleOffset(1.52);
+			hV0PtSysSum[iSp][iMu][iSph]->SetStats(0);
+
+			hV0PtSysSumUnc[iSp][iMu][iSph]->SetBinContent(iBin,TMath::Sqrt(sumUnc));
+			hV0PtSysSumUnc[iSp][iMu][iSph]->SetFillStyle(3005);
+			hV0PtSysSumUnc[iSp][iMu][iSph]->SetFillColor(kBlack);
+			hV0PtSysSumUnc[iSp][iMu][iSph]->SetTitle(Form("%s %s %s; V0 p_{T} (GeV/#it{c}); Unc. syst. uncertainty (w.r.t. S_{0})",SPECNAMES[iSp],PLOTS_MULTI[iMu],PLOTS_SPHERO[iSph]));
+			hV0PtSysSumUnc[iSp][iMu][iSph]->GetYaxis()->SetTitleOffset(1.52);
+			hV0PtSysSumUnc[iSp][iMu][iSph]->SetStats(0);
+
+			Double_t part = 0;
+			if (sum>0) {
+				part += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
+				hFracBudget[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				
+				part += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				hFracEffi[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				
+				if (iSph>0) part += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+				hFracExpBias[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				
+				part += sumCuts;
+				hFracCuts[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+
+				part += hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigEx[iSp][iMu][iSph]->GetBinContent(iBin);
+				hFracSigEx[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+
+				if (iSp>1) {
+					part += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
+					hFracFD[iSp][iMu][iSph]->SetBinContent(iBin,part/TMath::Sqrt(sum));
+				}
+			}
+
+			// and ratios
+			Double_t partR = 0;
+			if (sumUnc>0) {
+				
+				partR += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				hFracEffiRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+				
+				if (iSph>0) partR += hexpbias->GetBinContent(iBin)*hexpbias->GetBinContent(iBin);
+				hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+				
+				partR += sumCutsUnc;
+				hFracCutsRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+
+				partR += hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDSigExRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+				hFracSigExRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+
+				if (iSp>1) {
+					partR += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+					hFracFDRatioToHM[iSp][iMu][iSph]->SetBinContent(iBin,partR/TMath::Sqrt(sumUnc));
+				}
+			}
+			
+		}
+
+		hFracBudget[iSp][iMu][iSph]->SetLineColor(kMagenta); hFracBudget[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracEffi[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffi[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracExpBias[iSp][iMu][iSph]->SetLineColor(kCyan+1); hFracExpBias[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracCuts[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCuts[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracSigEx[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigEx[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracFD[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFD[iSp][iMu][iSph]->SetLineWidth(3);
+
+		hFracEffiRatioToHM[iSp][iMu][iSph]->SetLineColor(kGreen+2); hFracEffiRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetLineColor(kCyan+1); hFracExpBiasRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracCutsRatioToHM[iSp][iMu][iSph]->SetLineColor(kBlue); hFracCutsRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracSigExRatioToHM[iSp][iMu][iSph]->SetLineColor(kRed); hFracSigExRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+		hFracFDRatioToHM[iSp][iMu][iSph]->SetLineColor(kBlack); hFracFDRatioToHM[iSp][iMu][iSph]->SetLineWidth(3);
+
+
+	}	}	}
+
+	return;
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		if (NMULTI<4) continue;
+		if (NSPHERO<5) continue;
+		TCanvas* cTot = new TCanvas(Form("cTot_%s",SPECIES[iSp]),"",1400,1000);
+		cTot->Divide(3,2,5e-5,5e-5); 
+		Int_t padC = 1;
+
+		TLegend* leg = new TLegend(0.13,.68,0.88,0.88);
+		mHandler->MakeNiceLegend(leg,0.027,2);	
+		leg->AddEntry(hFracBudget[iSp][3][0],"mat. budget","l");
+		leg->AddEntry(hFracEffi[iSp][3][0],"+ MB effi.","l");
+		leg->AddEntry(hFracExpBias[iSp][3][0],"+ exp. bias","l");
+		leg->AddEntry(hFracCuts[iSp][3][0],"+ cuts var.","l");
+		leg->AddEntry(hFracSigEx[iSp][3][0],"+ signal extr.","l");
+		if (iSp>1) leg->AddEntry(hFracFD[iSp][3][0],"+ feeddown corr.","l");
+
+
+		cTot->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][0]);
+		DrawMirrored(hFracBudget[iSp][3][0],"same ][");DrawMirrored(hFracEffi[iSp][3][0],"same ][");DrawMirrored(hFracCuts[iSp][3][0],"same ][");DrawMirrored(hFracSigEx[iSp][3][0],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][0],"same ][");
+		
+		leg->Draw();
+
+
+		cTot->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][3]);
+		DrawMirrored(hFracBudget[iSp][3][3],"same ][");DrawMirrored(hFracEffi[iSp][3][3],"same ][");DrawMirrored(hFracExpBias[iSp][3][3],"same ][");DrawMirrored(hFracCuts[iSp][3][3],"same ][");DrawMirrored(hFracSigEx[iSp][3][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][3],"same ][");
+		cTot->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][3][4]);
+		DrawMirrored(hFracBudget[iSp][3][4],"same ][");DrawMirrored(hFracEffi[iSp][3][4],"same ][");DrawMirrored(hFracExpBias[iSp][3][4],"same ][");DrawMirrored(hFracCuts[iSp][3][4],"same ][");DrawMirrored(hFracSigEx[iSp][3][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][3][4],"same ][");
+		cTot->cd(4)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][0]);
+		DrawMirrored(hFracBudget[iSp][4][0],"same ][");DrawMirrored(hFracEffi[iSp][4][0],"same ][");DrawMirrored(hFracCuts[iSp][4][0],"same ][");DrawMirrored(hFracSigEx[iSp][4][0],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][0],"same ][");
+		cTot->cd(5)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][3]);
+		DrawMirrored(hFracBudget[iSp][4][3],"same ][");DrawMirrored(hFracEffi[iSp][4][3],"same ][");DrawMirrored(hFracExpBias[iSp][4][3],"same ][");DrawMirrored(hFracCuts[iSp][4][3],"same ][");DrawMirrored(hFracSigEx[iSp][4][3],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][3],"same ][");
+		cTot->cd(6)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSum[iSp][4][4]);
+		DrawMirrored(hFracBudget[iSp][4][4],"same ][");DrawMirrored(hFracEffi[iSp][4][4],"same ][");DrawMirrored(hFracExpBias[iSp][4][4],"same ][");DrawMirrored(hFracCuts[iSp][4][4],"same ][");DrawMirrored(hFracSigEx[iSp][4][4],"same ][");if(iSp>1)DrawMirrored(hFracFD[iSp][4][4],"same ][");
+		cTot->Write();
+		cTot->SaveAs(Form("plotsys/cTot_%s.png",SPECIES[iSp]));
+	}
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		if (NMULTI<2) continue;
+		if (NSPHERO<3) continue;
+		TCanvas* cTotRatioToHM = new TCanvas(Form("cTotRatioToHM_%s",SPECIES[iSp]),"",1500,450);
+		cTotRatioToHM->Divide(3,1,5e-5,5e-5); 
+		Int_t padC = 1;
+
+		TLegend* leg = new TLegend(0.13,.68,0.88,0.88);
+		mHandler->MakeNiceLegend(leg,0.027,2);	
+		
+		leg->AddEntry(hFracEffiRatioToHM[iSp][1][0],"MB effi.","l");
+		leg->AddEntry(hFracExpBiasRatioToHM[iSp][1][0],"+ exp. bias","l");
+		leg->AddEntry(hFracCutsRatioToHM[iSp][1][0],"+ cuts var.","l");
+		leg->AddEntry(hFracSigExRatioToHM[iSp][1][0],"+ signal extr.","l");
+		if (iSp>1) leg->AddEntry(hFracFDRatioToHM[iSp][1][0],"+ feeddown corr.","l");
+
+
+		cTotRatioToHM->cd(1)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][0]);
+		DrawMirrored(hFracEffiRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][0],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][0],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][0],"same ][");
+		
+		leg->Draw();
+
+		cTotRatioToHM->cd(2)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][1]);
+		DrawMirrored(hFracEffiRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][1],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][1],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][1],"same ][");
+
+		cTotRatioToHM->cd(3)->SetLogx(kTRUE); DrawMirrored(hV0PtSysSumUnc[iSp][1][2]);
+		DrawMirrored(hFracEffiRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracExpBiasRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracCutsRatioToHM[iSp][1][2],"same ][");DrawMirrored(hFracSigExRatioToHM[iSp][1][2],"same ][");if(iSp>1)DrawMirrored(hFracFDRatioToHM[iSp][1][2],"same ][");
+		
+		cTotRatioToHM->Write();
+		cTotRatioToHM->SaveAs(Form("plotsys/cTotRatioToHM_%s.png",SPECIES[iSp]));
+	}
+
+	// IF NOT DOING FULL 4(HM)x8(S0) SYSTEMATIC STUDY, USE HM_01 S0_10 AS REFERENCES
+	/*for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+		Int_t iMu = 0; Int_t iSph = 0;
+		iMu=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=3;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=4;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iMu=3;	iSph=0; hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][3][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iMu=2;	iSph=0; hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=3;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=4;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iMu=4;	iSph=0; hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][0]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][3]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSum[iSp][iMu][iSph] = (TH1F*)hV0PtSysSum[iSp][4][4]->Clone(Form("hV0PtSysSum_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+
+		iSph = 0;
+		iMu=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=3;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=4;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iMu=3;	iSph=0; hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][3][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iMu=2;	iSph=0; hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=3;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=4;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iMu=4;	iSph=0; hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][0]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=1;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=2;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=5;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=6;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=7;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][3]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+		iSph=8;	hV0PtSysSumUnc[iSp][iMu][iSph] = (TH1F*)hV0PtSysSumUnc[iSp][4][4]->Clone(Form("hV0PtSysSumUnc_%s_%s_%s",SPECIES[iSp],MULTI[iMu],SPHERO[iSph]));
+	}*/
+}
+
+
+void MyAnalysisV0syst::AddDeviationsNt() {
+
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < 3; ++iReg)	{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+
+		//cout << "Calculating relative systematic uncertainties from cut variations for " << hV0PtSysSum[iSp][iMu][iSph] << " " << hV0PtSysSum[iSp][iMu][iSph]->GetName() << endl;
+		for (int iBin = 1; iBin < hV0PtRtSysSum[iSp][iReg][iRtBin]->GetNbinsX()+1; iBin++) {
+			
+			Double_t sum = 0;
+			Double_t sumCuts = 0;
+			Double_t sumUnc = 0;
+			Double_t sumCutsUnc = 0;
+
+			// sources from cut variations
+			for (int iSo = 0; iSo < sysSizeof; ++iSo)	{
+			if (iSp==1 && iSo==sysLifetime) continue;
+					
+				sum 	+= hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin)*hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin);
+				sumCuts += hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin)*hV0PtRtSysMaxD[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin);
+
+				sumUnc 	+= hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin)*hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin);
+				sumCutsUnc += hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin)*hV0PtRtSysMaxDRatioToHM[iSp][iReg][iSo][iRtBin]->GetBinContent(iBin);
+				// sum unc denote the uncorrelated uncertainty on ratios to HM, e.g unc of f = RT-biased/RT-int.
+
+			}
+
+			// from material budget, fully correlated between s0
+			sum += hV0PtSysBudget->GetBinContent(iBin)*hV0PtSysBudget->GetBinContent(iBin);
+			
+			// from using MB efficiency
+			if (sum>0) {
+				sum += hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				sumUnc += 1.*hV0PtSysEffi->GetBinContent(iBin)*hV0PtSysEffi->GetBinContent(iBin);
+				// factor 2. comes from propagation on ratios
+				// for f = A/B, (s_f/f)^2 = (s_A/A)^2 + (s_B/B)^2
+				// but (s_A/A) == (s_B/B)
+				//// decided to use more liberal 1.0 similarly to other ALICE analyses
+			}
+
+			// from experimental bias or unfolding
+			
+			
+			// from signal extraction
+			if (sum>0) {
+				sum += hV0PtRtSysMaxDSigEx[iSp][iReg][iRtBin]->GetBinContent(iBin)*hV0PtRtSysMaxDSigEx[iSp][iReg][iRtBin]->GetBinContent(iBin);
+				sumUnc += hV0PtRtSysMaxDSigExRatioToHM[iSp][iReg][iRtBin]->GetBinContent(iBin)*hV0PtRtSysMaxDSigExRatioToHM[iSp][iReg][iRtBin]->GetBinContent(iBin);
+			}
+
+			// from feeddown correction
+			if (iSp>1 && sum>0) {
+				//sum += hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotal[iSp][iMu][iSph]->GetBinContent(iBin);
+				//sumUnc += hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin)*hV0PtSysMaxDFeeddownTotalRatioToHM[iSp][iMu][iSph]->GetBinContent(iBin);
+			}
+
+			
+
+
+			hV0PtRtSysSum[iSp][iReg][iRtBin]->SetBinContent(iBin,TMath::Sqrt(sum));
+			hV0PtRtSysSumUnc[iSp][iReg][iRtBin]->SetBinContent(iBin,TMath::Sqrt(sumUnc));
+		}
+		
+		hV0PtRtSysSum[iSp][iReg][iRtBin]->SetFillStyle(3005);
+		hV0PtRtSysSum[iSp][iReg][iRtBin]->SetFillColor(kBlack);
+		hV0PtRtSysSum[iSp][iReg][iRtBin]->SetTitle(Form("%s %s R_{T} bin:%i; V0 p_{T} (GeV/#it{c}); Relative syst. uncertainty",SPECNAMES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSum[iSp][iReg][iRtBin]->GetYaxis()->SetTitleOffset(1.52);
+		hV0PtRtSysSum[iSp][iReg][iRtBin]->SetStats(0);
+		hV0PtRtSysSumUnc[iSp][iReg][iRtBin]->SetFillStyle(3005);
+		hV0PtRtSysSumUnc[iSp][iReg][iRtBin]->SetFillColor(kBlack);
+		hV0PtRtSysSumUnc[iSp][iReg][iRtBin]->SetTitle(Form("%s %s R_{T} bin:%i; V0 p_{T} (GeV/#it{c}); Relative syst. uncertainty",SPECNAMES[iSp],REGIONS[iReg],iRtBin));
+		hV0PtRtSysSumUnc[iSp][iReg][iRtBin]->GetYaxis()->SetTitleOffset(1.52);
+		hV0PtRtSysSumUnc[iSp][iReg][iRtBin]->SetStats(0);
+
+
+	}	}	}
+
+	return;
+
+}
+
+void MyAnalysisV0syst::DrawMirrored(TH1F* hist, const char* opt)	{
+
+	TString hname(hist->GetName());
+	double range = (hname.Contains("K0s") ? 0.15 : 0.25);
+	if (hname.Contains("Unc") || hname.Contains("Ratio") ) range = 0.1; 
+	//hist->GetYaxis()->SetRangeUser(-1.5*hist->GetMaximum(),1.5*hist->GetMaximum());
+	hist->GetYaxis()->SetRangeUser(-1.*range,range);
+	hist->Draw(opt);
+	TH1F* htmpMir = (TH1F*)hist->Clone("dtmpMir");
+	htmpMir->Scale(-1.);
+	htmpMir->Draw(Form("same %s",opt));
+}
+
+
 
 void MyAnalysisV0syst::CalculateFeeddownSys() {
 

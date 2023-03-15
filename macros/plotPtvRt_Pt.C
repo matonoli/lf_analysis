@@ -14,135 +14,10 @@ TString path(".");
 Int_t colors[5] = {kBlack, kRed, kBlack, kGreen+2, kBlue};
 const int NRT = 4; 
 enum {Stat, Syst, SystUnc, Monash, Ropes, NHIST};
-const char* strH[NHIST] = {"Stat", "Syst", "SystUnc", "Monash", "Ropes"};
+const char* strH[NHIST] = {"Stat", "Syst", "SystUnc"};//, "Monash", "Ropes"};
 
 
 // PLOTTING FUNCTIONS
-void MakeRatioPlot(TH1D* hn, TH1D* hd, TCanvas* c, Double_t low, Double_t high, Double_t lowx, Double_t highx, const char* opt) {
-  
-  c->cd();
-  TString strOpt(opt);
-
-  // check for an already existent ratio plot
-  Bool_t hasRatio = false;
-  TObject* obj;
-  TIter next(c->GetListOfPrimitives());
-  while ( (obj = next()) ) {
-    TString objName = obj->GetName();
-    if (objName == Form("p2_%s",c->GetName())) {
-      TVirtualPad* prat = (TVirtualPad*)obj;
-      prat->cd();
-      hasRatio = true;
-    }
-  }
-
-  if (!hasRatio) {
-
-    TCanvas* ctop = (TCanvas*)c->Clone("ctop");
-    c->Clear();
-    ctop->SetBottomMargin(0.005);
-    c->cd();
-
-    TPad* p1 = new TPad(Form("p1_%s",c->GetName()),"",0.,0.3,1.,1.);
-    p1->SetBottomMargin(0.);
-    p1->Draw();
-    p1->cd();
-    ctop->DrawClonePad();
-
-    c->cd();
-    TPad* p2 = new TPad(Form("p2_%s",c->GetName()),"",0.,0.00,1.,0.28);
-    p2->SetTopMargin(0);
-    p2->SetBottomMargin(0.32);
-    p2->Draw();
-    p2->cd();
-  }
-
-  TH1D* hr = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
-  hr->SetMinimum(low);
-  hr->SetMaximum(high);
-  hr->GetXaxis()->SetRangeUser(lowx,highx);
-  hr->Divide(hd);
-
-  hr->GetYaxis()->SetTitle("ratio to ref.");
-  hr->GetYaxis()->CenterTitle();
-  hr->GetYaxis()->SetNdivisions(505);
-  hr->GetYaxis()->SetTitleSize(20);
-  hr->GetYaxis()->SetTitleFont(43);
-  hr->GetYaxis()->SetLabelFont(43); 
-
-  hr->GetYaxis()->SetTitleOffset(1.6);
-  hr->GetYaxis()->SetLabelOffset(0.0025);
-  hr->GetYaxis()->SetLabelSize(20);
-
-  hr->GetXaxis()->SetTitleSize(25);
-  hr->GetXaxis()->SetTitleFont(43);
-  hr->GetXaxis()->SetTitleOffset(4.);
-  hr->GetXaxis()->SetLabelFont(43); 
-  hr->GetXaxis()->SetLabelSize(25);
-  hr->GetXaxis()->SetTickLength(0.09);
-
-  if (!hasRatio)  hr->Draw(strOpt.Data());
-  else      hr->Draw(Form("same %s", strOpt.Data()));
-  TString hrname(hr->GetName());
-  if (! hrname.Contains("hBlank")) hr->Write();
-
-  //c->SetCanvasSize()
-  c->cd();
-
-}
-
-TH1D* GetFrame(const char* name, double min, double max, bool isRatios)
-{
-    
-    TH1D* hframe = new TH1D(Form("%s",name),Form("%s",name),(int)max-(int)min,min,max);
-    
-    hframe->GetYaxis()->SetTitleOffset(2);
-    hframe->GetYaxis()->SetNdivisions(510,kTRUE);
-    hframe->GetXaxis()->SetNdivisions(505,kTRUE);
-    hframe->GetXaxis()->SetLabelFont(63);
-    hframe->GetYaxis()->SetLabelFont(63);
-    hframe->GetXaxis()->SetTitleFont(63);
-    hframe->GetYaxis()->SetTitleFont(63);
-    hframe->GetYaxis()->SetTitleSize( 30 );
-    hframe->GetXaxis()->SetTitleSize( 30 );
-    hframe->GetYaxis()->SetLabelSize( 25 );
-    
-    if(isRatios){
-        hframe->GetYaxis()->SetNdivisions(505,kTRUE);
-        hframe->GetYaxis()->SetTitleOffset(1.5);
-        hframe->GetYaxis()->SetLabelSize( 20 );
-        hframe->GetYaxis()->SetTitleSize( 30 );
-    }
-    
-    if(strstr(name,"frame2")!=0){
-        hframe->GetXaxis()->SetLabelSize( 25 );
-        hframe->GetYaxis()->SetLabelSize( 25 );
-        
-        hframe->GetYaxis()->SetTitleOffset(2);
-        hframe->GetXaxis()->SetTitleOffset(3);
-        hframe->GetYaxis()->SetRangeUser(0.0,2.82);
-        hframe->GetYaxis()->SetNdivisions(505,kTRUE);
-        hframe->GetXaxis()->SetNdivisions(505,kTRUE);
-        hframe->GetYaxis()->SetTitle("Ratio to #it{N}_{ch} #geq 10");
-        //hframe->GetXaxis()->SetTitle(titleX);
-        
-        if(isRatios){
-            
-            hframe->GetYaxis()->SetNdivisions(505,kTRUE);
-            hframe->GetXaxis()->SetNdivisions(505,kTRUE);
-            hframe->GetXaxis()->SetLabelSize( 20 );
-            hframe->GetYaxis()->SetLabelSize( 20 );
-            hframe->GetXaxis()->SetTitleSize( 24 );
-            hframe->GetYaxis()->SetTitleSize( 25 );
-            hframe->GetYaxis()->SetRangeUser(0.65,1.35);
-            hframe->GetXaxis()->SetTitleOffset(3);
-            hframe->GetYaxis()->SetTitleOffset(1.5);
-            
-        }
-        
-    }
-    return hframe;
-}
 //______________________________________________________________
 void myLegendSetUp(TLegend *currentLegend,float currentTextSize){
     
@@ -228,35 +103,6 @@ void MakeNiceHistogram(TH1D* h, Int_t col) {
   //h->SetTopMargin(0.055);
 }
 
-TH1D* DivideSpline(TH1D* hn, TH1D* hd, Double_t scale) {
-
-  // replaces the denominator with a spline and creates a clone with the numerator's binning
-  // returns the ratio
-  
-
-  Int_t hd_nbins = hd->GetNbinsX();
-  
-  Double_t hd_x[400], hd_err[400]; 
-  for (int iB = 0; iB < hd_nbins; ++iB)   {
-    hd_x[iB]  = hd->GetBinCenter(iB+1);
-    hd_err[iB]  = hd->GetBinError(iB+1);    }
-  
-
-  TSpline3* hd_spl    = new TSpline3(hd, 0, 1, 0);
-  TSpline3* hd_splerr = new TSpline3(Form("splerr_%s",hd->GetName()), hd_x, hd_err, hd_nbins, 0, 1, 0);
-
-  TH1D* hd2 = (TH1D*)hn->Clone(Form("hr_%s",hn->GetName()));
-  for (int iB = 1; iB <= hd2->GetNbinsX(); ++iB)         {
-    hd2->SetBinContent(iB, hd_spl->Eval(hd2->GetBinCenter(iB)));  
-    hd2->SetBinError(iB, hd_splerr->Eval(hd2->GetBinCenter(iB))); }
-
-  hn->Divide(hn,hd2,scale);
-  delete hd_spl;
-  delete hd_splerr;
-  delete hd2;
-  
-  return hn;
-}
 
 void DrawHistograms(TH1D** h, Int_t nhist) {
 
@@ -291,9 +137,25 @@ TH1D* MakeRatioHist(TH1D* hn, TH1D* hd) {
 
 
 
-void plotPtvRt_Pt() {
+void plotPtvRt_Pt(Int_t particle = 1) {
 
-  //TH1::SetDefaultSumw2(1);
+  TString part; TString partL;
+  if (particle==1) {
+    part = TString("K0s" );
+    partL = TString("K^{0}_{S}");
+  } else if (particle==2) {
+    part = TString("L" );
+    partL = TString("#Lambda");
+  } else if (particle==3) {
+    part = TString("Lbar" );
+    partL = TString("#bar{#Lambda}");
+  } else {
+    printf("Wrong input \n");
+    return;
+  }
+  TString dmc("D");
+
+  TH1::SetDefaultSumw2(1);
 
   
 
@@ -328,19 +190,10 @@ void plotPtvRt_Pt() {
 
   // FETCH SOURCE HISTOGRAMS FROM FILES
   //TFile* fIn = new TFile(Form("%s/outMC_230123.root",path.Data()),"READ");
-  TFile* fIn = new TFile(Form("%s/outD_230220_0xcu_hist.root",path.Data()),"READ");
-  //Bool_t isRC = true; Bool_t isRTMin = false; TString part("K0s" ); TString partL("K^{0}_{S}"); TString dmc("D");
-  Bool_t isRC = true; Bool_t isRTMin = false; TString part("Lbar" ); TString partL("#Lambda");TString dmc("D");
-  //Bool_t isRC = true; Bool_t isRTMin = false; TString part("Pion" ); TString partL("#pi^{#pm}");
-  //Bool_t isRC = true; Bool_t isRTMin = false; TString part("Kaon" ); TString partL("K^{#pm}");
+  TFile* fIn = new TFile(Form("%s/outD_230301_0xcsu_hist.root",path.Data()),"READ");
 
-  TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0unfold_3");
-  /*hPtDT[Stat]     = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorr_%s_%s_Trans_%i",part.Data(),dmc.Data(),0));
-  hPtDTMin[Stat]  = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorr_%s_%s_TransMin_%i",part.Data(),dmc.Data(),0));
-  hPtDTMax[Stat]  = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorr_%s_%s_TransMax_%i",part.Data(),dmc.Data(),0));
-  hPtDN[Stat]     = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorr_%s_%s_Near_%i",part.Data(),dmc.Data(),0));
-  hPtDA[Stat]     = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorr_%s_%s_Away_%i",part.Data(),dmc.Data(),0));
-*/
+  TDirectoryFile* dirCorr = (TDirectoryFile*)fIn->Get("MyAnalysisV0unfold_4");
+  
   for (int i = 0; i<NRT+1; i++) {
     hPtT[i][Stat]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnf_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
     hPtTMin[i][Stat] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnf_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
@@ -348,8 +201,21 @@ void plotPtvRt_Pt() {
     hPtN[i][Stat]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnf_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
     hPtA[i][Stat]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnf_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
 
-    cout << "h is " << hPtT[i][Stat] << endl;
-  }
+    hPtT[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
+    hPtTMin[i][Syst] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnfSyst_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
+    hPtTMax[i][Syst] = (TH1D*)dirCorr->Get(Form("hV0PtRtMaxFitCorrUnfSyst_%s_%s_TransMax_%i",part.Data(),dmc.Data(),i));
+    hPtN[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
+    hPtA[i][Syst]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSyst_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
+
+    hPtT[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Trans_%i",part.Data(),dmc.Data(),i));
+    hPtTMin[i][SystUnc] = (TH1D*)dirCorr->Get(Form("hV0PtRtMinFitCorrUnfSystUnc_%s_%s_TransMin_%i",part.Data(),dmc.Data(),i));
+    hPtTMax[i][SystUnc] = (TH1D*)dirCorr->Get(Form("hV0PtRtMaxFitCorrUnfSystUnc_%s_%s_TransMax_%i",part.Data(),dmc.Data(),i));
+    hPtN[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Near_%i",part.Data(),dmc.Data(),i));
+    hPtA[i][SystUnc]    = (TH1D*)dirCorr->Get(Form("hV0PtRtFitCorrUnfSystUnc_%s_%s_Away_%i",part.Data(),dmc.Data(),i));
+
+}
+
+
   
 
   // MAKE PLOTS
@@ -475,7 +341,10 @@ void plotPtvRt_Pt() {
   
   for (int iRt = NRT; iRt > 0; --iRt)  {
     MakeNiceHistogram(hPtN[iRt][Stat], colors[iRt]);
-    hPtN[iRt][Stat]->Draw("same");
+    MakeNiceHistogram(hPtN[iRt][Syst], colors[iRt]);
+    MakeNiceHistogram(hPtN[iRt][SystUnc], colors[iRt]);
+    hPtN[iRt][Stat]->Draw("E X0 same");
+    hPtN[iRt][Syst]->Draw("e2 same");
   }
 
   latexSystem->DrawLatex(0.15,0.22,"pp, #sqrt{s} = 13 TeV");
@@ -492,7 +361,10 @@ void plotPtvRt_Pt() {
   hframeSpectraLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {
     MakeNiceHistogram(hPtA[iRt][Stat], colors[iRt]);
-    hPtA[iRt][Stat]->Draw("same");
+    MakeNiceHistogram(hPtA[iRt][Syst], colors[iRt]);
+    MakeNiceHistogram(hPtA[iRt][SystUnc], colors[iRt]);
+    hPtA[iRt][Stat]->Draw("E X0 same");
+    hPtA[iRt][Syst]->Draw("E2 same");
   }
   
   latexR->DrawLatex(0.2,0.75,"Away");
@@ -504,7 +376,10 @@ void plotPtvRt_Pt() {
   hframeSpectraLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {
     MakeNiceHistogram(hPtT[iRt][Stat], colors[iRt]);
-    hPtT[iRt][Stat]->Draw("same");
+    MakeNiceHistogram(hPtT[iRt][Syst], colors[iRt]);
+    MakeNiceHistogram(hPtT[iRt][SystUnc], colors[iRt]);
+    hPtT[iRt][Stat]->Draw("E X0 same");
+    hPtT[iRt][Syst]->Draw("E2 same");
   }
   latexR->DrawLatex(0.2,0.75,"Transverse");
 
@@ -513,9 +388,13 @@ void plotPtvRt_Pt() {
   pad[0][0]->cd();
   hframeRatioLeft->Draw();
   TH1D* hr[NRT];
+  TH1D* hrs[NRT];
   for (int iRt = NRT; iRt > 0; --iRt)  {    
     hr[iRt] = MakeRatioHist(hPtN[iRt][Stat],hPtN[0][Stat]);
-    hr[iRt]->Draw("same");
+    hr[iRt]->Draw("E X0 same");
+
+    hrs[iRt] = MakeRatioHist(hPtN[iRt][SystUnc],hPtN[0][SystUnc]);
+    hrs[iRt]->Draw("E2 same");
   }
 
   C->cd(0);
@@ -524,7 +403,10 @@ void plotPtvRt_Pt() {
   hframeRatioLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {    
     hr[iRt] = MakeRatioHist(hPtA[iRt][Stat],hPtA[0][Stat]);
-    hr[iRt]->Draw("same");
+    hr[iRt]->Draw("E X0 same");
+
+    hrs[iRt] = MakeRatioHist(hPtA[iRt][SystUnc],hPtA[0][SystUnc]);
+    hrs[iRt]->Draw("E2 same");
   }
   legendLeft->Draw();
 
@@ -534,7 +416,10 @@ void plotPtvRt_Pt() {
   hframeRatioLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {    
     hr[iRt] = MakeRatioHist(hPtT[iRt][Stat],hPtT[0][Stat]);
-    hr[iRt]->Draw("same");
+    hr[iRt]->Draw("E X0 same");
+
+    hrs[iRt] = MakeRatioHist(hPtT[iRt][SystUnc],hPtT[0][SystUnc]);
+    hrs[iRt]->Draw("E2 same");
   }
 
 
@@ -590,7 +475,9 @@ void plotPtvRt_Pt() {
   
   for (int iRt = NRT; iRt > 0; --iRt)  {
     MakeNiceHistogram(hPtT[iRt][Stat], colors[iRt]);
-    hPtT[iRt][Stat]->Draw("same");
+    MakeNiceHistogram(hPtT[iRt][Syst], colors[iRt]);
+    hPtT[iRt][Stat]->Draw("E X0 same");
+    hPtT[iRt][Syst]->Draw("E2 same");
   }
 
   latexSystem->DrawLatex(0.15,0.22,"pp, #sqrt{s} = 13 TeV");
@@ -607,7 +494,10 @@ void plotPtvRt_Pt() {
   hframeSpectraLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {
     MakeNiceHistogram(hPtTMin[iRt][Stat], colors[iRt]);
-    hPtTMin[iRt][Stat]->Draw("same");
+    MakeNiceHistogram(hPtTMin[iRt][Syst], colors[iRt]);
+    MakeNiceHistogram(hPtTMin[iRt][SystUnc], colors[iRt]);
+    hPtTMin[iRt][Stat]->Draw("E X0 same");
+    hPtTMin[iRt][Syst]->Draw("E2 same");
   }
   
   latexR->DrawLatex(0.2,0.75,"Trans., min");
@@ -619,7 +509,10 @@ void plotPtvRt_Pt() {
   hframeSpectraLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {
     MakeNiceHistogram(hPtTMax[iRt][Stat], colors[iRt]);
-    hPtTMax[iRt][Stat]->Draw("same");
+    MakeNiceHistogram(hPtTMax[iRt][Syst], colors[iRt]);
+    MakeNiceHistogram(hPtTMax[iRt][SystUnc], colors[iRt]);
+    hPtTMax[iRt][Stat]->Draw("E X0 same");
+    hPtTMax[iRt][Syst]->Draw("E2 same");
   }
   latexR->DrawLatex(0.2,0.75,"Trans., max");
 
@@ -630,7 +523,10 @@ void plotPtvRt_Pt() {
   
   for (int iRt = NRT; iRt > 0; --iRt)  {    
     hr[iRt] = MakeRatioHist(hPtT[iRt][Stat],hPtT[0][Stat]);
-    hr[iRt]->Draw("same");
+    hr[iRt]->Draw("E X0 same");
+
+    hrs[iRt] = MakeRatioHist(hPtT[iRt][SystUnc],hPtT[0][SystUnc]);
+    hrs[iRt]->Draw("E2 same");
   }
 
   C2->cd(0);
@@ -639,7 +535,10 @@ void plotPtvRt_Pt() {
   hframeRatioLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {    
     hr[iRt] = MakeRatioHist(hPtTMin[iRt][Stat],hPtTMin[0][Stat]);
-    hr[iRt]->Draw("same");
+    hr[iRt]->Draw("E X0 same");
+
+    hrs[iRt] = MakeRatioHist(hPtTMin[iRt][SystUnc],hPtTMin[0][SystUnc]);
+    hrs[iRt]->Draw("E2 same");
   }
   legendLeft2->Draw();
 
@@ -649,7 +548,10 @@ void plotPtvRt_Pt() {
   hframeRatioLeft->Draw();
   for (int iRt = NRT; iRt > 0; --iRt)  {    
     hr[iRt] = MakeRatioHist(hPtTMax[iRt][Stat],hPtTMax[0][Stat]);
-    hr[iRt]->Draw("same");
+    hr[iRt]->Draw("E X0 same");
+
+    hrs[iRt] = MakeRatioHist(hPtTMax[iRt][SystUnc],hPtTMax[0][SystUnc]);
+    hrs[iRt]->Draw("E2 same");
   }
 
 

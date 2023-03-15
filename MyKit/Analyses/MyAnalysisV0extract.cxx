@@ -101,9 +101,16 @@ Bool_t MyAnalysisV0extract::BorrowHistograms() {
 			= (TH3F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
 		hV0IMvPtNtMin[iSp][iType][iReg] 
 			= (TH3F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hV0IMvPtNtMax[iSp][iType][iReg] 
+			= (TH3F*)mHandler->analysis(0)->dirFile()->Get(Form("hV0IMvPtNtMax_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+
+		cout << "ntmax " << hV0IMvPtNtMax[iSp][iType][iReg] << " " << hV0IMvPtNtMax[iSp][iType][iReg]->GetEntries() << endl;
 	
 		hV0IMvPtNt[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH3(hV0IMvPtNt[iSp][iType][iReg]);
 		hV0IMvPtNtMin[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH3(hV0IMvPtNtMin[iSp][iType][iReg]);
+		hV0IMvPtNtMax[iSp][iType][iReg] = ((MyAnalysisV0*)mHandler->analysis(0))->RebinTH3(hV0IMvPtNtMax[iSp][iType][iReg]);
+
+		cout << "ntmax " << hV0IMvPtNtMax[iSp][iType][iReg] << " " << hV0IMvPtNtMax[iSp][iType][iReg]->GetEntries() << endl;
 
 
 	} } } 
@@ -167,6 +174,8 @@ Bool_t MyAnalysisV0extract::CreateHistograms() {
 
 		hV0PtNtMinFit[iSp][iType][iReg]		= new TH2F(Form("hV0PtNtMinFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,min]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
+		hV0PtNtMaxFit[iSp][iType][iReg]		= new TH2F(Form("hV0PtNtMaxFit_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";V0 p_{T} (GeV/#it{c}); N_{ch} [trans.,max]; Entries",	NPTBINS,XBINS, 60, -0.5, 59.5);
 
 	}	}	}
 
@@ -504,6 +513,7 @@ void MyAnalysisV0extract::DefineSidebands() {
 
 void MyAnalysisV0extract::TakeoverSidebands() {
 
+	mDirFile->cd();
 	cout << "mpar " << mParMuK0s << endl; 
 
 	mParSigK0s	= new TF1("funcSigK0s","[0]+[1]*x+[2]/x",1e-4+XBINS[0],XBINS[NPTBINS]);
@@ -768,6 +778,51 @@ void MyAnalysisV0extract::ProducePtSpectraFromHistsRt() {
 
 	} } }
 
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		cout << "ntmax " << hV0IMvPtNtMax[iSp][iType][iReg] << " " << hV0IMvPtNtMax[iSp][iType][iReg]->GetEntries() << endl;
+
+		for (int iNt = 1; iNt < hV0IMvPtNtMax[iSp][iType][iReg]->GetZaxis()->GetNbins()+1; iNt++)	{
+
+			hV0IMvPtNtMax[iSp][iType][iReg]->GetZaxis()->SetRange(iNt,iNt);
+			TH2F* hXY = (TH2F*)hV0IMvPtNtMax[iSp][iType][iReg]->Project3D("yx");			
+
+			printf("Extracting yield for pt spectrum RtMax iSp%i_iType%i_iReg%i_iNtBin%i \n",iSp,iType,iReg,iNt);
+			
+			Double_t* yield = 0;
+			Int_t binCounter = 1;
+
+
+			for (int iBin = 1; iBin < NPTBINS+1; iBin=iBin+1)	{
+			
+				// ACTUAL RAW YIELDS
+				yield = ExtractYieldSB((TH1F*)hXY->ProjectionY(
+					Form("RtMax_iSp%i_iType%i_iReg%i_iRtBin%i_iBin%i", iSp, iType, iReg, iNt, iBin),
+					iBin,iBin),false);
+
+				hV0PtNtMaxFit[iSp][iType][iReg]->SetBinContent(iBin,iNt,*(yield+0));
+				hV0PtNtMaxFit[iSp][iType][iReg]->SetBinError(iBin,iNt,*(yield+1));
+				binCounter++;
+
+			}
+
+		} 
+
+		// SCALE BY BIN WIDTH
+		for (int iX = 1; iX < hV0PtNtMaxFit[iSp][iType][iReg]->GetNbinsX()+1; iX++) {
+			for (int iY = 1; iY < hV0PtNtMaxFit[iSp][iType][iReg]->GetNbinsY()+1; iY++) {	
+				float binwidth = hV0PtNtMaxFit[iSp][iType][iReg]->GetXaxis()->GetBinWidth(iX);
+				float binc = hV0PtNtMaxFit[iSp][iType][iReg]->GetBinContent(iX,iY);
+				float bine = hV0PtNtMaxFit[iSp][iType][iReg]->GetBinError(iX,iY);
+				if (binwidth>0) hV0PtNtMaxFit[iSp][iType][iReg]->SetBinContent(iX,iY,binc/binwidth);
+				if (binwidth>0) hV0PtNtMaxFit[iSp][iType][iReg]->SetBinError(iX,iY,bine/binwidth);
+			}
+		}
+
+	} } }
+
 	// Remove junk from the file memory
 	TIter objIt(mDirFile->GetList(),kIterForward);
 	TObject* obj = 0;
@@ -984,11 +1039,11 @@ void MyAnalysisV0extract::ProduceRtSpectraFromTrees() {
 
 Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 
-
-
 	static Double_t val[2];
 	val[0] = 0; val[1] = 0;
 	Float_t fitMin = -0.1, fitMax = 0.1;
+
+	if (!hist->GetEntries() && !willDraw) return val;
 
 	for (int ib = 1; ib < hist->GetNbinsX()+1; ib++) hist->SetBinError(ib,TMath::Sqrt(hist->GetBinContent(ib)));
 
@@ -1006,23 +1061,24 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
 
 	Double_t Mean, Sigma, SF;
-	
+
+	if (!mParMuK0s) TakeoverSidebands();
+
 	if (mParMuK0s) {
-		Mean	= (spNumber==1) ? mParMuK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParMuL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
-		Sigma	= (spNumber==1) ? mParSigK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParSigL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		Mean	= (spNumber==1) ? mParMuK0s->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber])) : mParMuL->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber]));
+		Sigma	= (spNumber==1) ? mParSigK0s->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber])) : mParSigL->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber]));
 		SF = 1;
 	} else {
-
-		Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(xBins[binNumber-1]));
-		Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
-		SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*xBins[binNumber-1]+0.4*xBins[binNumber]));
+		Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(XBINS[binNumber-1]));
+		Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber]));
+		SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*XBINS[binNumber-1]+0.4*XBINS[binNumber]));
 
 	}
-	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, xBins[binNumber-1], xBins[binNumber]);
+	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, XBINS[binNumber-1], XBINS[binNumber]);
 
 	Double_t NSig = 6; //6;
 	//hist->Rebin(8);  // IM bins reduced to 125 so no need to rebin anymore
-	
+
 	TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
 	fbg->SetParameters(1.,0.,0.);
 	//fit only the linear background excluding the signal area
@@ -1041,9 +1097,6 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	hist->GetListOfFunctions()->Add(fright);
 	mHandler->root()->GetListOfFunctions()->Remove(fright);*/
 	
-
-
-
 
 	RooRealVar MassDT("MassDT","#Delta m_{inv} (GeV/#it{c}^{2})",Mean-3*NSig*Sigma,Mean+3*NSig*Sigma);
 	RooDataHist DT_set("DT_set","DT_set",MassDT,Import(*hist)); 
@@ -1071,7 +1124,6 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	RooAbsReal* fIntTot = fTotal.createIntegral(MassDT,NormSet(MassDT),Range("lowBR,highBR"));
 	RooAbsReal* fIntTot2 = fTotal.createIntegral(MassDT,NormSet(MassDT),Range("fullR"));
 	RooAbsReal* fIntTot3 = fTotal.createIntegral(MassDT);
-
 
 	Double_t N 	= hist->Integral(hist->FindBin(Mean-NSig*Sigma),hist->FindBin(Mean+NSig*Sigma));
 
@@ -1114,6 +1166,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	val[0] = N - Bg;
 	val[1] = TMath::Sqrt(TMath::Abs(N + Bg));
 
+
 	if (histName.Contains("Sys")) return val;
 
 
@@ -1129,8 +1182,8 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	if (!willDraw) return val;
 
 
-	if (!isRt) cFits[canCounter/nBins]->cd(1+canCounter%nBins);
-	else cFitsRt[canCounterRt/nBins]->cd(1+canCounterRt%nBins);
+	if (!isRt) cFits[canCounter/NPTBINS]->cd(1+canCounter%NPTBINS);
+	else cFitsRt[canCounterRt/NPTBINS]->cd(1+canCounterRt%NPTBINS);
 
 
 
@@ -1158,24 +1211,24 @@ Double_t* MyAnalysisV0extract::ExtractYieldSB(TH1F* hist, Bool_t willDraw) {
 	//fbg->Draw("same");
 
 	if (!isRt) {
-		cFits[canCounter/nBins]->Update();
-		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
-		mHandler->DrawCut(Mean+NSig*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
-		mHandler->DrawCut(Mean-NSig*Sigma,1,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins));
-		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFits[canCounter/nBins]->GetPad(1+canCounter%nBins)); }
+		cFits[canCounter/NPTBINS]->Update();
+		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFits[canCounter/NPTBINS]->GetPad(1+canCounter%NPTBINS));
+		mHandler->DrawCut(Mean+NSig*Sigma,2,cFits[canCounter/NPTBINS]->GetPad(1+canCounter%NPTBINS));
+		mHandler->DrawCut(Mean-NSig*Sigma,1,cFits[canCounter/NPTBINS]->GetPad(1+canCounter%NPTBINS));
+		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFits[canCounter/NPTBINS]->GetPad(1+canCounter%NPTBINS)); }
 	else {
-		//cout << "UGH " << cFitsRt[canCounterRt/nBins] << " " << Mean << " " << Sigma << " " << cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins) << "\n";
-		cFitsRt[canCounterRt/nBins]->Update();
-		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
-		mHandler->DrawCut(Mean+NSig*Sigma,2,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
-		mHandler->DrawCut(Mean-NSig*Sigma,1,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
-		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFitsRt[canCounterRt/nBins]->GetPad(1+canCounterRt%nBins));
+		//cout << "UGH " << cFitsRt[canCounterRt/NPTBINS] << " " << Mean << " " << Sigma << " " << cFitsRt[canCounterRt/NPTBINS]->GetPad(1+canCounterRt%NPTBINS) << "\n";
+		cFitsRt[canCounterRt/NPTBINS]->Update();
+		mHandler->DrawCut(Mean+2*NSig*Sigma,1,cFitsRt[canCounterRt/NPTBINS]->GetPad(1+canCounterRt%NPTBINS));
+		mHandler->DrawCut(Mean+NSig*Sigma,2,cFitsRt[canCounterRt/NPTBINS]->GetPad(1+canCounterRt%NPTBINS));
+		mHandler->DrawCut(Mean-NSig*Sigma,1,cFitsRt[canCounterRt/NPTBINS]->GetPad(1+canCounterRt%NPTBINS));
+		mHandler->DrawCut(Mean-2*NSig*Sigma,2,cFitsRt[canCounterRt/NPTBINS]->GetPad(1+canCounterRt%NPTBINS));
 	}
 
 	
 	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
 	mHandler->MakeNiceLegend(leg1, 0.08, 1.);
-	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[binNumber-1],xBins[binNumber])," ");
+	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",XBINS[binNumber-1],XBINS[binNumber])," ");
 	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
 	leg1->Draw();
 	
@@ -1207,22 +1260,23 @@ Double_t* MyAnalysisV0extract::ExtractYieldSBVarySigma(Double_t nsig, TH1F* hist
 	Int_t empty = (hist->Integral(hist->FindBin(fitMin),hist->FindBin(fitMax)));// == 0);
 
 	Double_t Mean, Sigma, SF;
-	
+	if (!mParMuK0s) TakeoverSidebands();
+
 	if (mParMuK0s) {
-		Mean	= (spNumber==1) ? mParMuK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParMuL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
-		Sigma	= (spNumber==1) ? mParSigK0s->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber])) : mParSigL->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
+		Mean	= (spNumber==1) ? mParMuK0s->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber])) : mParMuL->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber]));
+		Sigma	= (spNumber==1) ? mParSigK0s->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber])) : mParSigL->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber]));
 		SF = 1;
 	} else {
 
-		Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(xBins[binNumber-1]));
-		Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(xBins[binNumber-1]+xBins[binNumber]));
-		SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*xBins[binNumber-1]+0.4*xBins[binNumber]));
+		Mean = hSidebandMean[spNumber]->GetBinContent(hSidebandMean[spNumber]->FindBin(XBINS[binNumber-1]));
+		Sigma = hSidebandSigma[spNumber]->GetFunction(Form("fsigma_%i",spNumber))->Eval(0.5*(XBINS[binNumber-1]+XBINS[binNumber]));
+		SF = 1;//hSidebandSF[spNumber]->GetFunction(Form("fsf_%i",spNumber))->Eval(0.5*(0.6*XBINS[binNumber-1]+0.4*XBINS[binNumber]));
 
 	}
-	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, xBins[binNumber-1], xBins[binNumber]);
+	//if (spNumber==1) printf("bin %i mean %f sigma %f in bin %f and %f \n", binNumber, Mean, Sigma, XBINS[binNumber-1], XBINS[binNumber]);
 
 	Double_t NSig = nsig;
-	hist->Rebin(8);
+	//hist->Rebin(8);
 	
 	TF1 *fbg = new TF1("fbg",gfpol3,Mean-3.*NSig*Sigma,Mean+3.*NSig*Sigma,3);
 	fbg->SetParameters(1.,0.,0.);
@@ -1359,7 +1413,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSBVarySigma(Double_t nsig, TH1F* hist
 	
 	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
 	mHandler->MakeNiceLegend(leg1, 0.10, 1.);
-	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[binNumber-1],xBins[binNumber])," ");
+	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",XBINS[binNumber-1],XBINS[binNumber])," ");
 	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
 	leg1->Draw();
 	
@@ -1443,7 +1497,7 @@ Double_t* MyAnalysisV0extract::ExtractYieldSBVarySigma(Double_t nsig, TH1F* hist
 
 	TLegend* leg1 = new TLegend(0.071,0.57,0.5,0.88);//cFits[canCounter/NPTBINS]->BuildLegend();
 	mHandler->MakeNiceLegend(leg1, 0.10, 1.);
-	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",xBins[binNumber-1],xBins[binNumber])," ");
+	leg1->AddEntry((TObject*)0,Form("%4.2f < p_{T} < %4.2f (GeV/#it{c})",XBINS[binNumber-1],XBINS[binNumber])," ");
 	leg1->AddEntry((TObject*)0,Form("%s , #chi^{2}/ndf = %4.2f",SPECNAMES[spNumber],chi2ndf)," ");
 	leg1->AddEntry((TObject*)0,Form("%4.1f #pm %4.1f",val[0],val[1])," ");
 	leg1->Draw();

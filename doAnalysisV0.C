@@ -218,15 +218,16 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 			analysisV0correct->SetMCInputFile(MCinputFile);
 			if (fl.Contains("c-")) analysisV0correct->SetRun(false);
 			handler->AddAnalysis(analysisV0correct); }
+		if (fl.Contains("s")) {
+			MyAnalysisV0syst* analysisV0syst			= new MyAnalysisV0syst();
+			analysisV0syst->SetMCInputFile(MCinputFile);
+			if (fl.Contains("s-")) analysisV0syst->SetRun(false);
+			handler->AddAnalysis(analysisV0syst); }
 		if (fl.Contains("u")) {
 			MyAnalysisV0unfold* analysisV0unfold		= new MyAnalysisV0unfold();
 			analysisV0unfold->SetMCInputFile(MCinputFile);
 			if (fl.Contains("u-")) analysisV0unfold->SetRun(false);
 			handler->AddAnalysis(analysisV0unfold); }
-		if (fl.Contains("s")) {
-			MyAnalysisV0syst* analysisV0syst			= new MyAnalysisV0syst();
-			analysisV0syst->SetMCInputFile(MCinputFile);
-			handler->AddAnalysis(analysisV0syst); }
 		if (fl.Contains("p")) {
 			MyAnalysisV0plot* analysisV0plot			= new MyAnalysisV0plot();
 			handler->AddAnalysis(analysisV0plot); }
@@ -261,6 +262,7 @@ void doAnalysisV0(Long_t nEvents=10, const Char_t *flags = "0", const Char_t *in
 		handler->Finish();
 
 		printf("---Analysis finished. Exiting... \n");
+		root->ProcessLine("gObjectTable->Print()");
 		root->ProcessLine("new TBrowser");
 		
 

@@ -242,6 +242,18 @@ namespace V0consts {
 		cutsSizeof 																//30
 	};
 
+	/*enum sysSources {
+		sysRadiusL, sysDCAdd, sysCPA, sysSizeof
+	};
+
+	const char* SYSTS[sysSizeof] = { 
+		"sysRadiusL", "sysDCAdd", "sysCPA"
+	};
+
+	const char* PLOTS_SYSTS[sysSizeof] = { 
+		"radius", "DCA_{d-d}", "cos PA"
+	};*/
+
 	enum sysSources {
 		sysRadiusL, sysDCAdd, sysCPA, sysFastSignal,
 		sysCompMass, sysLifetime, sysNSigmaTPC, sysDCAPVpos,
@@ -347,6 +359,8 @@ class MyAnalysisV0: public MyAnalysis {
 		void DoEfficiency();
 		TH2F* RebinTH2(TH2F* h);
 		TH3F* RebinTH3(TH3F* h);
+		TH2F* ScaleWidthTH2(TH2F* h);
+		TH2F* DivideTH2ByTH1(TH2F* h, TH1F* d);
 
 		ClassDef(MyAnalysisV0,2);
 
