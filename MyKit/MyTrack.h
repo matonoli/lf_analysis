@@ -51,6 +51,8 @@ class MyTrack: public TObject {
 		UShort_t GetTPCNclsF()					const { return mAliTrack->GetTPCNclsF();};
 		Bool_t IsMCPrimary()					const { return mAliTrack->IsMCPrimary();};
 		Int_t GetMCPdgCode()					const { return mAliTrack->GetMCPdgCode();};
+		Int_t GetMCMotherPdgCode()				const { return mAliTrack->GetMCMotherPdgCode();};
+		Int_t GetMCMotherLabel()				const { return mAliTrack->GetMCMotherLabel();};
 #elif INPUTFORMAT == 2		
 		Float_t GetPt() 						const { return mAliTrack->Pt();};
 		Float_t GetPx() 						const { return mAliTrack->Px();};

@@ -103,6 +103,7 @@ Int_t MyHandler::LoadInputTree(const Char_t *inputFile, const Char_t *chainName)
 	mChain->SetBranchAddress("AnalysisEvent",&mEvent);
 	mChain->SetBranchAddress("AnalysisTrack",&bTracks);
 	mChain->SetBranchAddress("AnalysisV0Track",&bV0s);
+	mChain->SetBranchAddress("AnalysisCascadeTrack",&bCascades);
 	if (mFlagMC) mChain->SetBranchAddress("AnalysisParticle",&bParticles);
 	return 1;
 }

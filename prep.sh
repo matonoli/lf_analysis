@@ -23,6 +23,8 @@ cp ../MyKit/MyParticle.cxx .
 cp ../MyKit/MyParticle.h .
 cp ../MyKit/MyV0.cxx .
 cp ../MyKit/MyV0.h .
+cp ../MyKit/MyCascade.cxx .
+cp ../MyKit/MyCascade.h .
 cp ../MyKit/Analyses/MyAnalysisV0.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0.h .					# MyKit analyses
 cp ../MyKit/Analyses/MyAnalysisV0extract.cxx .
@@ -35,6 +37,8 @@ cp ../MyKit/Analyses/MyAnalysisV0syst.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0syst.h .
 cp ../MyKit/Analyses/MyAnalysisV0plot.cxx .
 cp ../MyKit/Analyses/MyAnalysisV0plot.h .
+cp ../MyKit/Analyses/MyAnalysisMC.cxx .
+cp ../MyKit/Analyses/MyAnalysisMC.h .
 cp ../AliAnalysisTaskMyTask.cxx .
 cp ../AliAnalysisTaskMyTask.h .							# alice task
 cp ../AddMyTask.C .

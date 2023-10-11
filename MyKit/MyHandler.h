@@ -24,6 +24,7 @@ class TROOT;
 class AliAnalysisPIDCascadeEvent;
 class AliAnalysisPIDCascadeTrack;
 class AliAnalysisPIDCascadeV0;
+class AliAnalysisPIDCascade;
 class AliAnalysisPIDCascadeParticle;
 
 class AliESDEvent;
@@ -74,12 +75,15 @@ class MyHandler: public TObject {
 		#if INPUTFORMAT == 1
 		TClonesArray* tracks()						const {return bTracks;};
 		TClonesArray* v0s()							const {return bV0s;};
+		TClonesArray* cascades()					const {return bCascades;};
 		TClonesArray* particles()					const {return bParticles;};
 		AliAnalysisPIDCascadeTrack* track(Int_t i)			const {return (AliAnalysisPIDCascadeTrack*)bTracks->At(i);};
 		AliAnalysisPIDCascadeV0* v0(Int_t i)				const {return (AliAnalysisPIDCascadeV0*)bV0s->At(i);};
+		AliAnalysisPIDCascade* cascade(Int_t i)				const {return (AliAnalysisPIDCascade*)bCascades->At(i);};
 		AliAnalysisPIDCascadeParticle* particle(Int_t i)	const {return (AliAnalysisPIDCascadeParticle*)bParticles->At(i);};
 		Int_t getNtracks()							const {return bTracks->GetEntriesFast();};
 		Int_t getNv0s()								const {return bV0s->GetEntriesFast();};
+		Int_t getNcascades()						const {return bCascades->GetEntriesFast();};
 		Int_t getNparticles()						const {return bParticles->GetEntriesFast();};
 		AliStack* mcstack()							const {return 0x0;};
 
@@ -89,6 +93,7 @@ class MyHandler: public TObject {
 		TParticle* particle(Int_t i)			const {return (mMCStack) ? (TParticle*)mMCStack->Particle(i) : 0;};
 		Int_t getNtracks()						const {return mEvent->GetNumberOfTracks();};
 		Int_t getNv0s()							const {return mEvent->GetNumberOfV0s();};
+		Int_t getNcascades()					const {return mEvent->GetNumberOfCascades();};
 		Int_t getNparticles()					const {return (mMCStack) ? mMCStack->GetNtrack() : 0;};	//needs a fix
 		AliStack* mcstack()						const {return mMCStack;};
 
@@ -130,6 +135,7 @@ class MyHandler: public TObject {
 		AnyEvent* mEvent = 0;
 		TClonesArray* bTracks = 0;
 		TClonesArray* bV0s = 0;
+		TClonesArray* bCascades = 0;
 		TClonesArray* bParticles = 0;
 		AliStack* mMCStack = 0;
 
