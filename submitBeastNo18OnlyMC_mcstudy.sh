@@ -5,7 +5,7 @@ date=231011
 pid=1
 
 #u can force threads by replacing aliroot with 'taskset --cpu-list ${pid} aliroot'
-cd ..
+
 runlist=2016_LHC16k
 mkdir workdirMC$runlist
 cd workdirMC$runlist
