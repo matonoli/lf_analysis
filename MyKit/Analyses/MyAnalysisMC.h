@@ -33,8 +33,8 @@ namespace MCconsts {
 	const char* REGIONS[] = {"Trans","Near","Away","TransMin","TransMax"};
 	const char* PLOTS_REGIONS[] = {"Trans.","Near","Away","Trans.-min","Trans.-max"};
 
-	const Int_t NSPECIES = 5;
-	const char* SPECIES[] = {"piKp","XiInc","Xi","phiInc","phi"};
+	const Int_t NSPECIES = 6;
+	const char* SPECIES[] = {"piKp","pr","XiInc","Xi","phiInc","phi"};
 			
 	const int NRTBINS = 5;
 	const double RTBINS[NRTBINS+1] = {5.0,0.0, 0.85, 1.5, 2.5, 5.0};
@@ -55,17 +55,19 @@ namespace MCconsts {
   		0.6, 1.2, 1.6, 2.2, 
   		2.8, 3.6, 5.0, 6.5 };
 
-  	const Int_t NPHIPTBINS = 7; 
+  	const Int_t NPHIPTBINS = 14; 
   	const Double_t PHIXBINS[NPHIPTBINS+1] = {
-  		0.6, 1.2, 1.6, 2.2, 
-  		2.8, 3.6, 5.0, 6.5 };
+  		0.5, 0.7, 0.9, 1.2, 
+  		1.4, 1.6, 1.8, 2.0,
+  		2.2, 2.6, 3.0, 3.5,
+  		4.0, 5.0, 8.0 };
 
   	const Double_t NPTBINS[NSPECIES] = {
-  		NPIPTBINS, NXIPTBINS, NXIPTBINS, NPHIPTBINS, NPHIPTBINS
+  		NPIPTBINS, NPIPTBINS, NXIPTBINS, NXIPTBINS, NPHIPTBINS, NPHIPTBINS
   	};
 
   	const Double_t* XBINS[NSPECIES] = {
-  		PIXBINS, XIXBINS, XIXBINS, PHIXBINS, PHIXBINS
+  		PIXBINS, PIXBINS, XIXBINS, XIXBINS, PHIXBINS, PHIXBINS
   	};
 		
   	const Int_t NEVENTTYPES = 10; //1+2+2+4+6+4+4 +2+4+4
@@ -120,8 +122,8 @@ class MyAnalysisMC: public MyAnalysis {
 		Double_t bugPt;
 
 		// DECLARE AUXILLIARY ENUMS
-		enum { RC, MC };
-		enum { piKp, XiInc, Xi, phiInc, phi };
+		enum { RC, MC, sizeofTypes };
+		enum { piKp, pr, XiInc, Xi, phiInc, phi, sizeofSpecies };
 
 		// IMPORTANT EVENT GLOBALS		
 		Double_t eventRt;
@@ -166,9 +168,11 @@ class MyAnalysisMC: public MyAnalysis {
 		TH2F* hMeanPtMinvLeadPt2;
 		TH2F* hMeanPtMaxvLeadPt2;
 		TH2F* hPhiDaughterRegionsPt[MCconsts::NTYPE];
+		TH2F* hPhiDaughterDPhiPt[MCconsts::NTYPE];
 
 		//PID NT HISTOGRAMS
 		TH1D* hPIDPt[MCconsts::NSPECIES][MCconsts::NTYPE];
+		TH2F* hPIDDPhivNchTrans[MCconsts::NSPECIES];
 
 		//PID NT HISTOGRAMS
 		TH2F* hPIDPtNt[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];

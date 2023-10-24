@@ -363,6 +363,30 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				}
 			}
 
+			// p
+			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
+				&& p.IsPrimary() && p.GetSign() != 0 &&
+				(TMath::Abs(p.GetPdgCode())==2212 ) ) {
+
+				hPIDPt[pr][MC]->Fill(p.GetPt());
+				if (isEventRTMC) {
+	
+					Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
+	
+					hPIDPtNt[pr][MC][region]->Fill(p.GetPt(),nChTransMC);
+					hPIDPtNtMin[pr][MC][region]->Fill(p.GetPt(),nChTransMinMC);
+					hPIDPtNtMax[pr][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+	
+					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
+					if (!region) {
+
+						hPIDPtNt[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						hPIDPtNtMin[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						hPIDPtNtMax[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+					}
+				}
+			}
+
 			// Xi
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
 				&& p.IsPrimary() && p.GetSign() != 0 &&
@@ -454,6 +478,8 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					Int_t regiond1 = WhatRegion(p.GetPhi(),phiLeadMC);
 					Int_t regiond2 = WhatRegion(p2.GetPhi(),phiLeadMC);
 
+					hPhiDaughterDPhiPt[MC]->Fill(phiMom.Pt(),mHandler->DeltaPhi(FlipNegativeAngle(phiMom.Phi()),p.GetPhi()));
+
 					hPhiDaughterRegionsPt[MC]->Fill(phiMom.Pt(),
 							(region == regiond1 && region == regiond2) ? 0 :
 							( (region == regiond1 || region == regiond2) ? 1 : 2) );
@@ -492,6 +518,9 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				hPIDPt[piKp][RC]->Fill(t.GetPt());
 
 				if (isEventRT)	{
+
+					hPIDDPhivNchTrans[piKp]->Fill(nChTrans,mHandler->DeltaPhi(phiLead,t.GetPhi()));
+
 					Int_t region = WhatRegion(t.GetPhi(),phiLead);
 					hPIDPtNt[piKp][RC][region]->Fill(t.GetPt(),nChTrans);
 					hPIDPtNtMin[piKp][RC][region]->Fill(t.GetPt(),nChTransMin);
@@ -504,6 +533,28 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPtNtMax[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMax);
 					}
 				}
+
+				if (TMath::Abs(t.GetMCPdgCode()) != 2212) continue;
+				
+				hPIDPt[pr][RC]->Fill(t.GetPt());
+
+				if (isEventRT)	{
+
+					hPIDDPhivNchTrans[pr]->Fill(nChTrans,mHandler->DeltaPhi(phiLead,t.GetPhi()));
+
+					Int_t region = WhatRegion(t.GetPhi(),phiLead);
+					hPIDPtNt[pr][RC][region]->Fill(t.GetPt(),nChTrans);
+					hPIDPtNtMin[pr][RC][region]->Fill(t.GetPt(),nChTransMin);
+					hPIDPtNtMax[pr][RC][region]->Fill(t.GetPt(),nChTransMax);
+					
+					Int_t regionSide = WhatRegionSide(t.GetPhi(),phiLead);
+					if (!region) {
+						hPIDPtNt[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
+						hPIDPtNtMin[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
+						hPIDPtNtMax[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMax);
+					}
+				}
+
 			}
 		}
 	}
@@ -523,6 +574,9 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				hPIDPt[XiInc][RC]->Fill(cas.GetPt());
 
 				if (isEventRT)	{
+
+					hPIDDPhivNchTrans[XiInc]->Fill(nChTrans,mHandler->DeltaPhi(phiLead,cas.GetPhi()));
+
 					Int_t region = WhatRegion(cas.GetPhi(),phiLead);
 					hPIDPtNt[XiInc][RC][region]->Fill(cas.GetPt(),nChTrans);
 					hPIDPtNtMin[XiInc][RC][region]->Fill(cas.GetPt(),nChTransMin);
@@ -544,6 +598,9 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPt[Xi][RC]->Fill(cas.GetPt());
 
 					if (isEventRT)	{
+
+						hPIDDPhivNchTrans[Xi]->Fill(nChTrans,mHandler->DeltaPhi(phiLead,cas.GetPhi()));
+
 						Int_t region = WhatRegion(cas.GetPhi(),phiLead);
 						hPIDPtNt[Xi][RC][region]->Fill(cas.GetPt(),nChTrans);
 						hPIDPtNtMin[Xi][RC][region]->Fill(cas.GetPt(),nChTransMin);
@@ -604,10 +661,14 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPt[phi][RC]->Fill(phiMom.Pt());
 						
 						if (!isEventRT) continue;
+
+						hPIDDPhivNchTrans[phi]->Fill(nChTrans,mHandler->DeltaPhi(phiLead,phiMom.Phi()));
 					
 						Int_t region = WhatRegion(FlipNegativeAngle(phiMom.Phi()),phiLead);
 						Int_t regiond1 = WhatRegion(t.GetPhi(),phiLead);
 						Int_t regiond2 = WhatRegion(t2.GetPhi(),phiLead);
+
+						hPhiDaughterDPhiPt[RC]->Fill(phiMom.Pt(),mHandler->DeltaPhi(FlipNegativeAngle(phiMom.Phi()),t.GetPhi()));
 
 						hPhiDaughterRegionsPt[RC]->Fill(phiMom.Pt(),
 							(region == regiond1 && region == regiond2) ? 0 :
@@ -813,7 +874,13 @@ Bool_t MyAnalysisMC::CreateHistograms() {
  	hPhiDaughterRegionsPt[MC]   = new TH2F("hPhiDaughterRegionsPt_MC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 3,-0.5,2.5);
  	hPhiDaughterRegionsPt[RC]	= new TH2F("hPhiDaughterRegionsPt_RC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 3,-0.5,2.5);
 
+ 	hPhiDaughterDPhiPt[MC]	= new TH2F("hPhiDaughterDPhiPt_MC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 300, -3.2, 3.2);
+ 	hPhiDaughterDPhiPt[RC]	= new TH2F("hPhiDaughterDPhiPt_RC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 300, -3.2, 3.2);
+
  	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+
+ 		hPIDDPhivNchTrans[iSp]				= new TH2F(TString::Format("hPIDDPhivNchTrans_%s",SPECIES[iSp]),"; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+
 	for (int iType = 0; iType < nType; ++iType)		{
 				
 		hPIDPt[iSp][iType]			= new TH1D(TString::Format("hPIDPt_%s_%s",SPECIES[iSp],TYPE[iType]),
@@ -852,6 +919,10 @@ Int_t MyAnalysisMC::Finish() {
 	
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
+
+	//CalculateEfficiencies();
+	//CorrectEfficiency();
+	//Unfold();
 
 	printf("Analysis %s finished.\n",this->GetName());
 	return 0;	
