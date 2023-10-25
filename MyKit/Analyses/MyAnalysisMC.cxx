@@ -272,7 +272,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
 
 				// Exclude Xi from NTMC
-				if (TMath::Abs(p.GetMCPdgCode()) == 3312) continue;
+				if (TMath::Abs(p.GetPdgCode()) == 3312) continue;
 
 				nChTransMC++;
 
