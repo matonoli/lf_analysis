@@ -270,6 +270,10 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				&& p.GetSign() != 0 && p.GetPt() > 0.15 && p.IsPrimary())	{
 
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
+
+				// Exclude Xi from NTMC
+				if (TMath::Abs(p.GetMCPdgCode()) == 3312) continue;
+
 				nChTransMC++;
 
 				if (WhatRegionSide(p.GetPhi(),phiLeadMC)==1) {
