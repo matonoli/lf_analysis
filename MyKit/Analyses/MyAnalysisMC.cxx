@@ -14,6 +14,7 @@
 #include <THashList.h>
 #include <TNtuple.h>
 #include <TString.h>
+#include <TROOT.h>
 
 #include "MyAnalysisMC.h"
 #include "MyEvent.h"
@@ -33,6 +34,8 @@
 #include "RooArgList.h"
 #include "RooDataHist.h"
 #include "RooPlot.h"
+
+#include "UnfoldNTclass.h"
 
 using std::cout;
 using namespace MCconsts;
@@ -104,6 +107,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 	Int_t nParticles = (mFlagMC) ? mHandler->getNparticles() : 0;
 
 	ptLead = -99.; phiLead = -99.; phiPrimeLead = -99;
+	Int_t pdgLead = 0;
 	for (int iTr = 0; iTr < nTracks; ++iTr)		{
 		
 		if (!mHandler->track(iTr)) continue;
@@ -122,11 +126,13 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 			if (t.GetPt() > ptLead) {		// search for leading track among primaries
 				ptLead = t.GetPt();
 				phiLead = t.GetPhi();
-				phiPrimeLead = phiPrime;	}
+				phiPrimeLead = phiPrime;
+				pdgLead = t.GetMCPdgCode();	}
 		}
 	}
 	hLeadPhivPt->Fill(ptLead,phiLead);
 	hLeadPhiPrimevPt->Fill(ptLead,phiPrimeLead);
+	hLeadPDG->Fill(pdgLead);
 
 
 	// RT NCH CALCULATION
@@ -250,7 +256,8 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
 				&& p.GetSign() != 0 && p.IsPrimary() && 
 					( TMath::Abs(p.GetPdgCode()) == 211 || TMath::Abs(p.GetPdgCode()) == 321 
-					|| TMath::Abs(p.GetPdgCode()) == 2212 || TMath::Abs(p.GetPdgCode()) == 11 )
+					|| TMath::Abs(p.GetPdgCode()) == 2212 || TMath::Abs(p.GetPdgCode()) == 11 
+					|| TMath::Abs(p.GetPdgCode()) == 3312 )
 				)	{
 
 				if (p.GetPt() > ptLeadMC) {
@@ -576,6 +583,8 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 
 				// ALL XI
 				hPIDPt[XiInc][RC]->Fill(cas.GetPt());
+				hXiBachDCAXY->Fill(TMath::Abs(cas.GetBachDCApvXY()) );
+				hXiPrDCAXY->Fill( cas.GetMCPdgCode() > 0 ? TMath::Abs(cas.GetV0posDCApvXY()) : TMath::Abs(cas.GetV0negDCApvXY()) );
 
 				if (isEventRT)	{
 
@@ -847,6 +856,7 @@ Bool_t MyAnalysisMC::CreateHistograms() {
 	
 	hLeadPhivPt				= new TH2F("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hLeadPhiPrimevPt		= new TH2F("hLeadPhiPrimevPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
+	hLeadPDG				= new TH1F("hLeadPDG",";PDG ID;Entries",20000,-10000,10000);
 	hNchvLeadPt				= new TH1F("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
 	hNchvLeadPt2			= new TH2F("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
 	hNchMinvLeadPt2			= new TH2F("hNchMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,min]", 90, 0., 30.,50,-0.5,49.5);
@@ -881,14 +891,18 @@ Bool_t MyAnalysisMC::CreateHistograms() {
  	hPhiDaughterDPhiPt[MC]	= new TH2F("hPhiDaughterDPhiPt_MC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 300, -3.2, 3.2);
  	hPhiDaughterDPhiPt[RC]	= new TH2F("hPhiDaughterDPhiPt_RC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 300, -3.2, 3.2);
 
+ 	hXiBachDCAXY		= new TH1F("hXiBachDCAXY",";DCA_{xy}^{PV}; Entries",	400, 0.0, 1.0);
+ 	hXiPrDCAXY			= new TH1F("hXiPrDCAXY",";DCA_{xy}^{PV}; Entries",	400, 0.0, 1.0);
+
  	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 
- 		hPIDDPhivNchTrans[iSp]				= new TH2F(TString::Format("hPIDDPhivNchTrans_%s",SPECIES[iSp]),"; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
-
+ 		hPIDDPhivNchTrans[iSp]			= new TH2F(TString::Format("hPIDDPhivNchTrans_%s",SPECIES[iSp]),"; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+	
 	for (int iType = 0; iType < nType; ++iType)		{
 				
 		hPIDPt[iSp][iType]			= new TH1D(TString::Format("hPIDPt_%s_%s",SPECIES[iSp],TYPE[iType]),
 			";p_{T} (GeV/#it{c}); Entries",	NPTBINS[iSp],XBINS[iSp]);
+
 
 	} }  
 
@@ -915,6 +929,39 @@ Bool_t MyAnalysisMC::CreateHistograms() {
 
 Bool_t MyAnalysisMC::BorrowHistograms() {
 
+	// Retrieve histograms that are used in Finish()
+	// When running on the same file
+
+	Int_t nType = (mFlagMC) ? NTYPE : 1;
+
+	hNchTransMCTrigMC	= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMCTrigMC");
+
+	hNt 			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTrans")->Clone("hNt");
+	hNtRec 			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRC")->Clone("hNtRec");
+	hNtGen			= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMC")->Clone("hNtGen");
+	hNtRM			= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransRCvMC")->Clone("hNtRM");
+
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+
+		hPIDEffi[iSp]		= (TH1D*)mHandler->analysis(0)->dirFile()->Get(TString::Format("hPIDEffi_%s",SPECIES[iSp]));
+
+	for (int iType = 0; iType < nType; ++iType)		{
+				
+		hPIDPt[iSp][iType]	= (TH1D*)mHandler->analysis(0)->dirFile()->Get(TString::Format("hPIDPt_%s_%s",SPECIES[iSp],TYPE[iType]));
+
+	} }  
+
+ 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < nType; ++iType)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+				
+		hPIDPtNt[iSp][iType][iReg]		= (TH2F*)mHandler->analysis(0)->dirFile()->Get(TString::Format("hPIDPtNt_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hPIDPtNtMin[iSp][iType][iReg]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get(TString::Format("hPIDPtNtMin_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hPIDPtNtMax[iSp][iType][iReg]	= (TH2F*)mHandler->analysis(0)->dirFile()->Get(TString::Format("hPIDPtNtMax_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		
+	} } } 
+
+
 	return true;
 
 }
@@ -924,12 +971,352 @@ Int_t MyAnalysisMC::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
-	//CalculateEfficiencies();
-	//CorrectEfficiency();
-	//Unfold();
+	CalculateEfficiencies();
+	CorrectEfficiency();
+	Normalise();
+	Unfold();
 
 	printf("Analysis %s finished.\n",this->GetName());
 	return 0;	
+}
+
+Bool_t MyAnalysisMC::CalculateEfficiencies() {
+
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+
+		hPIDEffi[iSp] = (TH1D*)hPIDPt[iSp][RC]->Clone(TString::Format("hPIDEffi_%s",SPECIES[iSp]));
+		hPIDEffi[iSp]->Divide(hPIDEffi[iSp],hPIDPt[iSp][MC],1.,1.,"B");
+
+		hPIDEffi[iSp]->Write();
+
+	}
+
+	return true;
+
+}
+
+Bool_t MyAnalysisMC::Normalise() {
+
+	// MC
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)			{
+	for (int iType = 0; iType < NTYPE; ++iType)			{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)			{
+
+		printf("Normalising histogram %s by N_T distribution \n", hPIDPtNtCorr[iSp][iType][iReg]->GetName());
+
+		for (int iNt = 1; iNt < hPIDPtNtCorr[iSp][iType][iReg]->GetNbinsY()+1; iNt++) {
+
+			Double_t NormEv = 0;			
+			NormEv = (iType==MC) ? hNchTransMCTrigMC->Integral(1,50) : hNt->Integral(1,50);
+			TH2F* htmp = hPIDPtNtCorr[iSp][iType][iReg];
+
+			TH1D* hpt = (TH1D*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			
+			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
+			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
+				htmp->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			}
+		}
+	}	}	}
+
+	return true;
+}
+
+Bool_t MyAnalysisMC::CorrectEfficiency() {
+
+	// SCALE BIN WIDTH
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
+		
+		hPIDPtCorr[iSp][iType] = 	
+			(TH1D*)hPIDPt[iSp][iType]->Clone(TString::Format("hPIDPtCorr_%s_%s",SPECIES[iSp],TYPE[iType]));
+		hPIDPtCorr[iSp][iType]->Scale(1.,"width");
+	
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		hPIDPtNtCorr[iSp][iType][iReg] = 	
+			(TH2F*)hPIDPtNt[iSp][iType][iReg]->Clone(TString::Format("hPIDPtNtCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hPIDPtNtMinCorr[iSp][iType][iReg] = 	
+			(TH2F*)hPIDPtNtMin[iSp][iType][iReg]->Clone(TString::Format("hPIDPtNtMinCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		hPIDPtNtMaxCorr[iSp][iType][iReg] = 	
+			(TH2F*)hPIDPtNtMax[iSp][iType][iReg]->Clone(TString::Format("hPIDPtNtMaxCorr_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		
+
+		hPIDPtNtCorr[iSp][iType][iReg]			= ScaleWidthTH2(hPIDPtNtCorr[iSp][iType][iReg]);
+		hPIDPtNtMinCorr[iSp][iType][iReg]		= ScaleWidthTH2(hPIDPtNtMinCorr[iSp][iType][iReg]);
+		hPIDPtNtMaxCorr[iSp][iType][iReg]		= ScaleWidthTH2(hPIDPtNtMaxCorr[iSp][iType][iReg]);
+
+	}	}	}
+
+
+	// CORRECT FOR EFFICIENCY
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+
+		hPIDPtCorr[iSp][RC]->Divide(hPIDEffi[iSp]);
+
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	
+		hPIDPtNtCorr[iSp][RC][iReg] 		= DivideTH2ByTH1(hPIDPtNtCorr[iSp][RC][iReg],hPIDEffi[iSp]);
+		hPIDPtNtMinCorr[iSp][RC][iReg] 		= DivideTH2ByTH1(hPIDPtNtMinCorr[iSp][RC][iReg],hPIDEffi[iSp]);
+		hPIDPtNtMaxCorr[iSp][RC][iReg] 		= DivideTH2ByTH1(hPIDPtNtMaxCorr[iSp][RC][iReg],hPIDEffi[iSp]);
+
+	}	}
+
+
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iType = 0; iType < NTYPE; ++iType)		{
+		
+		hPIDPtCorr[iSp][iType]->Write();
+
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		hPIDPtNtCorr[iSp][iType][iReg]->Write();
+		hPIDPtNtMinCorr[iSp][iType][iReg]->Write();
+		hPIDPtNtMaxCorr[iSp][iType][iReg]->Write();
+
+	}	}	}
+
+	return true;
+
+}
+
+Bool_t MyAnalysisMC::Unfold() {
+
+	mUnf = new UnfoldNTclass();
+	cout << "Unfolding class created " << mUnf << endl;
+
+	DoUnfoldingNt();
+	DoUnfolding1D();
+
+	return true;
+
+}
+
+TH2F* MyAnalysisMC::FlipMatrix(TH2F* h) {
+
+	TH2F* htmp = (TH2F*)h->Clone(Form("%s_flip",h->GetName()));
+	for (int i = 1; i < h->GetNbinsX()+1; i++) {
+	for (int j = 1; j < h->GetNbinsY()+1; j++) {
+			htmp->SetBinContent(i,j,h->GetBinContent(j,i));
+			htmp->SetBinError(i,j,h->GetBinError(j,i));
+	}	}
+	htmp->GetXaxis()->SetTitle(h->GetYaxis()->GetTitle());
+	htmp->GetYaxis()->SetTitle(h->GetXaxis()->GetTitle());
+	delete h;
+	return htmp; 
+}
+
+TH2F* MyAnalysisMC::ScaleWidthTH2(TH2F* h) {
+
+	if (!h) {
+		printf("No histogram to scale \n");
+		return 0x0; }
+
+	for (int iX = 1; iX < h->GetNbinsX()+1; iX++) {
+		for (int iY = 1; iY < h->GetNbinsY()+1; iY++) {	
+			float binwidth = h->GetXaxis()->GetBinWidth(iX);
+			float binc = h->GetBinContent(iX,iY);
+			float bine = h->GetBinError(iX,iY);
+			if (binwidth>0) h->SetBinContent(iX,iY,binc/binwidth);
+			if (binwidth>0) h->SetBinError(iX,iY,bine/binwidth);
+		}
+	}
+
+	return h;
+}
+
+TH2F* MyAnalysisMC::DivideTH2ByTH1(TH2F* h, TH1D* d) {
+
+	if (!h || !d) {
+		printf("Input parameters empty \n");
+		return 0x0; }
+
+	for (int iY = 1; iY < h->GetNbinsY()+1; iY++) {
+
+		TH1F* hx = (TH1F*)h->ProjectionX("",iY,iY);
+		hx->Divide(d);
+
+		for (int iX = 1; iX < h->GetNbinsX()+1; iX++) {
+			h->SetBinContent(iX,iY,hx->GetBinContent(iX));
+			h->SetBinError(iX,iY,hx->GetBinError(iX));
+		}
+
+		delete hx;
+	}
+
+	return h;
+}
+
+void MyAnalysisMC::DoUnfoldingNt() {
+
+	TList* lOut = new TList();
+	lOut->SetOwner();
+
+	// Output plots
+	const char* dOut = "results_unfolding";
+	const bool eRM = false;
+	const int NumberOfIters = 20;
+
+	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
+	hNtRM = FlipMatrix(hNtRM);
+	// ROWWISE NORMALISATION IS PERFORMED IN mUnf
+	//cout << "Histograms: " << hNtRec << " " << hNt << " " << hNtGen << " " << hNtRM << "\n";
+	
+	if (eRM) mUnf->ExtrapolateRM(hNtRM);
+	mUnf->SetnIter(NumberOfIters);
+	mUnf->SetError(hNtRec);
+	mUnf->SetError(hNtGen);
+	mUnf->SaveSolutionNT(kTRUE);
+	
+	if (mHandler->GetFlagMC()) mUnf->Setup(hNtRec,hNtGen,hNtRM);
+	else mUnf->Setup(hNt,hNtGen,hNtRM);
+	
+	mUnf->Unfold();
+	mUnf->V2H();
+	
+	printf(" - Unfolding region : %s\n",mUnf->GetRegion());
+
+	hNtUnf = (TH1F*)(mUnf->GetUnfoldedDistH())->Clone("hNtUnf");
+	if(mHandler->GetFlagMC())	hNtClosure = (TH1F*)(mUnf->GetClosureH())->Clone("hNtClosure");
+	
+	TH1F* hNT = (TH1F*)hNtUnf->Clone("_hNT");
+	hRtUnf = (TH1F*)mUnf->RebinNT2RT(hNtUnf, kTRUE);
+	hRtUnf->Scale(1.0/hRtUnf->Integral());
+	
+	//! Relative statistical uncertainty
+	//! NT distribution with final bins to plot
+	TH1F* hRelStatUnc = (TH1F*)hNtUnf->Clone("hRelStatUnc_Nt");
+	hRelStatUnc->Reset();
+
+	TH1F* hNch = (TH1F*)hNtUnf->Clone("hNT");
+	hNch->Reset();
+
+	for(int bin = 1; bin <= hRelStatUnc->GetNbinsX(); bin++){
+		double yield = hNtUnf->GetBinContent(bin);
+		double error = hNtUnf->GetBinError(bin);
+		if( yield > 0. ) hRelStatUnc->SetBinContent(bin, error / yield);
+	}
+
+	lOut->Add(hNtRM);
+	
+	if (mHandler->GetFlagMC()) 	lOut->Add(hNtClosure);
+	//else 	ComparisonPublished(hRtUnf);
+
+	lOut->Add(hNtUnf);
+	lOut->Add(hRtUnf);
+	lOut->Add(hRelStatUnc);
+
+	TGraph* gChi2 = nullptr;
+	if (mHandler->GetFlagMC())	{
+		mUnf->DrawNchClosure(hNtGen,hNtUnf,-0.5,30.0,"#it{N}_{T}","Unfolded/True",dOut);
+		TVectorD iterX = (TVectorD)mUnf->GetChi2Vectors(kTRUE);
+		TVectorD Chi2 = (TVectorD)mUnf->GetChi2Vectors(kFALSE);
+		gChi2 = new TGraph(iterX,Chi2);
+		gChi2->SetName("gChi2");
+		gChi2->SetMarkerStyle(8);
+		lOut->Add(gChi2);
+	}
+
+	TFile* fUnfOut;
+	if (mHandler->GetFlagMC())	fUnfOut = new TFile(Form("./%s/1D_newClass_mc.root",dOut),"RECREATE");
+	else	fUnfOut = new TFile(Form("./%s/1D_newClass_data.root",dOut),"RECREATE");
+
+
+	fUnfOut->cd();
+	lOut->Write();
+	(mUnf->GetObjArray())->Write();
+	fUnfOut->Close();
+	delete fUnfOut;
+
+	mDirFile->cd();
+	lOut->Write();
+}
+
+void MyAnalysisMC::DoUnfolding1D() {
+
+	mHandler->root()->SetBatch(kTRUE);
+
+	const char* dOut = "results_unfolding";
+	const bool eRM = false;
+	const int NumberOfIters = 20;
+	const char* Regions[NREGIONS] = {"Trans1D","Toward","Away","TransMin1D","TransMax1D"};
+
+	TFile* fUnfOut1D = (mHandler->GetFlagMC()) ? new TFile(Form("./%s/2D_newClass_mc.root",dOut),"RECREATE")
+		: new TFile(Form("./%s/2D_newClass_data.root",dOut),"RECREATE");
+	TList* lOut = new TList();
+	lOut->SetOwner();
+
+	//const char* Regions[3] = {"Transverse","Toward","Away"};
+	//const char* V0RegNames[3] = {"Trans","Near","Away"};
+	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	Int_t iType = RC;
+
+		UnfoldNTclass* obj = new UnfoldNTclass();
+
+		obj->SetRegion(Regions[iReg]);
+		obj->SetnIter(NumberOfIters);
+		
+		obj->SetPid(SPECIES[iSp]);
+		obj->SetPidIdx(7+iSp);
+		obj->SetMCAnalysis(mHandler->GetFlagMC());
+		obj->SaveSolutionNT(kFALSE);
+
+		printf(" - Unfolding species %s vs NT in region : %s\n",SPECIES[iSp],obj->GetRegion());
+		cout << "RM has " << hNtRM->GetNbinsX() << " x " << hNtRM->GetNbinsY() << endl;
+		cout << "hMC has " << hPIDPtNtCorr[iSp][iType][iReg]->GetNbinsX() << endl;
+		obj->UnfoldV02D(hNtRM,hPIDPtNtCorr[iSp][iType][iReg],hPIDPtNtCorr[iSp][iType][iReg]);
+		
+		TObjArray* Arr = (TObjArray*)obj->GetObjArray();
+		cout << "1 Finding " << hPIDPtNtCorr[iSp][iType][iReg] << " and " << (TH2F*)Arr->FindObject("_hPtvsNch") << "\n";
+		// first is Gen, second is Unf
+
+		// APPLY PROPER ERRORS!
+		hPIDPtNtCorrUnf[iSp][iType][iReg] = (TH2F*)Arr->FindObject("_hPtvsNch")->Clone(Form("hPIDPtNtCorrUnf_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]));
+		for (int iX = 1; iX < hPIDPtNtCorrUnf[iSp][iType][iReg]->GetNbinsX()+1; iX++) {
+			for (int iY = 1; iY < hPIDPtNtCorrUnf[iSp][iType][iReg]->GetNbinsY()+1; iY++) {	
+				float bine = hPIDPtNtCorrUnf[iSp][iType][iReg]->GetBinError(iX,iY);
+				if (bine>0) hPIDPtNtCorrUnf[iSp][iType][iReg]->SetBinError(iX,iY,bine);
+			}
+		}
+
+		if (mHandler->GetFlagMC())	obj->GetMCclosureinRTBins(hPIDPtNtCorr[iSp][MC][iReg],(TH2F*)Arr->FindObject("_hPtvsNch"));	
+
+		// NORMALISE
+		/*for (int iNt = 1; iNt < hV0PtNtFitCorrUnf[iSp][iType][iReg]->GetNbinsY()+1; iNt++) {
+			Double_t NormEv = 0;
+			NormEv = hNtUnf->Integral(1,50) > 0 ? (double)hNtUnf->GetBinContent(iNt) / hNtUnf->Integral(1,50) : 1;
+			//cout << "Normalisingggg by " << NormEv << endl;
+			TH2F* htmp = hV0PtNtFitCorrUnf[iSp][iType][iReg];
+
+			TH1F* hpt = (TH1F*)htmp->ProjectionX(Form("pt_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iNt),iNt,iNt);
+			if (NormEv>0) hpt->Scale( (iNt<51) ? 1./NormEv : 0 );
+			for (int iBin = 1; iBin < htmp->GetNbinsX()+1; iBin++) {
+				htmp->SetBinContent(iBin,iNt,hpt->GetBinContent(iBin));
+				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
+			}
+			delete hpt;
+		}*/
+
+		lOut->Add(hPIDPtNtCorrUnf[iSp][iType][iReg]);
+		fUnfOut1D->cd();
+		TDirectory* dir = fUnfOut1D->mkdir(Form("%s_%s",SPECIES[iSp],REGIONS[iReg]));
+		dir->cd();
+		(obj->GetObjArray())->Write();
+
+		delete obj;
+		obj = nullptr;
+
+	}	}
+
+	lOut->Write();
+	fUnfOut1D->Close();
+	delete fUnfOut1D;
+	mDirFile->cd();
+	lOut->Write();
+
+	mHandler->root()->SetBatch(kFALSE);
 }
 
 

@@ -23,6 +23,7 @@ class MyEvent;
 class MyTrack;
 class MyParticle;
 class TransverseSpherocity;
+class UnfoldNTclass;
 
 namespace MCconsts {
 		
@@ -103,6 +104,16 @@ class MyAnalysisMC: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t IsGeometricalCut(Float_t phiprime, Float_t pt);
 		Double_t FlipNegativeAngle(Double_t phi);
+		TH2F* FlipMatrix(TH2F* h);
+		TH2F* ScaleWidthTH2(TH2F* h);
+		TH2F* DivideTH2ByTH1(TH2F* h, TH1D* d);
+
+		Bool_t CalculateEfficiencies();
+		Bool_t Normalise();
+		Bool_t CorrectEfficiency();
+		Bool_t Unfold();
+		void DoUnfoldingNt();
+		void DoUnfolding1D();
 		
 		/*Bool_t ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin, Int_t NtMax);
@@ -120,6 +131,7 @@ class MyAnalysisMC: public MyAnalysis {
 		Bool_t mFlagHist;
 		Double_t bugR;
 		Double_t bugPt;
+		UnfoldNTclass* mUnf;
 
 		// DECLARE AUXILLIARY ENUMS
 		enum { RC, MC, sizeofTypes };
@@ -140,6 +152,7 @@ class MyAnalysisMC: public MyAnalysis {
 		// NT HISTOGRAMS
 		TH2F* hLeadPhivPt;
 		TH2F* hLeadPhiPrimevPt;
+		TH1F* hLeadPDG;
 		TH1F* hNchvLeadPt;
 		TH2F* hNchvLeadPt2;
 		TH2F* hNchMinvLeadPt2;
@@ -169,9 +182,12 @@ class MyAnalysisMC: public MyAnalysis {
 		TH2F* hMeanPtMaxvLeadPt2;
 		TH2F* hPhiDaughterRegionsPt[MCconsts::NTYPE];
 		TH2F* hPhiDaughterDPhiPt[MCconsts::NTYPE];
+		TH1F* hXiBachDCAXY;
+		TH1F* hXiPrDCAXY;
 
 		//PID NT HISTOGRAMS
 		TH1D* hPIDPt[MCconsts::NSPECIES][MCconsts::NTYPE];
+		TH1D* hPIDEffi[MCconsts::NSPECIES];
 		TH2F* hPIDDPhivNchTrans[MCconsts::NSPECIES];
 
 		//PID NT HISTOGRAMS
@@ -179,5 +195,25 @@ class MyAnalysisMC: public MyAnalysis {
 		TH2F* hPIDPtNtMin[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
 		TH2F* hPIDPtNtMax[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
 		
+		// POST PROCESSING HISTOGRAMS
+		TH1D* hPIDPtCorr[MCconsts::NSPECIES][MCconsts::NTYPE];
+		TH2F* hPIDPtNtCorr[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH2F* hPIDPtNtMinCorr[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH2F* hPIDPtNtMaxCorr[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		
+		TH2F* hPIDPtNtCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH2F* hPIDPtNtMinCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH2F* hPIDPtNtMaxCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+
+		// UNFOLDING HISTOGRAMS
+		TH1F* hNt;
+		TH1F* hNtRec;
+		TH1F* hNtGen;
+		TH2F* hNtRM;
+		TH1F* hNtUnf;
+		TH1F* hNtClosure;
+		TH1F* hRtUnf;
+
+
 };
 #endif
