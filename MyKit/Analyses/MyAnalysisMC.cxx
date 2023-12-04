@@ -971,10 +971,10 @@ Int_t MyAnalysisMC::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
-	CalculateEfficiencies();
-	CorrectEfficiency();
-	Normalise();
-	Unfold();
+	//CalculateEfficiencies();
+	//CorrectEfficiency();
+	//Normalise();
+	//Unfold();
 
 	printf("Analysis %s finished.\n",this->GetName());
 	return 0;	
