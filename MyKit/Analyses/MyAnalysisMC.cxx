@@ -132,7 +132,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 	}
 	hLeadPhivPt->Fill(ptLead,phiLead);
 	hLeadPhiPrimevPt->Fill(ptLead,phiPrimeLead);
-	hLeadPDG->Fill(pdgLead);
+	if (ptLead>5. && ptLead < 40.) hLeadPDG->Fill(pdgLead);
 
 
 	// RT NCH CALCULATION
@@ -257,7 +257,9 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				&& p.GetSign() != 0 && p.IsPrimary() && 
 					( TMath::Abs(p.GetPdgCode()) == 211 || TMath::Abs(p.GetPdgCode()) == 321 
 					|| TMath::Abs(p.GetPdgCode()) == 2212 || TMath::Abs(p.GetPdgCode()) == 11 
-					|| TMath::Abs(p.GetPdgCode()) == 3312 )
+					|| TMath::Abs(p.GetPdgCode()) == 3312 || TMath::Abs(p.GetPdgCode()) == 13
+					|| TMath::Abs(p.GetPdgCode()) == 3222 || TMath::Abs(p.GetPdgCode()) == 3112
+					|| TMath::Abs(p.GetPdgCode()) == 0 )
 				)	{
 
 				if (p.GetPt() > ptLeadMC) {
@@ -279,7 +281,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 				if (!IsTrans(p.GetPhi(),phiLeadMC)) continue;
 
 				// Exclude Xi from NTMC
-				if (TMath::Abs(p.GetPdgCode()) == 3312) continue;
+				//if (TMath::Abs(p.GetPdgCode()) == 3312) continue;
 
 				nChTransMC++;
 
@@ -579,7 +581,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 		if (mFlagMC) {
 
 			if (cas.GetEta() > cuts::V0_ETA[0] && cas.GetEta() < cuts::V0_ETA[1] 
-				&& (TMath::Abs(cas.GetMCPdgCode()) == 3312) ) {
+				&& (TMath::Abs(cas.GetMCPdgCode()) == 3312) && cas.IsMCPrimary() ) {
 
 				// ALL XI
 				hPIDPt[XiInc][RC]->Fill(cas.GetPt());
@@ -971,10 +973,12 @@ Int_t MyAnalysisMC::Finish() {
 	printf("Finishing analysis %s \n",this->GetName());
 	mDirFile->cd();
 
-	//CalculateEfficiencies();
-	//CorrectEfficiency();
-	//Normalise();
-	//Unfold();
+	if (mFlagHist)	{
+		CalculateEfficiencies();
+		CorrectEfficiency();
+		Normalise();
+		Unfold();
+	}
 
 	printf("Analysis %s finished.\n",this->GetName());
 	return 0;	
