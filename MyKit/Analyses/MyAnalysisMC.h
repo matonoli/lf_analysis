@@ -157,6 +157,10 @@ class MyAnalysisMC: public MyAnalysis {
 		TH2F* hLeadPhivPt;
 		TH2F* hLeadPhiPrimevPt;
 		TH1F* hLeadPDG;
+		TH1F* hLeadMotherPDG;
+		TH1F* hLeadDCAPri;
+		TH1F* hLeadDCASec;
+
 		TH1F* hNchvLeadPt;
 		TH2F* hNchvLeadPt2;
 		TH2F* hNchMinvLeadPt2;

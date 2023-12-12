@@ -118,6 +118,12 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 		// OPTIONAL, REQUIRE PDG
 		if (TMath::Abs(t.GetMCPdgCode()) != 211 && TMath::Abs(t.GetMCPdgCode()) != 321
 			&& TMath::Abs(t.GetMCPdgCode()) != 2212) continue;
+		if (t.GetPt()>5.) {
+			hLeadMotherPDG->Fill(t.GetMCMotherPdgCode());
+			if (t.IsMCPrimary()) hLeadDCAPri->Fill(TMath::Abs(t.GetDCApvXY()));
+			else hLeadDCASec->Fill(TMath::Abs(t.GetDCApvXY()));
+		}
+		if (!t.IsMCPrimary()) continue;
 
 		// CALCULATING FIELD+CHARGE ADJUSTED FOR PHI FOR GEOMETRICAL CUTS
 		Float_t phiPrime = t.GetPhi();//fmod(t.GetPhi(),2*TMath::Pi()/18.);
@@ -871,6 +877,9 @@ Bool_t MyAnalysisMC::CreateHistograms() {
 	hLeadPhivPt				= new TH2F("hLeadPhivPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hLeadPhiPrimevPt		= new TH2F("hLeadPhiPrimevPt","; p_{T} (GeV/#it{c}); #phi", 200, 0., 30., 400, -0.2, 6.4);
 	hLeadPDG				= new TH1F("hLeadPDG",";PDG ID;Entries",20000,-10000,10000);
+	hLeadMotherPDG			= new TH1F("hLeadMotherPDG",";PDG ID;Entries",20000,-10000,10000);
+	hLeadDCAPri				= new TH1F("hLeadDCAPri",";DCA_{xy}^{PV}; Entries",	400, 0.0, 1.0);
+	hLeadDCASec				= new TH1F("hLeadDCASec",";DCA_{xy}^{PV}; Entries",	400, 0.0, 1.0);
 	hNchvLeadPt				= new TH1F("hNchvLeadPt","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 200, 0., 30.);
 	hNchvLeadPt2			= new TH2F("hNchvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.]", 90, 0., 30.,50,-0.5,49.5);
 	hNchMinvLeadPt2			= new TH2F("hNchMinvLeadPt2","; p_{T}^{leading} (GeV/#it{c}); N_{ch} [trans.,min]", 90, 0., 30.,50,-0.5,49.5);
