@@ -24,7 +24,7 @@ void UnfoldNT(const char* fData, const char* fMC, const char* dOut, const bool i
 
 	if(strcmp(charge.c_str(),"Charged")==0) Undolf1D(dOut,isMC);
 	std::cout << "Unfolding 1D performed \n";
-	//UndolfV02D(dOut);
+	UndolfV02D(dOut);
 	//if(isMC) Undolf2DMC(dOut);
 	//if(!isMC) Undolf2D(dOut,trackcuts,detector,charge);
 
@@ -65,15 +65,16 @@ void FlipPtvNt(TH2F* h) {
 
 void UndolfV02D(const char* dirOut)
 {
-
-	TFile* fOut = new TFile(Form("./%s/2D_newClass_mc.root",dirOut),"UPDATE");
+	bool isMC = true;
+	TFile* fOut = (isMC) ? new TFile(Form("./%s/2D_newClass_mc.root",dirOut),"RECREATE")
+		: new TFile(Form("./%s/2D_newClass_data.root",dirOut),"RECREATE");
 
 	TList* lOut = new TList();
 	lOut->SetOwner();
 
 	UnfoldNTclass* dobj = new UnfoldNTclass();
 
-	TH2F* hRM = (TH2F*)fMC->Get("MyAnalysisV0correct_2/hNchTransRCvMC");
+	TH2F* hRM = (TH2F*)fMC->Get("MyAnalysisV0correct_2/hNchTransMinRCvMC");
 	TH2F* htmp = (TH2F*)hRM->Clone("hRes");
 	for (int i = 1; i < hRM->GetNbinsX()+1; i++) {
 	for (int j = 1; j < hRM->GetNbinsY()+1; j++) {
@@ -90,7 +91,7 @@ void UndolfV02D(const char* dirOut)
 	TGraph* gYieldvsNT = nullptr;
 
 	const char* Regions[3] = {"Toward","Away","Trans1D"};
-	const char* V0RegNames[3] = {"Near","Away","Trans"};
+	const char* V0RegNames[3] = {"Near","Away","TransMin"};
 	//const char* Regions[3] = {"Transverse","Toward","Away"};
 	//const char* V0RegNames[3] = {"Trans","Near","Away"};
 
@@ -105,10 +106,10 @@ void UndolfV02D(const char* dirOut)
 		obj->SetPidIdx(4);
 		obj->SetCharge("Charged");
 		obj->SetMCAnalysis(kTRUE);
-		obj->SaveSolutionNT(kFALSE);
+		obj->SaveSolutionNT(kTRUE);
 
-		TH2F* h2DGe = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNt_K0s_MC_%s",V0RegNames[region]));
-		TH2F* h2DMC = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtFitCorr_K0s_RC_%s",V0RegNames[region]));
+		TH2F* h2DGe = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtMin_K0s_MC_%s",V0RegNames[region]));
+		TH2F* h2DMC = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtMinFitCorr_K0s_RC_%s",V0RegNames[region]));
 
 		TH2F* hLGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNt_L_MC_%s",V0RegNames[region]));
 		TH2F* hLRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtFitCorr_L_RC_%s",V0RegNames[region]));
@@ -116,10 +117,10 @@ void UndolfV02D(const char* dirOut)
 		TH2F* hLbarRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hV0PtNtFitCorr_Lbar_RC_%s",V0RegNames[region]));
 		hLGen->Add(hLbarGen); hLRec->Add(hLbarRec);
 
-		TH2F* hPiGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtMC_%s",V0RegNames[region]));
-		TH2F* hPiRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtRC_%s",V0RegNames[region]));
-		TH2F* hKpmGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMC_%s",V0RegNames[region]));
-		TH2F* hKpmRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtRC_%s",V0RegNames[region]));
+		TH2F* hPiGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtMinMC_%s",V0RegNames[region]));
+		TH2F* hPiRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtMinRC_%s",V0RegNames[region]));
+		TH2F* hKpmGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMinMC_%s",V0RegNames[region]));
+		TH2F* hKpmRec = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hKpmPtNtMinRC_%s",V0RegNames[region]));
 
 		/*if (region == 2) {
 			hPiGen = (TH2F*)fMC->Get(Form("MyAnalysisV0correct_2/hPiPtNtMC_%s","Trans"));
@@ -152,18 +153,19 @@ void UndolfV02D(const char* dirOut)
 		printf(" - Region : %s\n",obj->GetRegion());
 		cout << "RM has " << hRM->GetNbinsX() << " x " << hRM->GetNbinsY() << endl;
 		cout << "hMC has " << h2DGe->GetNbinsX() << endl;
-		obj->UnfoldV02D(hRM,hNchRec,h2DMC);
+		//obj->UnfoldV02D(hRM,hNchRec,h2DMC);
+		obj->UnfoldV02D(hRM,h2DMC,h2DMC);
 		//obj->UnfoldV02D(hRM,h2DMC,h2DMC);
 		//! Uncomment if MCclosure is desired
 		//obj->GetMCclosureinNchBins(h2DGe);
 
 		TObjArray* Arr = (TObjArray*)obj->GetObjArray();
 		cout << "1 Finding " << h2DGe << " and " << (TH2F*)Arr->FindObject("_hPtvsNch") << "\n";
-		obj->GetMCclosureinRTBins(h2DGe,(TH2F*)Arr->FindObject("_hPtvsNch"));	// first is Gen, second is Unf
+		obj->GetMCclosureinRTMinBins(h2DGe,(TH2F*)Arr->FindObject("_hPtvsNch"));	// first is Gen, second is Unf
 
 		fOut->cd();
 
-
+		cout << Regions[region] << endl;
 		TDirectory* dir = fOut->mkdir(Form("%s",Regions[region]));
 		dir->cd();
 		(obj->GetObjArray())->Write();
@@ -192,9 +194,9 @@ void Undolf1D(const char* dOut, bool isMC)
 	std::cout << "Got here 1 \n";
 
 	TH1F* hRec = (TH1F*)fData->Get("MyAnalysisV0correct_2/hNchTrans");
-	TH1F* hMeas = (TH1F*)fMC->Get("MyAnalysisV0correct_2/hNchTransRC");
-	TH1F* hGen = (TH1F*)fMC->Get("MyAnalysisV0correct_2/hNchTransMC");
-	TH2F* hRes = (TH2F*)fMC->Get("MyAnalysisV0correct_2/hNchTransRCvMC");
+	TH1F* hMeas = (TH1F*)fMC->Get("MyAnalysisV0correct_2/hNchTransMinRC");
+	TH1F* hGen = (TH1F*)fMC->Get("MyAnalysisV0correct_2/hNchTransMinMC");
+	TH2F* hRes = (TH2F*)fMC->Get("MyAnalysisV0correct_2/hNchTransMinRCvMC");
 
 	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
 	TH2F* hResFlip = (TH2F*)hRes->Clone("hResFlip");

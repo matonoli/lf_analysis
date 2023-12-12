@@ -63,6 +63,7 @@ class UnfoldNTclass {
 		void GetMCclosureinNchBins(const TH2F* );
 		void GetMCclosureinRTBins(const TH2F*, const TH2F*);
 		void GetMCclosureinRTMinBins(const TH2F*, const TH2F*);
+		void GetMCclosureinRTMaxBins(const TH2F*, const TH2F*);
 		TH1F* RebinNT2RT(const TH1F* , bool);
 		TH1F* RebinPtAxis(const TH1F* );
 		void DrawNchClosure(const TH1F* ,const TH1F* ,const double& ,const double& ,const char* ,const char* ,const char*);
@@ -97,6 +98,8 @@ class UnfoldNTclass {
 ///		void TunePrior();
 ////		void LoadEventRecEfficiency();
 		void LoadSolutionNT();
+		void LoadSolutionNTMin();
+		void LoadSolutionNTMax();
 
 		void SetIsSystematics(bool issys) { isSys = issys; };
 		void SetDirectory(const char* dir) { directory = dir; };
@@ -119,6 +122,7 @@ class UnfoldNTclass {
 		void FillHistoVsRT(TH2F*, TH2F*);
 		int GetRTBin(const int&,bool);
 		int GetRTMinBin(const int&,bool);
+		int GetRTMaxBin(const int&,bool);
 
 
 		TObjArray* GetObjArray() { return ObjArray; }
@@ -159,7 +163,7 @@ class UnfoldNTclass {
 		bool isMC;
 		bool isSys;
 		string TrkID;
-		int _PidIdx;
+		int _PidIdx = 0;
 		const char* _Region;
 		const char* _Detector;
 		const char* _Pid;
@@ -176,6 +180,26 @@ class UnfoldNTclass {
 			1.80, 1.90, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4,
 			3.60, 3.80, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10.0};*/
 
+		// PT BINS
+	const Int_t NPIPTBINS = 16;
+	const Double_t PIXBINS[16+1] = { // divisible by omar's pions
+		0.4, 0.6, 0.8, 1.0, 1.2, 
+		1.4, 1.6, 1.8, 2.0, 2.2, 
+		2.6, 3.0, 3.4, 4.0, 5.0, 
+		6.5, 8.0 };
+		
+	const Int_t NXIPTBINS = 7; 
+  	const Double_t XIXBINS[7+1] = {
+  		0.6, 1.2, 1.6, 2.2, 
+  		2.8, 3.6, 5.0, 6.5 };
+
+  	const Int_t NPHIPTBINS = 14; 
+  	const Double_t PHIXBINS[14+1] = {
+  		0.5, 0.7, 0.9, 1.2, 
+  		1.4, 1.6, 1.8, 2.0,
+  		2.2, 2.6, 3.0, 3.5,
+  		4.0, 5.0, 8.0 };
+
 		const int nPtBins = 16;
 		double ptBins[16+1] = { // divisible by omar's pions
 		0.4, 0.6, 0.8, 1.0, 1.2, 
@@ -183,6 +207,19 @@ class UnfoldNTclass {
 		2.6, 3.0, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };
 
+
+	const Int_t NSPECIES = 6;
+  	const Int_t NPTBINS[7+6] = {
+  		nPtBins, nPtBins, nPtBins, nPtBins, nPtBins, nPtBins, nPtBins, 
+  		NPIPTBINS, NPIPTBINS, NXIPTBINS, NXIPTBINS, NPHIPTBINS, NPHIPTBINS
+  	};
+
+  	const Double_t* XBINS[7+6] = {
+  		ptBins, ptBins, ptBins, ptBins, ptBins, ptBins, ptBins,
+  		PIXBINS, PIXBINS, XIXBINS, XIXBINS, PHIXBINS, PHIXBINS
+  	};
+
+		
 
 		/*const int nPtBins = 20;
 		double ptBins[20+1] = { // test to study trigger bin edge effect
@@ -200,19 +237,21 @@ class UnfoldNTclass {
 			39.5, 40.5, 41.5, 42.5, 43.5, 44.5, 45.5, 46.5, 47.5, 48.5, 49.5};
 
 		const int nRTBins = 4;
-		double RTBins[4+1] = {0.0, 0.5, 1.5, 2.5, 5.0};
+		//double RTBins[4+1] = {0.0, 0.5, 1.5, 2.5, 5.0};
+		double RTBins[4+1] = {0.0, 0.85, 1.5, 2.5, 5.0};
 
 		/*const int nRTBins = 1;
 		double RTBins[1+1] = {0.0, 5.0};*/
 
-		const char* const PidArray[6]
-			= {"Charged","Pion","Kaon","Proton","K0s","L"};
-		const char* const ArrayPidLatex[6]
-			= {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}", "K^{0}_{S}","#Lambda"};
-		const char* const ArrayPidLatexPos[6]
-			= {"h^{+}","#pi^{+}","K^{+}","p", "K^{0}_{S}","#Lambda"};
-		const char* const ArrayPidLatexNeg[6]
-			= {"h^{-}","#pi^{-}","K^{-}","#bar{p}", "K^{0}_{S}", "#Lambda"};
+		const char* const PidArray[13]
+			= {"Charged","Pion","Kaon","Proton","K0s","L","Lbar","piKp","pr","XiInc","Xi","phiInc","phi"};
+		const char* const ArrayPidLatex[13]
+			= {"h^{+} + h^{-}","#pi^{+} + #pi^{-}","K^{+} + K^{-}","p + #bar{p}", "K^{0}_{S}","#Lambda","#bar{#Lambda}",
+				"#pi/K/p","p + #bar{p}","#Xi inc.","#Xi w. DCA cut","#phi inc.","#phi #rightarrow K^{+}K^{-}"};
+		const char* const ArrayPidLatexPos[7]
+			= {"h^{+}","#pi^{+}","K^{+}","p", "K^{0}_{S}","#Lambda","#bar{#Lambda}"};
+		const char* const ArrayPidLatexNeg[7]
+			= {"h^{-}","#pi^{-}","K^{-}","#bar{p}", "K^{0}_{S}", "#Lambda","#bar{#Lambda}"};
 		const char* const EtaArray[4]
 			= {"02","24","46","68"};
 
