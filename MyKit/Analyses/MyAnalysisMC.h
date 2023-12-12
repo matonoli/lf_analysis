@@ -114,6 +114,10 @@ class MyAnalysisMC: public MyAnalysis {
 		Bool_t Unfold();
 		void DoUnfoldingNt();
 		void DoUnfolding1D();
+		void DoUnfoldingNtMin();
+		void DoUnfolding1DMin();
+		void DoUnfoldingNtMax();
+		void DoUnfolding1DMax();
 		
 		/*Bool_t ProcessV0toHist(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Mu, Int_t Sph);
 		Bool_t ProcessV0toHistRT(MyV0 &v0, Int_t Sp, Int_t Type, Int_t Reg, Int_t Nt, Int_t NtMin, Int_t NtMax);
@@ -213,6 +217,22 @@ class MyAnalysisMC: public MyAnalysis {
 		TH1F* hNtUnf;
 		TH1F* hNtClosure;
 		TH1F* hRtUnf;
+
+		TH1F* hNtMin;
+		TH1F* hNtMinRec;
+		TH1F* hNtMinGen;
+		TH2F* hNtMinRM;
+		TH1F* hNtMinUnf;
+		TH1F* hNtMinClosure;
+		TH1F* hRtMinUnf;
+
+		TH1F* hNtMax;
+		TH1F* hNtMaxRec;
+		TH1F* hNtMaxGen;
+		TH2F* hNtMaxRM;
+		TH1F* hNtMaxUnf;
+		TH1F* hNtMaxClosure;
+		TH1F* hRtMaxUnf;
 
 
 };
