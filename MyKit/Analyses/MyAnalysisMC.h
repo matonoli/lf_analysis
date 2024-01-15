@@ -27,8 +27,8 @@ class UnfoldNTclass;
 
 namespace MCconsts {
 		
-	const Int_t NTYPE = 2; 
-	const char* TYPE[NTYPE] = {"RC","MC"};
+	const Int_t NTYPE = 3; 
+	const char* TYPE[NTYPE] = {"RC","MC","D"};
 			
 	const Int_t NREGIONS = 5;
 	const char* REGIONS[] = {"Trans","Near","Away","TransMin","TransMax"};
@@ -107,11 +107,16 @@ class MyAnalysisMC: public MyAnalysis {
 		TH2F* FlipMatrix(TH2F* h);
 		TH2F* ScaleWidthTH2(TH2F* h);
 		TH2F* DivideTH2ByTH1(TH2F* h, TH1D* d);
+		TH2F* ScaleTH2Rows(TH2F* h, Double_t d);
 
 		Bool_t CalculateEfficiencies();
 		Bool_t Normalise();
 		Bool_t CorrectEfficiency();
 		Bool_t Unfold();
+		void LoadDataXi();
+		void BinHistogramsIntoRT();
+
+
 		void DoUnfoldingNt();
 		void DoUnfolding1D();
 		void DoUnfoldingNtMin();
@@ -138,7 +143,7 @@ class MyAnalysisMC: public MyAnalysis {
 		UnfoldNTclass* mUnf;
 
 		// DECLARE AUXILLIARY ENUMS
-		enum { RC, MC, sizeofTypes };
+		enum { RC, MC, D, sizeofTypes };
 		enum { piKp, pr, XiInc, Xi, phiInc, phi, sizeofSpecies };
 
 		// IMPORTANT EVENT GLOBALS		
@@ -237,6 +242,12 @@ class MyAnalysisMC: public MyAnalysis {
 		TH1F* hNtMaxUnf;
 		TH1F* hNtMaxClosure;
 		TH1F* hRtMaxUnf;
+
+		// DATA
+		TH1F* hPIDPtRtCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS][MCconsts::NRTBINS];
+		TH1F* hPIDPtRtMinCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS][MCconsts::NRTBINS];
+		TH1F* hPIDPtRtMaxCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS][MCconsts::NRTBINS];
+
 
 
 };
