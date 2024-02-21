@@ -101,8 +101,210 @@ void UnfoldNTclass::Setup(const TH1F* measured, const TH1F* truth, const TH2F* r
 	_hUnfDist->Reset();
 
 }
+
+
+TH2F* UnfoldNTclass::RebinHistogram2D(TH2F* hrm, TH2F* hptnt, TH1F* hnt) { // REBIN ONLY N_MEAS (Y-AXIS) W REWEIGHTING
+
+  	const int maxBins = 200; // Maximum expected number of bins
+    double newBinEdges[maxBins + 1]; // +1 for the upper edge of the last bin
+    int numBins = hptnt->GetYaxis()->GetNbins();
+
+    // Check to not exceed maxBins
+    if (numBins > maxBins) {
+        // Handle error: Too many bins
+        return nullptr;
+    }
+
+    newBinEdges[0] = -0.5;
+    // Extract bin edges from the y-axis of hptnt
+    for (int iBin = 2; iBin <= numBins + 1; ++iBin) { // Include the upper edge of the last bin
+        newBinEdges[iBin - 1] = 0.5 + hptnt->GetYaxis()->GetBinLowEdge(iBin);
+    }
+
+    double ntbins[50+1];
+    for (int i = 0; i < 50+1; ++i) ntbins[i] = i - 0.5;
+
+    // Create a new histogram with these bin edges for both x and y axes
+    TH2F* hRebinned = new TH2F(Form("%s_rebin",hrm->GetName()), hrm->GetTitle(),
+                               50, ntbins, // x-axis bins
+                               numBins, newBinEdges); // y-axis bins
+
+	// SANITY CHECK
+	//hnt->Reset();
+	//for (int xBin = 1; xBin <= hnt->GetNbinsX(); ++xBin) { hnt->SetBinContent(xBin,1.); }
+
+
+    // Fill the new histogram with contents from hrm, adjusting for the new binning
+    for (int xBin = 1; xBin <= hrm->GetNbinsX(); ++xBin) {
+        for (int yBin = 1; yBin <= hrm->GetNbinsY(); ++yBin) {
+
+            double content = hrm->GetBinContent(xBin, yBin);
+            double error = hrm->GetBinError(xBin, yBin);
+            double xCenter = hrm->GetXaxis()->GetBinCenter(xBin);
+            double yCenter = hrm->GetYaxis()->GetBinCenter(yBin);
+            int newBinY = hRebinned->GetYaxis()->FindBin(yCenter);
+            double weight = (double)hnt->GetBinContent(yBin);
+
+            cout << " --- " << xBin << " : " << yBin << " weight is " << weight << " -------------!!??!!" << endl;
+    
+            if (content != 0) {
+
+            	hRebinned->SetBinContent(xBin, newBinY, hRebinned->GetBinContent(xBin, newBinY) + weight*content);
+            	// Simple error summing
+            	hRebinned->SetBinError(xBin, newBinY, sqrt(pow(hRebinned->GetBinError(xBin, newBinY), 2) + pow(weight*error, 2)));
+        
+            }
+        }
+    }
+
+    for (int iX = 1; iX < hRebinned->GetNbinsX()+1; ++iX) {
+    	for (int iY = 1; iY < hRebinned->GetNbinsY()+1; ++iY) {
+
+    		int lowbin = hnt->FindBin( newBinEdges[iY-1] );
+    		int hibin = hnt->FindBin( newBinEdges[iY] - 0.5 );
+    		double norm = hnt->Integral(lowbin,hibin);
+
+    		cout << iX << " " << iY << " -- !!! __ !!! hNORM has " << norm << endl;
+			if (norm != 0) {
+    			hRebinned->SetBinContent(iX, iY, hRebinned->GetBinContent(iX, iY) / norm);
+    			hRebinned->SetBinError(iX, iY, hRebinned->GetBinError(iX, iY) / norm);
+			}
+    	}
+    }
+
+    return hRebinned;
+}
+
+/*TH2F* UnfoldNTclass::RebinHistogram2D(TH2F* hrm, TH2F* hptnt) { // REBIN ONLY N_MEAS (Y-AXIS)
+
+  	const int maxBins = 200; // Maximum expected number of bins
+    double newBinEdges[maxBins + 1]; // +1 for the upper edge of the last bin
+    int numBins = hptnt->GetYaxis()->GetNbins();
+
+    // Check to not exceed maxBins
+    if (numBins > maxBins) {
+        // Handle error: Too many bins
+        return nullptr;
+    }
+
+    newBinEdges[0] = -0.5;
+    // Extract bin edges from the y-axis of hptnt
+    for (int iBin = 2; iBin <= numBins + 1; ++iBin) { // Include the upper edge of the last bin
+        newBinEdges[iBin - 1] = 0.5 + hptnt->GetYaxis()->GetBinLowEdge(iBin);
+    }
+
+    double ntbins[50+1];
+    for (int i = 0; i < 50+1; ++i) ntbins[i] = i - 0.5;
+
+    // Create a new histogram with these bin edges for both x and y axes
+    TH2F* hRebinned = new TH2F(Form("%s_rebin",hrm->GetName()), hrm->GetTitle(),
+                               50, ntbins, // x-axis bins
+                               numBins, newBinEdges); // y-axis bins
+
+    // Keep track of maximum row in order to not over-normalise the last bin
+    Int_t lastrow = 0;
+
+    // Fill the new histogram with contents from hrm, adjusting for the new binning
+    for (int xBin = 1; xBin <= hrm->GetNbinsX(); ++xBin) {
+        for (int yBin = 1; yBin <= hrm->GetNbinsY(); ++yBin) {
+
+            double content = hrm->GetBinContent(xBin, yBin);
+            double error = hrm->GetBinError(xBin, yBin);
+            double xCenter = hrm->GetXaxis()->GetBinCenter(xBin);
+            double yCenter = hrm->GetYaxis()->GetBinCenter(yBin);
+            int newBinY = hRebinned->GetYaxis()->FindBin(yCenter);
+    
+            if (content != 0) {
+
+            	if (yBin>lastrow) lastrow = yBin + 0.5;
+            	hRebinned->SetBinContent(xBin, newBinY, hRebinned->GetBinContent(xBin, newBinY) + content);
+            	// Simple error summing
+            	hRebinned->SetBinError(xBin, newBinY, sqrt(pow(hRebinned->GetBinError(xBin, newBinY), 2) + pow(error, 2)));
+        
+            }
+        }
+    }
+
+    for (int iX = 1; iX < hRebinned->GetNbinsX()+1; ++iX) {
+    	for (int iY = 1; iY < hRebinned->GetNbinsY()+1; ++iY) {
+
+    		double norm = !(iY==hRebinned->GetNbinsY()) ? newBinEdges[iY]-newBinEdges[iY-1]
+    			: (lastrow)-newBinEdges[iY-1];
+
+    		cout << iX << " " << iY << " -- !!! __ !!! hNORM has " << norm << endl;
+			if (norm != 0) {
+    			hRebinned->SetBinContent(iX, iY, hRebinned->GetBinContent(iX, iY) / norm);
+    			hRebinned->SetBinError(iX, iY, hRebinned->GetBinError(iX, iY) / norm);
+			}
+    	}
+    }
+
+    return hRebinned;
+}*/
+
+/*TH2F* UnfoldNTclass::RebinHistogram2D(TH2F* hrm, TH2F* hptnt) { // COMPLETE REBINNING
+
+  	const int maxBins = 200; // Maximum expected number of bins
+    double newBinEdges[maxBins + 1]; // +1 for the upper edge of the last bin
+    int numBins = hptnt->GetYaxis()->GetNbins();
+
+    // Check to not exceed maxBins
+    if (numBins > maxBins) {
+        // Handle error: Too many bins
+        return nullptr;
+    }
+
+    newBinEdges[0] = -0.5;
+    // Extract bin edges from the y-axis of hptnt
+    for (int iBin = 2; iBin <= numBins + 1; ++iBin) { // Include the upper edge of the last bin
+        newBinEdges[iBin - 1] = 0.5 + hptnt->GetYaxis()->GetBinLowEdge(iBin);
+    }
+
+    // Create a new histogram with these bin edges for both x and y axes
+    TH2F* hRebinned = new TH2F(Form("%s_rebin",hrm->GetName()), hrm->GetTitle(),
+                               numBins, newBinEdges, // x-axis bins
+                               numBins, newBinEdges); // y-axis bins
+
+    // Keep track of maximum row in order to not over-normalise the last bin
+    Int_t lastrow = 0;
+
+    // Fill the new histogram with contents from hrm, adjusting for the new binning
+    for (int xBin = 1; xBin <= hrm->GetNbinsX(); ++xBin) {
+        for (int yBin = 1; yBin <= hrm->GetNbinsY(); ++yBin) {
+
+            double content = hrm->GetBinContent(xBin, yBin);
+            double xCenter = hrm->GetXaxis()->GetBinCenter(xBin);
+            double yCenter = hrm->GetYaxis()->GetBinCenter(yBin);
+    
+            if (content != 0) {
+
+            	if (yBin>lastrow) lastrow = yBin + 0.5;
+                // Fill the histogram using the center of the original bins
+                hRebinned->Fill(xCenter, yCenter, content);
+            }
+        }
+    }
+
+    for (int iX = 1; iX < hRebinned->GetNbinsX()+1; ++iX) {
+    	for (int iY = 1; iY < hRebinned->GetNbinsY()+1; ++iY) {
+
+    		double norm = !(iY==hRebinned->GetNbinsY()) ? newBinEdges[iY]-newBinEdges[iY-1]
+    			: (lastrow)-newBinEdges[iY-1];
+
+    		cout << iX << " " << iY << " -- !!! __ !!! hNORM has " << norm << endl;
+			if (norm != 0) {
+    			hRebinned->SetBinContent(iX, iY, hRebinned->GetBinContent(iX, iY) / norm);
+    			hRebinned->SetBinError(iX, iY, hRebinned->GetBinError(iX, iY) / norm);
+			}
+    	}
+    }
+
+    return hRebinned;
+}*/
+
+
 //_________________________
-void UnfoldNTclass::LoadSolutionNT()
+void UnfoldNTclass::LoadSolutionNT(TH2F* hptnt = nullptr, TH1F* hnt = nullptr)
 {
 
 	TFile* fIn = nullptr;
@@ -120,6 +322,22 @@ void UnfoldNTclass::LoadSolutionNT()
 
 	delete fIn;
 	fIn = nullptr;
+
+	if (hptnt) {
+		TH2F* hRebinned = RebinHistogram2D(_hUnfMatrixNT, hptnt, hnt);
+		_hUnfMatrixNT->Reset();
+
+		//cout << " /////// REBINNING NT UNFOLDING MATRIX TO " << hRebinned->GetNbinsY() << " ////////// " << endl;
+		for(int i = 0; i < hRebinned->GetNbinsX(); i++)	{
+		for(int j = 0; j < hRebinned->GetNbinsY(); j++)	{
+
+			//cout << "Filling " << i << " " << j << " with " << hRebinned->GetBinContent(i+1,j+1) << endl;
+			_hUnfMatrixNT->SetBinContent(i+1,j+1,hRebinned->GetBinContent(i+1,j+1)>0?hRebinned->GetBinContent(i+1,j+1):0);
+			_hUnfMatrixNT->SetBinError(i+1,j+1,hRebinned->GetBinContent(i+1,j+1)>0?hRebinned->GetBinError(i+1,j+1):0);
+			
+		}	}
+
+	}
 
 }
 //_________________________
@@ -165,7 +383,7 @@ void UnfoldNTclass::LoadSolutionNTMax()
 
 }
 //_________________________
-void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRecvsNacc)
+void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRecvsNacc, TH2F* hptnt = nullptr, TH1F* hnt = nullptr)
 {
 
 	cout << "binning is " << NPTBINS[_PidIdx] << endl;
@@ -185,7 +403,7 @@ void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRec
 	//! the Unfolding matrix in pT bins
 	//! is stored
 	if(strcmp(_Region,"Transverse")==0) {
-		ObjArray->AddLast(_hUnfMatrix);
+		ObjArray->AddLast(_hUnfMatrix);		// this is the pt dependent unfolding matrix
 		ObjArray->AddLast(_hCovMatrix);
 	} 
 
@@ -196,9 +414,12 @@ void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRec
 		|| (strcmp(_Region,"TransMin1D")==0) || (strcmp(_Region,"TransMax1D")==0)) {
 		if (rmname.Contains("Min")) LoadSolutionNTMin();
 		else if (rmname.Contains("Max")) LoadSolutionNTMax();
-		else LoadSolutionNT();
+		else LoadSolutionNT(hptnt,hnt);
 	}
 	//if((strcmp(_Region,"Transverse")==0)) LoadSolutionNT();
+
+
+	ObjArray->AddLast(_hUnfMatrixNT);
 
 	if(strcmp(_Region,"Transverse")==0){
 		for(int binx = 1; binx <= hIniRM->GetNbinsX(); binx++){
@@ -253,6 +474,8 @@ void UnfoldNTclass::UnfoldV02D(TH2F* hIniRM, TH2F* hPtRecvsNacc, TH2F* hPIDPtRec
 		if(strcmp(_Region,"Transverse")==0) { Unfold(); }		// Unfolding matrix is calculated from Nch
 		if (hPIDProj) UnfoldPID(hPIDProj, hMultGen, hRM);	// Recalculating unfolded distribution from PID spectra instead of Nch
 		
+
+
 		if((strcmp(_Region,"Toward")==0) || (strcmp(_Region,"Away")==0) || (strcmp(_Region,"Trans1D")==0)
 			|| (strcmp(_Region,"TransMin1D")==0) || (strcmp(_Region,"TransMax1D")==0) ) {
 			//Setup(hProj, hMultGen, hRM );
@@ -709,6 +932,27 @@ void UnfoldNTclass::GetMCclosureinRTBins(const TH2F* hGen, const TH2F* hUnf)
 	}
 }
 
+void UnfoldNTclass::GetMCclosureinRTBinsPhi(const TH2F* hGen, const TH2F* hUnf)
+{
+
+	for(int binrt = 0; binrt <= nRTBins; binrt++){
+
+		int lowedge = GetRTBinPhi(binrt,kTRUE);
+		int upedge  = GetRTBinPhi(binrt,kFALSE);
+
+		TH1F* hg = (TH1F*)hGen->ProjectionX(Form("hPtGen_RT_%d",binrt),lowedge,upedge);
+		
+		TH1F* hu = (TH1F*)hUnf->ProjectionX(Form("hPtUnf_RT_%d",binrt),lowedge,upedge);
+
+		cout << "2 Finding " << hg << " and " << hu << "\n";
+
+		//	if((strcmp(_Region,"Toward")==0)||(strcmp(_Region,"Transverse")==0)){
+		//DrawClosureRatios(hg,hu,0.0,10.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",RTBins[binrt-1],RTBins[binrt],binrt,kFALSE,kTRUE,"results");
+		DrawClosureRatios(hg,hu,0.0,8.12,binrt,"#it{p}_{T} (GeV/#it{c})","Unfolded/True",(binrt>0)?RTBins[binrt-1]:RTBins[0],(binrt>0)?RTBins[binrt]:RTBins[nRTBins],binrt,kFALSE,kTRUE,"results_unfolding");
+		//}
+	}
+}
+
 void UnfoldNTclass::GetMCclosureinRTMinBins(const TH2F* hGen, const TH2F* hUnf)
 {
 
@@ -971,7 +1215,7 @@ void UnfoldNTclass::DrawClosureRatios(TH1F* hGen,TH1F* hUn, const double& min, c
 	line2->Draw("SAME");
 
 	latex->SetTextAlign(12);
-	latex->DrawLatex(0.2, 0.8,"pp, #sqrt{#it{s}} = 13 TeV, #it{This thesis}");
+	latex->DrawLatex(0.2, 0.8,"pp, #sqrt{#it{s}} = 13 TeV");
 	latex->DrawLatex(0.2, 0.73, Form("%s, %s",_Region,PidLatex(_PidIdx)));
 	gSystem->Exec(Form("mkdir -p ./%s/plots_differential",dirOut));
 	latex->SetTextAlign(22);
@@ -1187,6 +1431,41 @@ int UnfoldNTclass::GetRTBin(const int& binRt, bool isLowEdge)
 	else if( binRt == 4 ){//! From NT = 19 to NT = 36
 		if(isLowEdge) binNch = 20;
 		else binNch = 38;
+	}
+	else{
+		if(isLowEdge) binNch = 39;
+		else binNch = 50;
+	}
+
+	return binNch;
+
+}
+
+int UnfoldNTclass::GetRTBinPhi(const int& binRt, bool isLowEdge)	{
+
+	int binNch = -1;
+
+	//! <NT> = 7. 43
+	
+	if( binRt == 0 ){
+		if(isLowEdge) binNch = 1;
+		else binNch = 50;
+	}
+	else if( binRt == 1 ){ //! From NT = 0 to NT = 6
+		if(isLowEdge) binNch = 1;
+		else binNch = 1;//else binNch = 4;
+	}
+	else if( binRt == 2 ){ //! From NT = 6 to NT = 11
+		if(isLowEdge) binNch = 2;
+		else binNch = 3;
+	}
+	else if( binRt == 3 ){//! From NT = 12 to NT = 18
+		if(isLowEdge) binNch = 4;
+		else binNch = 5;
+	}
+	else if( binRt == 4 ){//! From NT = 19 to NT = 36
+		if(isLowEdge) binNch = 6;
+		else binNch = 6;
 	}
 	else{
 		if(isLowEdge) binNch = 39;

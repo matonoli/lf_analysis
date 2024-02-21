@@ -37,7 +37,7 @@ class UnfoldNTclass {
 		~UnfoldNTclass();
 		void Setup(const TH1F* measured, const TH1F* truth, const TH2F* response);  // set up from already-filled histograms
 		void SetnIter(int iter) { _niter = iter; }
-		void UnfoldV02D(TH2F* , TH2F*, TH2F*);
+		void UnfoldV02D(TH2F* , TH2F*, TH2F*, TH2F*, TH1F*);
 		void Unfold2D(TH2F* , TH2F*);
 		//void Unfold2D_Alternative_Approach(TH2F* , TH2F* );
 		void CorrectPTdistributions();
@@ -62,6 +62,7 @@ class UnfoldNTclass {
 		TH1F* GetUnfoldedDistH();
 		void GetMCclosureinNchBins(const TH2F* );
 		void GetMCclosureinRTBins(const TH2F*, const TH2F*);
+		void GetMCclosureinRTBinsPhi(const TH2F*, const TH2F*);
 		void GetMCclosureinRTMinBins(const TH2F*, const TH2F*);
 		void GetMCclosureinRTMaxBins(const TH2F*, const TH2F*);
 		TH1F* RebinNT2RT(const TH1F* , bool);
@@ -97,7 +98,8 @@ class UnfoldNTclass {
 		void SaveSolutionNT(bool);
 ///		void TunePrior();
 ////		void LoadEventRecEfficiency();
-		void LoadSolutionNT();
+		TH2F* RebinHistogram2D(TH2F* hrm, TH2F* hptnt, TH1F* hnt);
+		void LoadSolutionNT(TH2F* hptnt, TH1F* hnt);
 		void LoadSolutionNTMin();
 		void LoadSolutionNTMax();
 
@@ -121,6 +123,7 @@ class UnfoldNTclass {
 
 		void FillHistoVsRT(TH2F*, TH2F*);
 		int GetRTBin(const int&,bool);
+		int GetRTBinPhi(const int&,bool);
 		int GetRTMinBin(const int&,bool);
 		int GetRTMaxBin(const int&,bool);
 
@@ -188,17 +191,28 @@ class UnfoldNTclass {
 		2.6, 3.0, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };
 		
-	const Int_t NXIPTBINS = 7; 
-  	const Double_t XIXBINS[7+1] = {
-  		0.6, 1.2, 1.6, 2.2, 
-  		2.8, 3.6, 5.0, 6.5 };
+	
+ 	const Int_t NXIPTBINS = 6; 
+  	const Double_t XIXBINS[6+1] = {
+      0.6, 1.4, 2.0, 
+      2.6, 3.4, 5.0, 8.0 };
 
-  	const Int_t NPHIPTBINS = 14; 
+	/*const Int_t NXIPTBINS = 7; 
+  	const Double_t XIXBINS[7+1] = {
+      0.6, 1.2, 1.4, 2.0, 
+      2.6, 3.4, 5.0, 8.0 };*/
+
+  	/*const Int_t NPHIPTBINS = 14; 
   	const Double_t PHIXBINS[14+1] = {
   		0.5, 0.7, 0.9, 1.2, 
   		1.4, 1.6, 1.8, 2.0,
   		2.2, 2.6, 3.0, 3.5,
-  		4.0, 5.0, 8.0 };
+  		4.0, 5.0, 8.0 };*/
+
+  	const Int_t NPHIPTBINS = 5;
+  	const Double_t PHIXBINS[5+1] = {
+  		0.5 , 1 , 1.5 , 2. , 
+  			2.5, 5.0};
 
 		const int nPtBins = 16;
 		double ptBins[16+1] = { // divisible by omar's pions
