@@ -104,6 +104,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 
 	// TRACK LOOP TO FIND LEADING
 	Int_t nTracks = mHandler->getNtracks();
+	Int_t nV0s = mHandler->getNv0s();
 	Int_t nCascades = mHandler->getNcascades();
 	Int_t nParticles = (mFlagMC) ? mHandler->getNparticles() : 0;
 
@@ -387,6 +388,11 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[piKp][MC][region]->Fill(p.GetPt(),nChTransMC);
 					hPIDPtNtMin[piKp][MC][region]->Fill(p.GetPt(),nChTransMinMC);
 					hPIDPtNtMax[piKp][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[piKp][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[piKp][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[piKp][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 	
 					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 					if (!region) {
@@ -394,6 +400,11 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPtNt[piKp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 						hPIDPtNtMin[piKp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 						hPIDPtNtMax[piKp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[piKp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[piKp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[piKp][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 			}
@@ -411,6 +422,11 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[pr][MC][region]->Fill(p.GetPt(),nChTransMC);
 					hPIDPtNtMin[pr][MC][region]->Fill(p.GetPt(),nChTransMinMC);
 					hPIDPtNtMax[pr][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[pr][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[pr][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[pr][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 	
 					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 					if (!region) {
@@ -418,6 +434,79 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPtNt[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 						hPIDPtNtMin[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 						hPIDPtNtMax[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[pr][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						}
+					}
+				}
+			}
+
+			// k0s
+			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
+				&& p.IsPrimary() &&
+				(TMath::Abs(p.GetPdgCode())==310 ) ) {
+
+				hPIDPt[K0s][MC]->Fill(p.GetPt());
+				if (isEventRTMC) {
+	
+					Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
+	
+					hPIDPtNt[K0s][MC][region]->Fill(p.GetPt(),nChTransMC);
+					hPIDPtNtMin[K0s][MC][region]->Fill(p.GetPt(),nChTransMinMC);
+					hPIDPtNtMax[K0s][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[K0s][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[K0s][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[K0s][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+					}
+	
+					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
+					if (!region) {
+
+						hPIDPtNt[K0s][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						hPIDPtNtMin[K0s][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						hPIDPtNtMax[K0s][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[K0s][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[K0s][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[K0s][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						}
+					}
+				}
+			}
+
+			// lambdas
+			if (p.GetEta() > cuts::V0_ETA[0] && p.GetEta() < cuts::V0_ETA[1]
+				&& p.IsPrimary() &&
+				(TMath::Abs(p.GetPdgCode())==3122 ) ) {
+
+				hPIDPt[L][MC]->Fill(p.GetPt());
+				if (isEventRTMC) {
+	
+					Int_t region = WhatRegion(p.GetPhi(),phiLeadMC);
+	
+					hPIDPtNt[L][MC][region]->Fill(p.GetPt(),nChTransMC);
+					hPIDPtNtMin[L][MC][region]->Fill(p.GetPt(),nChTransMinMC);
+					hPIDPtNtMax[L][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[L][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[L][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[L][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+					}
+	
+					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
+					if (!region) {
+
+						hPIDPtNt[L][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
+						hPIDPtNtMin[L][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
+						hPIDPtNtMax[L][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[L][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[L][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[L][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 			}
@@ -440,6 +529,14 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[Xi][MC][region]->Fill(p.GetPt(),nChTransMC);
 					hPIDPtNtMin[Xi][MC][region]->Fill(p.GetPt(),nChTransMinMC);
 					hPIDPtNtMax[Xi][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[XiInc][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[XiInc][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[XiInc][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						hPIDPtNtRCvMC[Xi][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[Xi][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[Xi][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 	
 					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 					if (!region) {
@@ -449,6 +546,14 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPtNt[Xi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 						hPIDPtNtMin[Xi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 						hPIDPtNtMax[Xi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[XiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[XiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[XiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+							hPIDPtNtRCvMC[Xi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[Xi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[Xi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 			}
@@ -465,12 +570,22 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[phiInc][MC][region]->Fill(p.GetPt(),nChTransMC);
 					hPIDPtNtMin[phiInc][MC][region]->Fill(p.GetPt(),nChTransMinMC);
 					hPIDPtNtMax[phiInc][MC][region]->Fill(p.GetPt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[phiInc][MC][region]->Fill(p.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[phiInc][MC][region]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[phiInc][MC][region]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 					
 					Int_t regionSide = WhatRegionSide(p.GetPhi(),phiLeadMC);
 					if (!region) {
 						hPIDPtNt[phiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC);
 						hPIDPtNtMin[phiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC);
 						hPIDPtNtMax[phiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[phiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[phiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[phiInc][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(p.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 			}
@@ -522,12 +637,22 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[phi][MC][region]->Fill(phiMom.Pt(),nChTransMC);
 					hPIDPtNtMin[phi][MC][region]->Fill(phiMom.Pt(),nChTransMinMC);
 					hPIDPtNtMax[phi][MC][region]->Fill(phiMom.Pt(),nChTransMaxMC);
+					if (isEventRT) {
+						hPIDPtNtRCvMC[phi][MC][region]->Fill(phiMom.Pt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[phi][MC][region]->Fill(phiMom.Pt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[phi][MC][region]->Fill(phiMom.Pt(),nChTransMaxMC,nChTransMax);
+					}
 					
 					Int_t regionSide = WhatRegionSide(FlipNegativeAngle(phiMom.Phi()),phiLeadMC);
 					if (!region) {
 						hPIDPtNt[phi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(phiMom.Pt(),nChTransMC);
 						hPIDPtNtMin[phi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(phiMom.Pt(),nChTransMinMC);
 						hPIDPtNtMax[phi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(phiMom.Pt(),nChTransMaxMC);
+						if (isEventRT) {
+							hPIDPtNtRCvMC[phi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(phiMom.Pt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[phi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(phiMom.Pt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[phi][MC][IsMinOrMax(isSideAMinMC,regionSide)]->Fill(phiMom.Pt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 			}
@@ -560,12 +685,23 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[piKp][RC][region]->Fill(t.GetPt(),nChTrans);
 					hPIDPtNtMin[piKp][RC][region]->Fill(t.GetPt(),nChTransMin);
 					hPIDPtNtMax[piKp][RC][region]->Fill(t.GetPt(),nChTransMax);
+
+					if (isEventRTMC) {
+						hPIDPtNtRCvMC[piKp][RC][region]->Fill(t.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[piKp][RC][region]->Fill(t.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[piKp][RC][region]->Fill(t.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 					
 					Int_t regionSide = WhatRegionSide(t.GetPhi(),phiLead);
 					if (!region) {
 						hPIDPtNt[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
 						hPIDPtNtMin[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
 						hPIDPtNtMax[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMax);
+						if (isEventRTMC) {
+							hPIDPtNtRCvMC[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[piKp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 
@@ -581,15 +717,76 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[pr][RC][region]->Fill(t.GetPt(),nChTrans);
 					hPIDPtNtMin[pr][RC][region]->Fill(t.GetPt(),nChTransMin);
 					hPIDPtNtMax[pr][RC][region]->Fill(t.GetPt(),nChTransMax);
+
+					if (isEventRTMC) {
+						hPIDPtNtRCvMC[pr][RC][region]->Fill(t.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[pr][RC][region]->Fill(t.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[pr][RC][region]->Fill(t.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 					
 					Int_t regionSide = WhatRegionSide(t.GetPhi(),phiLead);
 					if (!region) {
 						hPIDPtNt[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTrans);
 						hPIDPtNtMin[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMin);
 						hPIDPtNtMax[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMax);
+						if (isEventRTMC) {
+							hPIDPtNtRCvMC[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[pr][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(t.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 
+			}
+		}
+	}
+
+	// RC PID LOOP -- V0s
+	for (int iV0 = 0; iV0 < nV0s; ++iV0)		{
+
+		if (!mHandler->v0(iV0)) continue;
+		MyV0 v0(mHandler->v0(iV0));	v0.SetHandler(mHandler);
+
+		if (mFlagMC) {
+
+			if (v0.GetEta() > cuts::V0_ETA[0] && v0.GetEta() < cuts::V0_ETA[1] 
+				&& (TMath::Abs(v0.GetMCPdgCode()) == 310 || TMath::Abs(v0.GetMCPdgCode()) == 3122) && v0.IsMCPrimary() ) {
+
+				// ONLY V0 W DCA CUT	
+				if ( TMath::Abs(v0.GetPosTrack()->GetImpactParameter(0)) > cuts::V0_D_DCAPVXY
+				&& TMath::Abs(v0.GetNegTrack()->GetImpactParameter(0)) > cuts::V0_D_DCAPVXY ) {
+
+					Int_t sp = (TMath::Abs(v0.GetMCPdgCode()) == 310) ? K0s : L; 
+				 
+					hPIDPt[sp][RC]->Fill(v0.GetPt());
+
+					if (isEventRT)	{
+
+						hPIDDPhivNchTrans[sp]->Fill(nChTrans,mHandler->DeltaPhi(phiLead,v0.GetPhi()));
+
+						Int_t region = WhatRegion(v0.GetPhi(),phiLead);
+						hPIDPtNt[sp][RC][region]->Fill(v0.GetPt(),nChTrans);
+						hPIDPtNtMin[sp][RC][region]->Fill(v0.GetPt(),nChTransMin);
+						hPIDPtNtMax[sp][RC][region]->Fill(v0.GetPt(),nChTransMax);
+						if (isEventRTMC) {
+							hPIDPtNtRCvMC[sp][RC][region]->Fill(v0.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[sp][RC][region]->Fill(v0.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[sp][RC][region]->Fill(v0.GetPt(),nChTransMaxMC,nChTransMax);
+						}	
+						
+						Int_t regionSide = WhatRegionSide(v0.GetPhi(),phiLead);
+						if (!region) {
+							hPIDPtNt[sp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(v0.GetPt(),nChTrans);
+							hPIDPtNtMin[sp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(v0.GetPt(),nChTransMin);
+							hPIDPtNtMax[sp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(v0.GetPt(),nChTransMax);
+							if (isEventRTMC) {
+								hPIDPtNtRCvMC[sp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(v0.GetPt(),nChTransMC,nChTrans);
+								hPIDPtNtMinRCvMC[sp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(v0.GetPt(),nChTransMinMC,nChTransMin);
+								hPIDPtNtMaxRCvMC[sp][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(v0.GetPt(),nChTransMaxMC,nChTransMax);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -618,12 +815,22 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 					hPIDPtNt[XiInc][RC][region]->Fill(cas.GetPt(),nChTrans);
 					hPIDPtNtMin[XiInc][RC][region]->Fill(cas.GetPt(),nChTransMin);
 					hPIDPtNtMax[XiInc][RC][region]->Fill(cas.GetPt(),nChTransMax);
+					if (isEventRTMC) {
+						hPIDPtNtRCvMC[XiInc][RC][region]->Fill(cas.GetPt(),nChTransMC,nChTrans);
+						hPIDPtNtMinRCvMC[XiInc][RC][region]->Fill(cas.GetPt(),nChTransMinMC,nChTransMin);
+						hPIDPtNtMaxRCvMC[XiInc][RC][region]->Fill(cas.GetPt(),nChTransMaxMC,nChTransMax);
+					}
 					
 					Int_t regionSide = WhatRegionSide(cas.GetPhi(),phiLead);
 					if (!region) {
 						hPIDPtNt[XiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTrans);
 						hPIDPtNtMin[XiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMin);
 						hPIDPtNtMax[XiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMax);
+						if (isEventRTMC) {
+							hPIDPtNtRCvMC[XiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[XiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[XiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMaxMC,nChTransMax);
+						}
 					}
 				}
 
@@ -642,12 +849,22 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPtNt[Xi][RC][region]->Fill(cas.GetPt(),nChTrans);
 						hPIDPtNtMin[Xi][RC][region]->Fill(cas.GetPt(),nChTransMin);
 						hPIDPtNtMax[Xi][RC][region]->Fill(cas.GetPt(),nChTransMax);
+						if (isEventRTMC) {
+							hPIDPtNtRCvMC[Xi][RC][region]->Fill(cas.GetPt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[Xi][RC][region]->Fill(cas.GetPt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[Xi][RC][region]->Fill(cas.GetPt(),nChTransMaxMC,nChTransMax);
+						}	
 						
 						Int_t regionSide = WhatRegionSide(cas.GetPhi(),phiLead);
 						if (!region) {
 							hPIDPtNt[Xi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTrans);
 							hPIDPtNtMin[Xi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMin);
 							hPIDPtNtMax[Xi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMax);
+							if (isEventRTMC) {
+								hPIDPtNtRCvMC[Xi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMC,nChTrans);
+								hPIDPtNtMinRCvMC[Xi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMinMC,nChTransMin);
+								hPIDPtNtMaxRCvMC[Xi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(cas.GetPt(),nChTransMaxMC,nChTransMax);
+							}
 						}
 					}
 				}
@@ -717,6 +934,14 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 						hPIDPtNt[phi][RC][region]->Fill(phiMom.Pt(),nChTrans);
 						hPIDPtNtMin[phi][RC][region]->Fill(phiMom.Pt(),nChTransMin);
 						hPIDPtNtMax[phi][RC][region]->Fill(phiMom.Pt(),nChTransMax);
+						if (isEventRTMC) {
+							hPIDPtNtRCvMC[phiInc][RC][region]->Fill(phiMom.Pt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[phiInc][RC][region]->Fill(phiMom.Pt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[phiInc][RC][region]->Fill(phiMom.Pt(),nChTransMaxMC,nChTransMax);
+							hPIDPtNtRCvMC[phi][RC][region]->Fill(phiMom.Pt(),nChTransMC,nChTrans);
+							hPIDPtNtMinRCvMC[phi][RC][region]->Fill(phiMom.Pt(),nChTransMinMC,nChTransMin);
+							hPIDPtNtMaxRCvMC[phi][RC][region]->Fill(phiMom.Pt(),nChTransMaxMC,nChTransMax);
+						}
 						
 						Int_t regionSide = WhatRegionSide(FlipNegativeAngle(phiMom.Phi()),phiLead);
 						if (!region) {
@@ -726,6 +951,14 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 							hPIDPtNt[phi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTrans);
 							hPIDPtNtMin[phi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMin);
 							hPIDPtNtMax[phi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMax);
+							if (isEventRTMC) {
+								hPIDPtNtRCvMC[phiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMC,nChTrans);
+								hPIDPtNtMinRCvMC[phiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMinMC,nChTransMin);
+								hPIDPtNtMaxRCvMC[phiInc][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMaxMC,nChTransMax);
+								hPIDPtNtRCvMC[phi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMC,nChTrans);
+								hPIDPtNtMinRCvMC[phi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMinMC,nChTransMin);
+								hPIDPtNtMaxRCvMC[phi][RC][IsMinOrMax(isSideAMin,regionSide)]->Fill(phiMom.Pt(),nChTransMaxMC,nChTransMax);
+							}
 						}
 					}
 				}
@@ -933,6 +1166,10 @@ Bool_t MyAnalysisMC::CreateHistograms() {
 
 	} }  
 
+	const int NNTBINS = 50;
+    double NTBINS[NNTBINS + 1];
+    for(int i = 0; i < NNTBINS+1; ++i)	NTBINS[i] = (double)i - 0.5;
+    
  	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 	for (int iType = 0; iType < nType; ++iType)		{
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
@@ -944,6 +1181,14 @@ Bool_t MyAnalysisMC::CreateHistograms() {
 		hPIDPtNtMax[iSp][iType][iReg]			= new TH2F(TString::Format("hPIDPtNtMax_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
 			";p_{T} (GeV/#it{c}); N_{ch} [trans.,max]; Entries",	NPTBINS[iSp],XBINS[iSp], 50, -0.5, 49.5);
 		
+		hPIDPtNtRCvMC[iSp][iType][iReg]			= new TH3F(TString::Format("hPIDPtNtRCvMC_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [true,trans.]; N_{ch} [meas,trans.]; Entries",	NPTBINS[iSp], XBINS[iSp], NNTBINS, NTBINS, NNTBINS, NTBINS);
+		hPIDPtNtMinRCvMC[iSp][iType][iReg]			= new TH3F(TString::Format("hPIDPtNtMinRCvMC_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [true,trans.,min]; N_{ch} [meas,trans.,min]; Entries",	NPTBINS[iSp],XBINS[iSp], NNTBINS, NTBINS, NNTBINS, NTBINS);
+		hPIDPtNtMaxRCvMC[iSp][iType][iReg]			= new TH3F(TString::Format("hPIDPtNtMaxRCvMC_%s_%s_%s",SPECIES[iSp],TYPE[iType],REGIONS[iReg]),
+			";p_{T} (GeV/#it{c}); N_{ch} [true,trans.,max]; N_{ch} [meas,trans.,max]; Entries",	NPTBINS[iSp],XBINS[iSp], NNTBINS, NTBINS, NNTBINS, NTBINS);
+
+
 	} } } 
 
 
@@ -1013,6 +1258,8 @@ Int_t MyAnalysisMC::Finish() {
 		CorrectEfficiency();
 		Normalise();
 		LoadDataXi();
+		LoadDataPhi();
+		RebinPhiForClosure();
 		Unfold();
 		BinHistogramsIntoRT();
 	}
@@ -1033,6 +1280,29 @@ Bool_t MyAnalysisMC::CalculateEfficiencies() {
 	}
 
 	return true;
+
+}
+
+TH2F* MyAnalysisMC::RebinTH2(TH2F* h, Int_t nbins, const Double_t xbins[]) {
+
+	if (!h) return 0x0;
+	if (h->GetNbinsX() != nbins) {
+			
+		TAxis *xaxis = h->GetXaxis(); 
+		TAxis *yaxis = h->GetYaxis(); 
+		TH2F *htmp = new TH2F("htmp",
+			TString::Format(";%s;%s;%s",xaxis->GetTitle(),yaxis->GetTitle(),h->GetZaxis()->GetTitle()),
+			nbins, xbins, yaxis->GetNbins(), yaxis->GetBinLowEdge(1), yaxis->GetBinLowEdge(h->GetYaxis()->GetNbins()+1));
+		for (int j=1; j<=yaxis->GetNbins();j++)	{ 
+		for (int i=1; i<=xaxis->GetNbins();i++)	{ 
+			htmp->Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),h->GetBinContent(i,j)); 
+		}	}	
+			
+		h = (TH2F*)htmp->Clone(h->GetName());
+		delete htmp;
+			
+	}
+	return h;
 
 }
 
@@ -1077,6 +1347,12 @@ Bool_t MyAnalysisMC::Normalise() {
 				htmp->SetBinError(iBin,iNt,hpt->GetBinError(iBin));
 			}
 		}
+
+
+		//if (iSp == Xi)	hPIDPtNtCorr[iSp][iType][iReg] = RebinTH2(hPIDPtNtCorr[iSp][iType][iReg],NXIPTBINS,XIXBINS);
+
+
+
 	}	}	}
 
 	return true;
@@ -1168,33 +1444,45 @@ Bool_t MyAnalysisMC::Unfold() {
 
 }
 
-TH2F* MyAnalysisMC::FlipMatrix(TH2F* h) {
+TH2F* MyAnalysisMC::FlipMatrix(TH2F* h, Int_t limit = 0) {
 
-	cout << "Flipping " << h << " " << h->GetName() << endl;
+    cout << "Flipping " << h << " " << h->GetName() << endl;
 
-	const int nBinsX = h->GetNbinsX();
+    const int nBinsX = h->GetNbinsX();
     const int nBinsY = h->GetNbinsY();
 
-    // Get the axis ranges
-    const double xMin = h->GetXaxis()->GetXmin();
-    const double xMax = h->GetXaxis()->GetXmax();
-    const double yMin = h->GetYaxis()->GetXmin();
-    const double yMax = h->GetYaxis()->GetXmax();
+    // Dynamically allocate arrays for bin edges
+    double* xBinEdges = new double[nBinsX + 1];
+    double* yBinEdges = new double[nBinsY + 1];
 
-    // Create a new histogram with flipped y-axis bins
-    TH2F* htmp = new TH2F(h->GetName(), h->GetTitle(),
-                           nBinsY, yMin, yMax, nBinsX, xMin, xMax);
+    // Extract the bin edges from the x-axis
+    for (int i = 0; i <= nBinsX; i++) {
+        xBinEdges[i] = h->GetXaxis()->GetBinLowEdge(i + 1);
+    }
 
-	//TH2F* htmp = (TH2F*)h->Clone(Form("%s_flip",h->GetName()));
-	for (int i = 1; i < htmp->GetNbinsX()+1; i++) {
-	for (int j = 1; j < htmp->GetNbinsY()+1; j++) {
-			htmp->SetBinContent(i,j,h->GetBinContent(j,i));
-			htmp->SetBinError(i,j,h->GetBinError(j,i));
-	}	}
-//	htmp->GetXaxis()->SetTitle(h->GetYaxis()->GetTitle());
-//	htmp->GetYaxis()->SetTitle(h->GetXaxis()->GetTitle());
-	delete h;
-	return htmp; 
+    // Extract the bin edges from the y-axis
+    for (int j = 0; j <= nBinsY; j++) {
+        yBinEdges[j] = h->GetYaxis()->GetBinLowEdge(j + 1);
+    }
+
+    // Create a new histogram with the flipped axis bins
+    TH2F* htmp = new TH2F(Form("%s_flip", h->GetName()), h->GetTitle(),
+                          nBinsY, yBinEdges, nBinsX, xBinEdges);
+
+    // Fill the new histogram with flipped content
+    for (int i = 1; i <= nBinsY; i++) {
+        for (int j = 1; j <= nBinsX; j++) {
+            htmp->SetBinContent(i, j, h->GetBinContent(j, i) > limit ? h->GetBinContent(j, i) : 0);
+            htmp->SetBinError(i, j, h->GetBinContent(j, i) > limit ? h->GetBinError(j, i) : 0);
+        }
+    }
+
+    // Cleanup: Delete dynamically allocated arrays
+    delete[] xBinEdges;
+    delete[] yBinEdges;
+    delete h;
+
+    return htmp; 
 }
 
 TH2F* MyAnalysisMC::ScaleWidthTH2(TH2F* h) {
@@ -1262,7 +1550,7 @@ TH2F* MyAnalysisMC::ScaleTH2Rows(TH2F* h, Double_t d) {
 
 void MyAnalysisMC::LoadDataXi() {
 
-	TFile* fileXi = new TFile("../files/xi_results_oli_mar_14.root","READ");
+	TFile* fileXi = new TFile("../files/xi_results_oli_jan_30.root","READ");
 	const char* xiNames[NREGIONS] = { "Transverse", "Towards", "Away", "Transverse", "Transverse"};  
 
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
@@ -1289,6 +1577,7 @@ void MyAnalysisMC::LoadDataXi() {
 
 	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
 
+		// This isn't a correct way of flipping (results in equal bins) but works with the unfolding class
 		hPIDPtNtCorr[Xi][D][iReg] = (TH2F*)FlipMatrix(hPIDPtNtCorr[Xi][D][iReg]);
 		hPIDPtNtMinCorr[Xi][D][iReg] = (TH2F*)FlipMatrix(hPIDPtNtMinCorr[Xi][D][iReg]);
 		hPIDPtNtMaxCorr[Xi][D][iReg] = (TH2F*)FlipMatrix(hPIDPtNtMaxCorr[Xi][D][iReg]);
@@ -1334,6 +1623,341 @@ void MyAnalysisMC::LoadDataXi() {
 	}
 }
 
+
+void MyAnalysisMC::LoadDataPhi() {
+
+	TFile* filePhi = new TFile("../files/CompressedHistograms.root","READ");
+	const char* phiNames[NREGIONS] = { "Transverse", "Toward", "Away", "Transverse", "Transverse"};  
+
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		hPIDPtNtCorr[phi][D][iReg] = 0x0;
+		hPIDPtNtMinCorr[phi][D][iReg] = 0x0;
+		hPIDPtNtMaxCorr[phi][D][iReg] = 0x0;
+		
+		hPIDPtNtCorr[phi][D][iReg] = (TH2F*)filePhi->Get(Form("hPhi_Vs_NT_%s",phiNames[iReg]))->Clone(TString::Format("hPIDPtNtCorr_%s_%s_%s",SPECIES[phi],TYPE[D],REGIONS[iReg]));
+		//hPIDPtNtMinCorr[phi][D][iReg] = (TH2F*)fileXi->Get(Form("hXiNtMinVsPt%s",xiNames[iReg]))->Clone(TString::Format("hPIDPtNtMinCorr_%s_%s_%s",SPECIES[Xi],TYPE[D],REGIONS[iReg]));
+		//hPIDPtNtMaxCorr[phi][D][iReg] = (TH2F*)fileXi->Get(Form("hXiNtMaxVsPt%s",xiNames[iReg]))->Clone(TString::Format("hPIDPtNtMaxCorr_%s_%s_%s",SPECIES[Xi],TYPE[D],REGIONS[iReg]));
+
+		hPIDPtNtCorr[Xi][D][iReg]->SetDirectory(mDirFile);
+		//hPIDPtNtMinCorr[Xi][D][iReg]->SetDirectory(mDirFile);
+		//hPIDPtNtMaxCorr[Xi][D][iReg]->SetDirectory(mDirFile);
+
+	}
+
+	hPhiPtNtBinning = (TH2F*)hPIDPtNtCorr[phi][D][0]->Clone("hPhiPtNtBinning");
+
+	delete filePhi;
+	mDirFile->cd();
+
+
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+
+		//hPIDPtNtCorr[phi][D][iReg] = (TH2F*)FlipMatrix(hPIDPtNtCorr[phi][D][iReg]);
+		//hPIDPtNtMinCorr[Xi][D][iReg] = (TH2F*)FlipMatrix(hPIDPtNtMinCorr[Xi][D][iReg]);
+		//hPIDPtNtMaxCorr[Xi][D][iReg] = (TH2F*)FlipMatrix(hPIDPtNtMaxCorr[Xi][D][iReg]);
+
+		hPIDPtNtCorr[phi][D][iReg]->Write();
+		//hPIDPtNtMinCorr[Xi][D][iReg]->Write();
+		//hPIDPtNtMaxCorr[Xi][D][iReg]->Write();
+	}
+
+	// UNNORMALISE PHI DATA
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	Int_t iSp = phi;
+	Int_t iType = D;
+
+	TH1F* hNtRebin = RebinHistogram1D(hNt,hPIDPtNtCorr[phi][D][iReg]);
+	hNtRebin->Write();
+
+		for (int iNt = 1; iNt < hNtRebin->GetNbinsX()+1; ++iNt)	{
+			Double_t NormScaleNt = hNtRebin->Integral(iNt,iNt)/hNtRebin->Integral(1,51);
+			if (iReg==3) NormScaleNt = hNtMin->Integral(iNt,iNt)/hNtMin->Integral(1,51);
+			if (iReg==4) NormScaleNt = hNtMax->Integral(iNt,iNt)/hNtMax->Integral(1,51);
+
+			//cout << "iReg " << iReg << " " << hPIDPtNtCorr[Xi][D][iReg] << " " << hPIDPtNtMinCorr[Xi][D][iReg] << " " << hPIDPtNtMaxCorr[Xi][D][iReg] << endl;
+
+			for (int iX = 1; iX < hPIDPtNtCorr[phi][D][iReg]->GetNbinsX()+1; iX++) {
+				Double_t binc = hPIDPtNtCorr[phi][D][iReg]->GetBinContent(iX,iNt);
+				Double_t bine = hPIDPtNtCorr[phi][D][iReg]->GetBinError(iX,iNt);
+				hPIDPtNtCorr[phi][D][iReg]->SetBinContent(iX,iNt,binc*NormScaleNt);
+				hPIDPtNtCorr[phi][D][iReg]->SetBinError(iX,iNt,bine*NormScaleNt);
+
+				/*
+				if (iReg==3) {
+					Double_t binc = hPIDPtNtMinCorr[Xi][D][iReg]->GetBinContent(iX,iNt);
+					Double_t bine = hPIDPtNtMinCorr[Xi][D][iReg]->GetBinError(iX,iNt);
+					hPIDPtNtMinCorr[Xi][D][iReg]->SetBinContent(iX,iNt,binc*NormScaleNt);
+					hPIDPtNtMinCorr[Xi][D][iReg]->SetBinError(iX,iNt,bine*NormScaleNt);
+				}
+				if (iReg==4) {
+				Double_t binc = hPIDPtNtMaxCorr[Xi][D][iReg]->GetBinContent(iX,iNt);
+				Double_t bine = hPIDPtNtMaxCorr[Xi][D][iReg]->GetBinError(iX,iNt);
+				hPIDPtNtMaxCorr[Xi][D][iReg]->SetBinContent(iX,iNt,binc*NormScaleNt);
+				hPIDPtNtMaxCorr[Xi][D][iReg]->SetBinError(iX,iNt,bine*NormScaleNt);
+				}*/
+
+			}
+		}
+
+		// Now we have phi as a function of RT classes but in NT binning
+		TH2F* hRebinned = new TH2F(Form("%s_rebin",hPIDPtNtCorr[phi][D][iReg]->GetName()),hPIDPtNtCorr[phi][D][iReg]->GetTitle(),
+			NPHIPTBINS, PHIXBINS, 50, -0.5, 49.5);
+		for (int iX = 1; iX < hPIDPtNtCorr[phi][D][iReg]->GetNbinsX()+1; iX++) {
+		for (int iY = 1; iY < hPIDPtNtCorr[phi][D][iReg]->GetNbinsY()+1; iY++) {
+			hRebinned->SetBinContent(iX,iY,hPIDPtNtCorr[phi][D][iReg]->GetBinContent(iX,iY));
+			hRebinned->SetBinError(iX,iY,hPIDPtNtCorr[phi][D][iReg]->GetBinError(iX,iY));
+		}	}
+		hPIDPtNtCorr[phi][D][iReg] = hRebinned;
+		hPIDPtNtCorr[phi][D][iReg]->Write();
+	}
+}
+
+void MyAnalysisMC::RebinPhiForClosure() {
+
+
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)		{
+	//for (int iType = 0; iType < NTYPE-1; ++iType)		{ // full rebinning of matrix
+	for (int iType = 0; iType < 1; ++iType)		{		// or only partial in n_meas
+
+		// First store NT projections for reweighting of the unfolding matrix
+		hNtPID[phi][iType][iReg] = (TH1F*)hPIDPtNtCorr[phi][iType][iReg]->ProjectionY(Form("hNtPID_%i_%i_%i",phi,iType,iReg),1,51);
+		hNtPID[phi][iType][iReg]->Write();
+
+		// Rebinning NT into coarser according to the NT binning given by histogram from data
+		hPIDPtNtCorr[phi][iType][iReg] = RebinHistogram2DOnlyNT(hPIDPtNtCorr[phi][iType][iReg],hPhiPtNtBinning);
+
+		// Moving back to histogram with equal bins so that it works w the unf. class
+		TH2F* hRebinned = new TH2F(Form("%s_rebin",hPIDPtNtCorr[phi][iType][iReg]->GetName()),hPIDPtNtCorr[phi][iType][iReg]->GetTitle(),
+			NPHIPTBINS, PHIXBINS, 50, -0.5, 49.5);
+		for (int iX = 1; iX < hPIDPtNtCorr[phi][iType][iReg]->GetNbinsX()+1; iX++) {
+		for (int iY = 1; iY < hPIDPtNtCorr[phi][iType][iReg]->GetNbinsY()+1; iY++) {
+			hRebinned->SetBinContent(iX,iY,hPIDPtNtCorr[phi][iType][iReg]->GetBinContent(iX,iY));
+			hRebinned->SetBinError(iX,iY,hPIDPtNtCorr[phi][iType][iReg]->GetBinError(iX,iY));
+		}	}
+		hPIDPtNtCorr[phi][iType][iReg] = hRebinned;
+		hPIDPtNtCorr[phi][iType][iReg]->Write();
+
+
+	}	}
+
+}
+
+TH2F* MyAnalysisMC::RebinHistogram2D(TH2F* hrm, TH2F* hptnt) {
+
+  	const int maxBins = 100; // Maximum expected number of bins
+    double newBinEdges[maxBins + 1]; // +1 for the upper edge of the last bin
+    int numBins = hptnt->GetYaxis()->GetNbins();
+
+    // Check to not exceed maxBins
+    if (numBins > maxBins) {
+        // Handle error: Too many bins
+        return nullptr;
+    }
+
+    newBinEdges[0] = -0.5;
+    // Extract bin edges from the y-axis of hptnt
+    for (int iBin = 2; iBin <= numBins + 1; ++iBin) { // Include the upper edge of the last bin
+        newBinEdges[iBin - 1] = 0.5 + hptnt->GetYaxis()->GetBinLowEdge(iBin);
+    }
+
+    // Create a new histogram with these bin edges for both x and y axes
+    TH2F* hRebinned = new TH2F(Form("%s_rebin",hrm->GetName()), hrm->GetTitle(),
+                               numBins, newBinEdges, // x-axis bins
+                               numBins, newBinEdges); // y-axis bins
+
+    // Fill the new histogram with contents from hrm, adjusting for the new binning
+    for (int xBin = 1; xBin <= hrm->GetNbinsX(); ++xBin) {
+        for (int yBin = 1; yBin <= hrm->GetNbinsY(); ++yBin) {
+
+            double content = hrm->GetBinContent(xBin, yBin);
+            double xCenter = hrm->GetXaxis()->GetBinCenter(xBin);
+            double yCenter = hrm->GetYaxis()->GetBinCenter(yBin);
+            if (content != 0) {
+                // Fill the histogram using the center of the original bins
+                hRebinned->Fill(xCenter, yCenter, content);
+            }
+        }
+    }
+
+    return hRebinned;
+}
+
+TH2F* MyAnalysisMC::RebinHistogram2DOnlyNT(TH2F* hrm, TH2F* hptnt) {
+
+  	const int maxBins = 100; // Maximum expected number of bins
+    double newBinEdges[maxBins + 1]; // +1 for the upper edge of the last bin
+    int numBins = hptnt->GetYaxis()->GetNbins();
+
+    // Check to not exceed maxBins
+    if (numBins > maxBins) {
+        // Handle error: Too many bins
+        return nullptr;
+    }
+
+    newBinEdges[0] = -0.5;
+    // Extract bin edges from the y-axis of hptnt
+    for (int iBin = 2; iBin <= numBins + 1; ++iBin) { // Include the upper edge of the last bin
+        newBinEdges[iBin - 1] = 0.5 + hptnt->GetYaxis()->GetBinLowEdge(iBin);
+    }
+
+    // Create a new histogram with these bin edges for both x and y axes
+    TH2F* hRebinned = new TH2F(Form("%s_rebin",hrm->GetName()), hrm->GetTitle(),
+                               NPHIPTBINS,PHIXBINS, // x-axis bins
+                               numBins, newBinEdges); // y-axis bins
+
+    // Fill the new histogram with contents from hrm, adjusting for the new binning
+    for (int xBin = 1; xBin <= hrm->GetNbinsX(); ++xBin) {
+        for (int yBin = 1; yBin <= hrm->GetNbinsY(); ++yBin) {
+
+            double content = hrm->GetBinContent(xBin, yBin);
+            double xCenter = hrm->GetXaxis()->GetBinCenter(xBin);
+            double yCenter = hrm->GetYaxis()->GetBinCenter(yBin);
+            if (content != 0) {
+                // Fill the histogram using the center of the original bins
+                hRebinned->Fill(xCenter, yCenter, content);
+            }
+        }
+    }
+
+    return hRebinned;
+}
+
+TH1F* MyAnalysisMC::RebinHistogram1D(TH1F* hrm, TH2F* hptnt) {
+
+  	const int maxBins = 200; // Maximum expected number of bins
+    double newBinEdges[maxBins + 1]; // +1 for the upper edge of the last bin
+    int numBins = hptnt->GetYaxis()->GetNbins();
+
+    // Check to not exceed maxBins
+    if (numBins > maxBins) {
+        // Handle error: Too many bins
+        return nullptr;
+    }
+
+    newBinEdges[0] = -0.5;
+    // Extract bin edges from the y-axis of hptnt
+    for (int iBin = 2; iBin <= numBins + 1; ++iBin) { // Include the upper edge of the last bin
+        newBinEdges[iBin - 1] = 0.5 + hptnt->GetYaxis()->GetBinLowEdge(iBin);
+    }
+
+    // Create a new histogram with these bin edges for both x and y axes
+    TH1F* hRebinned = new TH1F(Form("%s_rebin",hrm->GetName()), hrm->GetTitle(),
+                               numBins, newBinEdges);
+
+    // Fill the new histogram with contents from hrm, adjusting for the new binning
+    for (int xBin = 1; xBin <= hrm->GetNbinsX(); ++xBin) {
+
+        double content = hrm->GetBinContent(xBin);
+        double xCenter = hrm->GetXaxis()->GetBinCenter(xBin);
+        if (content != 0) {
+                // Fill the histogram using the center of the original bins
+                hRebinned->Fill(xCenter, content);
+        }
+    }
+
+    return hRebinned;
+}
+
+
+/*void MyAnalysisMC::DoUnfoldingNtRebin() {
+
+	TList* lOut = new TList();
+	lOut->SetOwner();
+
+	// Output plots
+	const char* dOut = "results_unfolding_rebin";
+	const bool eRM = false;
+	const int NumberOfIters = 3;
+
+	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
+	hNtRM = FlipMatrix(hNtRM);
+	TH2F* hNtRMRebin = RebinHistogram2D(hNtRM,hPIDPtNtCorr[phi][D][0]);
+	TH1F* hNtRecRebin = RebinHistogram1D(hNtRec,hPIDPtNtCorr[phi][D][0]);
+	TH1F* hNtGenRebin = RebinHistogram1D(hNtGen,hPIDPtNtCorr[phi][D][0]);
+	TH1F* hNtRebin = RebinHistogram1D(hNt,hPIDPtNtCorr[phi][D][0]);
+	// ROWWISE NORMALISATION IS PERFORMED IN mUnf
+	//cout << "Histograms: " << hNtRec << " " << hNt << " " << hNtGen << " " << hNtRM << "\n";
+	
+	if (eRM) mUnf->ExtrapolateRM(hNtRMRebin);
+	mUnf->SetnIter(NumberOfIters);
+	mUnf->SetError(hNtRecRebin);
+	mUnf->SetError(hNtGenRebin);
+	mUnf->SaveSolutionNT(kTRUE);
+	
+	if (mHandler->GetFlagMC()) mUnf->Setup(hNtRecRebin,hNtGenRebin,hNtRMRebin);
+	else mUnf->Setup(hNtRebin,hNtGenRebin,hNtRMRebin);
+	
+	mUnf->Unfold();
+	mUnf->V2H();
+	
+	printf(" - Unfolding region : %s\n",mUnf->GetRegion());
+
+	hNtUnf = (TH1F*)(mUnf->GetUnfoldedDistH())->Clone("hNtUnf");
+	if(mHandler->GetFlagMC())	hNtClosure = (TH1F*)(mUnf->GetClosureH())->Clone("hNtClosure");
+	
+	TH1F* hNT = (TH1F*)hNtUnf->Clone("_hNT");
+	hRtUnf = (TH1F*)mUnf->RebinNT2RT(hNtUnf, kTRUE);
+	hRtUnf->Scale(1.0/hRtUnf->Integral());
+	
+	//! Relative statistical uncertainty
+	//! NT distribution with final bins to plot
+	TH1F* hRelStatUnc = (TH1F*)hNtUnf->Clone("hRelStatUnc_Nt");
+	hRelStatUnc->Reset();
+
+	TH1F* hNch = (TH1F*)hNtUnf->Clone("hNT");
+	hNch->Reset();
+
+	for(int bin = 1; bin <= hRelStatUnc->GetNbinsX(); bin++){
+		double yield = hNtUnf->GetBinContent(bin);
+		double error = hNtUnf->GetBinError(bin);
+		if( yield > 0. ) hRelStatUnc->SetBinContent(bin, error / yield);
+	}
+
+	lOut->Add(hNtRMRebin);
+	
+	if (mHandler->GetFlagMC()) 	lOut->Add(hNtClosure);
+	//else 	ComparisonPublished(hRtUnf);
+
+	lOut->Add(hNtUnf);
+	lOut->Add(hRtUnf);
+	lOut->Add(hRelStatUnc);
+
+	TGraph* gChi2 = nullptr;
+	if (mHandler->GetFlagMC())	{
+		mUnf->DrawNchClosure(hNtGen,hNtUnf,-0.5,30.0,"#it{N}_{T}","Unfolded/True",dOut);
+		TVectorD iterX = (TVectorD)mUnf->GetChi2Vectors(kTRUE);
+		TVectorD Chi2 = (TVectorD)mUnf->GetChi2Vectors(kFALSE);
+		gChi2 = new TGraph(iterX,Chi2);
+		gChi2->SetName("gChi2");
+		gChi2->SetMarkerStyle(8);
+		lOut->Add(gChi2);
+	}
+
+	TFile* fUnfOut;
+	if (mHandler->GetFlagMC())	fUnfOut = new TFile(Form("./%s/1D_newClass_mc.root",dOut),"RECREATE");
+	else	fUnfOut = new TFile(Form("./%s/1D_newClass_data.root",dOut),"RECREATE");
+
+
+
+	fUnfOut->cd();
+	lOut->Write();
+	(mUnf->GetObjArray())->Write();
+	fUnfOut->Close();
+	delete fUnfOut;
+
+	fUnfOut = new TFile(Form("./%s/1D_newClass_data.root",dOut),"RECREATE");
+	fUnfOut->cd();
+	lOut->Write();
+	(mUnf->GetObjArray())->Write();
+	fUnfOut->Close();
+	delete fUnfOut;	
+
+	mDirFile->cd();
+	lOut->Write();
+}*/
+
+
 void MyAnalysisMC::DoUnfoldingNt() {
 
 	TList* lOut = new TList();
@@ -1342,10 +1966,10 @@ void MyAnalysisMC::DoUnfoldingNt() {
 	// Output plots
 	const char* dOut = "results_unfolding";
 	const bool eRM = false;
-	const int NumberOfIters = 20;
+	const int NumberOfIters = 5;
 
 	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
-	hNtRM = FlipMatrix(hNtRM);
+	hNtRM = FlipMatrix(hNtRM,20);
 	// ROWWISE NORMALISATION IS PERFORMED IN mUnf
 	//cout << "Histograms: " << hNtRec << " " << hNt << " " << hNtGen << " " << hNtRM << "\n";
 	
@@ -1435,10 +2059,10 @@ void MyAnalysisMC::DoUnfoldingNtMin() {
 	// Output plots
 	const char* dOut = "results_unfolding_min";
 	const bool eRM = false;
-	const int NumberOfIters = 18;
+	const int NumberOfIters = 5;
 
 	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
-	hNtMinRM = FlipMatrix(hNtMinRM);
+	hNtMinRM = FlipMatrix(hNtMinRM,20);
 	// ROWWISE NORMALISATION IS PERFORMED IN mUnf
 	//cout << "Histograms: " << hNtRec << " " << hNt << " " << hNtGen << " " << hNtRM << "\n";
 	
@@ -1530,10 +2154,10 @@ void MyAnalysisMC::DoUnfoldingNtMax() {
 	// Output plots
 	const char* dOut = "results_unfolding_max";
 	const bool eRM = false;
-	const int NumberOfIters = 10;
+	const int NumberOfIters = 5;
 
 	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
-	hNtMaxRM = FlipMatrix(hNtMaxRM);
+	hNtMaxRM = FlipMatrix(hNtMaxRM,20);
 	// ROWWISE NORMALISATION IS PERFORMED IN mUnf
 	//cout << "Histograms: " << hNtRec << " " << hNt << " " << hNtGen << " " << hNtRM << "\n";
 	
@@ -1620,7 +2244,7 @@ void MyAnalysisMC::DoUnfolding1D() {
 
 	const char* dOut = "results_unfolding";
 	const bool eRM = false;
-	const int NumberOfIters = 20;
+	const int NumberOfIters = 5;
 	const char* Regions[NREGIONS] = {"Trans1D","Toward","Away","TransMin1D","TransMax1D"};
 
 	TFile* fUnfOut1D = (mHandler->GetFlagMC()) ? new TFile(Form("./%s/2D_newClass_mc.root",dOut),"RECREATE")
@@ -1635,7 +2259,8 @@ void MyAnalysisMC::DoUnfolding1D() {
 	for (int iReg = 0; iReg < 5; ++iReg)		{
 	for (int itype = 0; itype < sizeoftypesUnf; ++itype)		{
 	Int_t iType = typesUnf[itype];
-	if (iType == D && iSp != Xi ) continue;
+	if (iType == D && iSp != Xi && iSp != phi) continue;
+	if (iType == D && iSp == phi && iReg > 2) continue;
 
 		UnfoldNTclass* obj = new UnfoldNTclass();
 
@@ -1645,13 +2270,19 @@ void MyAnalysisMC::DoUnfolding1D() {
 		obj->SetPid(SPECIES[iSp]);
 		obj->SetPidIdx(7+iSp);
 		obj->SetMCAnalysis(iType == RC ? 1 : 0);
-		obj->SaveSolutionNT(kFALSE);
+		obj->SaveSolutionNT(kTRUE);
 
 		printf(" - Unfolding species %s vs NT in region : %s\n",SPECIES[iSp],obj->GetRegion());
 		cout << "RM has " << hNtRM->GetNbinsX() << " x " << hNtRM->GetNbinsY() << endl;
-		cout << "hMC has " << hPIDPtNtCorr[iSp][iType][iReg]->GetNbinsX() << endl;
-		obj->UnfoldV02D(hNtRM,hPIDPtNtCorr[iSp][iType][iReg],hPIDPtNtCorr[iSp][iType][iReg]);
-		
+		cout << "hMC has " << hPIDPtNtCorr[iSp][iType][iReg]->GetNbinsY() << endl;
+
+		// Calling with the last argument makes it rebin the unfolding matrix according to its Y-axis
+		obj->UnfoldV02D(hNtRM,hPIDPtNtCorr[iSp][iType][iReg],hPIDPtNtCorr[iSp][iType][iReg], 
+			//(iType ==D && iSp == phi) ? hPhiPtNtBinning : nullptr ); // normal
+			( (iType == RC||iType == D) && iSp == phi) ? hPhiPtNtBinning : nullptr, // only for testing closures
+			//( (iType == RC||iType == D) && iSp == phi) ? (TH1F*)hPIDPtNtCorr[iSp][MC][iReg]->ProjectionY(Form("py%i_%i_%i",iSp,iType,iReg),1,51) : nullptr); // we need a reweighting distribution for rebinning
+			( (iType == RC||iType == D) && iSp == phi) ? hNtPID[phi][RC][iReg] : nullptr); // we need a reweighting distribution for rebinning
+
 		TObjArray* Arr = (TObjArray*)obj->GetObjArray();
 		cout << "1 Finding " << hPIDPtNtCorr[iSp][iType][iReg] << " and " << (TH2F*)Arr->FindObject("_hPtvsNch") << "\n";
 		// first is Gen, second is Unf
@@ -1665,7 +2296,9 @@ void MyAnalysisMC::DoUnfolding1D() {
 			}
 		}
 
-		if (iType==RC)	obj->GetMCclosureinRTBins(hPIDPtNtCorr[iSp][MC][iReg],(TH2F*)Arr->FindObject("_hPtvsNch"));	
+		if (iType==RC)	obj->GetMCclosureinRTBins(hPIDPtNtCorr[iSp][MC][iReg],(TH2F*)Arr->FindObject("_hPtvsNch"));	//normal
+		//if (iSp == phi && iType==RC)	obj->GetMCclosureinRTBinsPhi(hPIDPtNtCorr[iSp][MC][iReg],(TH2F*)Arr->FindObject("_hPtvsNch"));	//testing phi closure in coarser binning
+		//else if (iType==RC)	obj->GetMCclosureinRTBins(hPIDPtNtCorr[iSp][MC][iReg],(TH2F*)Arr->FindObject("_hPtvsNch"));	//normal
 
 		// NORMALISE
 		/*for (int iNt = 1; iNt < hV0PtNtFitCorrUnf[iSp][iType][iReg]->GetNbinsY()+1; iNt++) {
@@ -1709,7 +2342,7 @@ void MyAnalysisMC::DoUnfolding1DMin() {
 
 	const char* dOut = "results_unfolding_min";
 	const bool eRM = false;
-	const int NumberOfIters = 18;
+	const int NumberOfIters = 5;
 	const char* Regions[4] = {"Trans1D","Toward","Away","TransMin1D"};
 	
 
@@ -1741,7 +2374,7 @@ void MyAnalysisMC::DoUnfolding1DMin() {
 		printf(" - Unfolding species %s in region : %s\n",SPECIES[iSp],obj->GetRegion());
 		cout << "RM has " << hNtMinRM->GetNbinsX() << " x " << hNtMinRM->GetNbinsY() << endl;
 		cout << "hMC has " << hPIDPtNtMinCorr[iSp][iType][iReg]->GetNbinsX() << endl;
-		obj->UnfoldV02D(hNtMinRM,hPIDPtNtMinCorr[iSp][iType][iReg],hPIDPtNtMinCorr[iSp][iType][iReg]);
+		obj->UnfoldV02D(hNtMinRM,hPIDPtNtMinCorr[iSp][iType][iReg],hPIDPtNtMinCorr[iSp][iType][iReg],nullptr,nullptr);
 		
 		TObjArray* Arr = (TObjArray*)obj->GetObjArray();
 		cout << "1 Finding " << hPIDPtNtMinCorr[iSp][iType][iReg] << " and " << (TH2F*)Arr->FindObject("_hPtvsNch") << "\n";
@@ -1801,7 +2434,7 @@ void MyAnalysisMC::DoUnfolding1DMax() {
 
 	const char* dOut = "results_unfolding_max";
 	const bool eRM = false;
-	const int NumberOfIters = 10;
+	const int NumberOfIters = 5;
 	const char* Regions[5] = {"Trans1D","Toward","Away","TransMin1D","TransMax1D"};
 	
 
@@ -1834,7 +2467,7 @@ void MyAnalysisMC::DoUnfolding1DMax() {
 		printf(" - Unfolding species %s in region : %s\n",SPECIES[iSp],obj->GetRegion());
 		cout << "RM has " << hNtMaxRM->GetNbinsX() << " x " << hNtMaxRM->GetNbinsY() << endl;
 		cout << "hMC has " << hPIDPtNtMaxCorr[iSp][iType][iReg]->GetNbinsX() << endl;
-		obj->UnfoldV02D(hNtMaxRM,hPIDPtNtMaxCorr[iSp][iType][iReg],hPIDPtNtMaxCorr[iSp][iType][iReg]);
+		obj->UnfoldV02D(hNtMaxRM,hPIDPtNtMaxCorr[iSp][iType][iReg],hPIDPtNtMaxCorr[iSp][iType][iReg],nullptr,nullptr);
 		
 		TObjArray* Arr = (TObjArray*)obj->GetObjArray();
 		cout << "1 Finding " << hPIDPtNtMaxCorr[iSp][iType][iReg] << " and " << (TH2F*)Arr->FindObject("_hPtvsNch") << "\n";
@@ -1941,4 +2574,177 @@ void MyAnalysisMC::BinHistogramsIntoRT() {
 
 	}	}
 
+	TH1F* hNtUnfRebin = RebinHistogram1D(hNtUnf,hPhiPtNtBinning);
+
+	for (int iReg = 0; iReg < 3; ++iReg)		{
+	for (int iRtBin = 0; iRtBin < NRTBINS; ++iRtBin)	{
+	Int_t iSp = phi;
+	Int_t iType = D;
+
+	hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin] = 0x0;
+
+		// REBIN
+		int lowedge = GetRTBinPhi(iRtBin,kTRUE);
+		int upedge  = GetRTBinPhi(iRtBin,kFALSE);
+		Double_t NormScaleNt = hNtUnfRebin->Integral(lowedge,upedge)/hNtUnfRebin->Integral(1,7);
+
+		cout << "iReg "  << iReg << " iRtBin " << iRtBin << " " << hPIDPtNtCorrUnf[iSp][iType][iReg] << " " << hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin] << endl;
+		if (hPIDPtNtCorrUnf[iSp][iType][iReg]) {
+			hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin]
+				= (TH1F*)hPIDPtNtCorrUnf[iSp][iType][iReg]->ProjectionX(Form("hPIDPtRtCorrUnf_%s_%s_%s_%i",SPECIES[iSp],TYPE[iType],REGIONS[iReg],iRtBin),lowedge,upedge);
+			hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin]->Scale(1./NormScaleNt);
+		}
+		cout << "iReg "  << iReg << " iRtBin " << iRtBin << " " << hPIDPtNtCorrUnf[iSp][iType][iReg] << " " << hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin] << endl;
+
+
+	cout << "Writing " << iReg << " " << hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin] << " " << hPIDPtRtMinCorrUnf[iSp][iType][iReg][iRtBin] << " " << hPIDPtRtMaxCorrUnf[iSp][iType][iReg][iRtBin] << endl;
+	if (hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin]) hPIDPtRtCorrUnf[iSp][iType][iReg][iRtBin]->Write();
+	
+	}	}
+
 }
+
+Int_t MyAnalysisMC::GetRTBinPhi(const int& binRt, bool isLowEdge)	{
+
+	int binNch = -1;
+
+	//! <NT> = 7. 43
+	
+	if( binRt == 0 ){
+		if(isLowEdge) binNch = 1;
+		else binNch = 50;
+	}
+	else if( binRt == 1 ){ //! From NT = 0 to NT = 6
+		if(isLowEdge) binNch = 1;
+		else binNch = 1;//else binNch = 4;
+	}
+	else if( binRt == 2 ){ //! From NT = 6 to NT = 11
+		if(isLowEdge) binNch = 2;
+		else binNch = 3;
+	}
+	else if( binRt == 3 ){//! From NT = 12 to NT = 18
+		if(isLowEdge) binNch = 4;
+		else binNch = 5;
+	}
+	else if( binRt == 4 ){//! From NT = 19 to NT = 36
+		if(isLowEdge) binNch = 6;
+		else binNch = 6;
+	}
+	else{
+		if(isLowEdge) binNch = 39;
+		else binNch = 50;
+	}
+
+	return binNch;
+
+}
+
+
+/*void MyAnalysisMC::CalculateUnfoldingSysNt() {
+
+	TFile* fClosuresNt = new TFile("../files/unfolding/results_unfolding/2D_newClass_mc.root","READ");
+	TFile* fClosuresNtMin = new TFile("../files/unfolding/results_unfolding_min/2D_newClass_mc.root","READ");
+	TFile* fClosuresNtMax = new TFile("../files/unfolding/results_unfolding_max/2D_newClass_mc.root","READ");
+	const char* Regions[NREGIONS] = {"Trans1D","Toward","Away","TransMin1D","TransMax1D"};
+
+	// RT ANALYSIS
+	for (int iSp = 1; iSp < NSPECIES; ++iSp)	{
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)	{
+
+		TDirectoryFile* dir;
+		if (iReg==3) dir = (TDirectoryFile*)fClosuresNtMin->Get(Form("%s_%s",SPECIES[iSp],REGIONS[iReg]));
+		else if (iReg==4) dir = (TDirectoryFile*)fClosuresNtMax->Get(Form("%s_%s",SPECIES[iSp],REGIONS[iReg]));
+		else dir = (TDirectoryFile*)fClosuresNt->Get(Form("%s_%s",SPECIES[iSp],REGIONS[iReg]));
+
+		// DIVIDE BY RT INTEGRATED
+		TH1D* hClosureD = (TH1D*)dir->Get(Form("hUnToGen_%s_%s_%i",SPECIES[iSp],Regions[iReg],0));
+		for (int iRtBin = 1; iRtBin < NRTBINS; ++iRtBin)	{
+		
+			TH1D* hClosure = (TH1D*)dir->Get(Form("hUnToGen_%s_%s_%i",SPECIES[iSp],Regions[iReg],iRtBin));
+			hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->Divide(hClosure,hClosureD,1.,1.,"");	
+
+			// CALCULATE UNCERTAINTIES
+			for( Int_t i=1; i<hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetNbinsX()+1; i++){ 
+				Double_t err1 = hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinError(i);
+				Double_t errHM = hClosureD->GetBinError(i);
+				Double_t errR = TMath::Sqrt(TMath::Abs(err1*err1 - errHM*errHM));
+				errR = (hClosureD->GetBinContent(i) > 0) ? errR / hClosureD->GetBinContent(i) : 0;
+				hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->SetBinError(i,errR);
+			}
+
+			// CALCULATE MAX DEVIATIONS
+			for (int iBin = 1; iBin<hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetNbinsX()+1;iBin++) {
+				Double_t maxD = 0;
+				Double_t varD = TMath::Abs(hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinContent(iBin)-1.);
+				if (varD>maxD && varD>0.*hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinError(iBin)) maxD=varD;
+						
+				Double_t model = (iReg==1||iReg==2)? 0.005*0.005 : 0.02*0.02; // model dependence systematic						
+				if (hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinContent(iBin)>0) hV0PtRtSysMaxDUnfolding[iSp][iReg][iRtBin]->SetBinContent(iBin,TMath::Sqrt(model+maxD*maxD));
+				if (hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinContent(iBin)>0) hV0PtRtSysMaxDUnfolding[iSp][iReg][iRtBin]->SetBinError(iBin,hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinError(iBin));
+				if (hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinContent(iBin)>0) hV0PtRtSysMaxDUnfoldingRatioToHM[iSp][iReg][iRtBin]->SetBinContent(iBin,TMath::Sqrt(maxD*maxD));
+				if (hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinContent(iBin)>0) hV0PtRtSysMaxDUnfoldingRatioToHM[iSp][iReg][iRtBin]->SetBinError(iBin,hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetBinError(iBin));
+			}
+
+			// SMOOTHEN BY FITTING   (TERNARIES USED FOR TREATING UNSTABLE OUTLIERS)
+			TF1* fpol = new TF1("fpol",(iSp==1&&iReg==4&&iRtBin==4)?"pol1":"pol2",0.4,8.0);
+			hV0PtRtSysMaxDUnfolding[iSp][iReg][iRtBin]->Fit(fpol,(iSp==2&&(iReg==4||iReg==0)&&iRtBin==4)?"W0Q":"0Q");
+			for (int iBin = 1; iBin<hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetNbinsX()+1;iBin++) {
+				hV0PtRtSysMaxDUnfoldingSmooth[iSp][iReg][iRtBin]->SetBinContent(iBin,
+					fpol->Eval(hV0PtRtSysMaxDUnfoldingSmooth[iSp][iReg][iRtBin]->GetBinCenter(iBin)));
+			}
+			hV0PtRtSysMaxDUnfoldingRatioToHM[iSp][iReg][iRtBin]->Fit(fpol,(iSp==2&&(iReg==4||iReg==0)&&iRtBin==4)?"W0Q":"0Q");
+			for (int iBin = 1; iBin<hV0PtRtSysUnfolding[iSp][iReg][iRtBin]->GetNbinsX()+1;iBin++) {
+				hV0PtRtSysMaxDUnfoldingSmoothRatioToHM[iSp][iReg][iRtBin]->SetBinContent(iBin,
+					fpol->Eval(hV0PtRtSysMaxDUnfoldingSmoothRatioToHM[iSp][iReg][iRtBin]->GetBinCenter(iBin)));
+			}
+
+		}
+
+	}	}
+
+	// CORRELATION OF L TO K RATIOS
+	for (int iReg = 0; iReg < NREGIONS; ++iReg)	{
+	for (int iRtBin = 1; iRtBin < NRTBINS; ++iRtBin)	{
+		
+		hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->Divide(hV0PtRtSysUnfolding[2][iReg][iRtBin],hV0PtRtSysUnfolding[1][iReg][iRtBin],1.,1.,"");	
+
+		// CALCULATE UNCERTAINTIES
+		for( Int_t i=1; i<hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetNbinsX()+1; i++){ 
+			Double_t err1 = hV0PtRtSysUnfolding[2][iReg][iRtBin]->GetBinError(i);
+			Double_t errHM = hV0PtRtSysUnfolding[1][iReg][iRtBin]->GetBinError(i);
+			Double_t errR = TMath::Sqrt(TMath::Abs(err1*err1 - errHM*errHM));
+			errR = (hV0PtRtSysUnfolding[1][iReg][iRtBin]->GetBinContent(i) > 0) ? errR / hV0PtRtSysUnfolding[1][iReg][iRtBin]->GetBinContent(i) : 0;
+			hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->SetBinError(i,errR);
+		}
+
+			// CALCULATE MAX DEVIATIONS
+		for (int iBin = 1; iBin<hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetNbinsX()+1;iBin++) {
+			Double_t maxD = 0;
+			Double_t varD = TMath::Abs(hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetBinContent(iBin)-1.);
+			if (varD>maxD && varD>0.*hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetBinError(iBin)) maxD=varD;
+						
+			Double_t model = 0;
+			if (hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetBinContent(iBin)>0) hV0PtRtSysMaxDUnfoldingLtoK0s[iReg][iRtBin]->SetBinContent(iBin,TMath::Sqrt(model+maxD*maxD));
+			if (hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetBinContent(iBin)>0) hV0PtRtSysMaxDUnfoldingLtoK0s[iReg][iRtBin]->SetBinError(iBin,hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetBinError(iBin));
+			
+		}
+
+			// SMOOTHEN BY FITTING   (TERNARIES USED FOR TREATING UNSTABLE OUTLIERS)
+			TF1* fpol = new TF1("fpol",((iReg==2||iReg==4)&&iRtBin==4)?"pol1":"pol2",0.4,8.0);
+			hV0PtRtSysMaxDUnfoldingLtoK0s[iReg][iRtBin]->Fit(fpol,(iReg==0&&iRtBin==4)?"W0Q":"0Q");
+			for (int iBin = 1; iBin<hV0PtRtSysUnfoldingLtoK0s[iReg][iRtBin]->GetNbinsX()+1;iBin++) {
+				hV0PtRtSysMaxDUnfoldingSmoothLtoK0s[iReg][iRtBin]->SetBinContent(iBin,
+					fpol->Eval(hV0PtRtSysMaxDUnfoldingSmoothLtoK0s[iReg][iRtBin]->GetBinCenter(iBin)));
+			}
+
+		}
+
+	}
+
+
+	fClosuresNt->Close();
+	fClosuresNtMin->Close();
+	fClosuresNtMax->Close();
+	mDirFile->cd();
+
+}*/

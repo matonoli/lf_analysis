@@ -34,8 +34,8 @@ namespace MCconsts {
 	const char* REGIONS[] = {"Trans","Near","Away","TransMin","TransMax"};
 	const char* PLOTS_REGIONS[] = {"Trans.","Near","Away","Trans.-min","Trans.-max"};
 
-	const Int_t NSPECIES = 6;
-	const char* SPECIES[] = {"piKp","pr","XiInc","Xi","phiInc","phi"};
+	const Int_t NSPECIES = 8;
+	const char* SPECIES[] = {"piKp","pr","K0s","L","XiInc","Xi","phiInc","phi"};
 			
 	const int NRTBINS = 5;
 	const double RTBINS[NRTBINS+1] = {5.0,0.0, 0.85, 1.5, 2.5, 5.0};
@@ -51,10 +51,16 @@ namespace MCconsts {
 		2.6, 3.0, 3.4, 4.0, 5.0, 
 		6.5, 8.0 };
 		
-	const Int_t NXIPTBINS = 7; 
+	/*const Int_t NXIPTBINS = 7; 
   	const Double_t XIXBINS[NXIPTBINS+1] = {
   		0.6, 1.2, 1.6, 2.2, 
-  		2.8, 3.6, 5.0, 6.5 };
+  		2.8, 3.6, 5.0, 6.5 };*/
+
+  	
+  const Int_t NXIPTBINS = 6; 
+  const Double_t XIXBINS[NXIPTBINS+1] = {
+      0.6, 1.4, 2.0, 
+      2.6, 3.4, 5.0, 8.0 };
 
   	const Int_t NPHIPTBINS = 14; 
   	const Double_t PHIXBINS[NPHIPTBINS+1] = {
@@ -63,12 +69,17 @@ namespace MCconsts {
   		2.2, 2.6, 3.0, 3.5,
   		4.0, 5.0, 8.0 };
 
+  	/*const Int_t NPHIPTBINS = 5;
+  	const Double_t PHIXBINS[5+1] = {
+  		0.5 , 1 , 1.5 , 2. , 
+  			2.5, 5.0};*/
+
   	const Double_t NPTBINS[NSPECIES] = {
-  		NPIPTBINS, NPIPTBINS, NXIPTBINS, NXIPTBINS, NPHIPTBINS, NPHIPTBINS
+  		NPIPTBINS, NPIPTBINS, NPIPTBINS, NPIPTBINS, NXIPTBINS, NXIPTBINS, NPHIPTBINS, NPHIPTBINS
   	};
 
   	const Double_t* XBINS[NSPECIES] = {
-  		PIXBINS, PIXBINS, XIXBINS, XIXBINS, PHIXBINS, PHIXBINS
+  		PIXBINS, PIXBINS, PIXBINS, PIXBINS, XIXBINS, XIXBINS, PHIXBINS, PHIXBINS
   	};
 		
   	const Int_t NEVENTTYPES = 10; //1+2+2+4+6+4+4 +2+4+4
@@ -104,20 +115,28 @@ class MyAnalysisMC: public MyAnalysis {
 		Bool_t SelectV0Daughter(MyTrack &tr);
 		Bool_t IsGeometricalCut(Float_t phiprime, Float_t pt);
 		Double_t FlipNegativeAngle(Double_t phi);
-		TH2F* FlipMatrix(TH2F* h);
+		TH2F* FlipMatrix(TH2F* h, Int_t limit);
 		TH2F* ScaleWidthTH2(TH2F* h);
 		TH2F* DivideTH2ByTH1(TH2F* h, TH1D* d);
 		TH2F* ScaleTH2Rows(TH2F* h, Double_t d);
+		TH2F* RebinTH2(TH2F* h, Int_t nbins, const Double_t xbins[]);
+		TH2F* RebinHistogram2D(TH2F* hrm, TH2F* hptnt);
+		TH2F* RebinHistogram2DOnlyNT(TH2F* hrm, TH2F* hptnt);
+		TH1F* RebinHistogram1D(TH1F* hrm, TH2F* hptnt);
 
 		Bool_t CalculateEfficiencies();
 		Bool_t Normalise();
 		Bool_t CorrectEfficiency();
 		Bool_t Unfold();
 		void LoadDataXi();
+		void LoadDataPhi();
+		void RebinPhiForClosure();
 		void BinHistogramsIntoRT();
+		Int_t GetRTBinPhi(const int& binRt, bool isLowEdge);
 
 
 		void DoUnfoldingNt();
+		//void DoUnfoldingNtRebin();
 		void DoUnfolding1D();
 		void DoUnfoldingNtMin();
 		void DoUnfolding1DMin();
@@ -144,7 +163,7 @@ class MyAnalysisMC: public MyAnalysis {
 
 		// DECLARE AUXILLIARY ENUMS
 		enum { RC, MC, D, sizeofTypes };
-		enum { piKp, pr, XiInc, Xi, phiInc, phi, sizeofSpecies };
+		enum { piKp, pr, K0s, L, XiInc, Xi, phiInc, phi, sizeofSpecies };
 
 		// IMPORTANT EVENT GLOBALS		
 		Double_t eventRt;
@@ -203,10 +222,15 @@ class MyAnalysisMC: public MyAnalysis {
 		TH1D* hPIDEffi[MCconsts::NSPECIES];
 		TH2F* hPIDDPhivNchTrans[MCconsts::NSPECIES];
 
+		TH1F* hNtPID[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+
 		//PID NT HISTOGRAMS
 		TH2F* hPIDPtNt[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
 		TH2F* hPIDPtNtMin[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
 		TH2F* hPIDPtNtMax[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH3F* hPIDPtNtRCvMC[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH3F* hPIDPtNtMinRCvMC[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
+		TH3F* hPIDPtNtMaxRCvMC[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS];
 		
 		// POST PROCESSING HISTOGRAMS
 		TH1D* hPIDPtCorr[MCconsts::NSPECIES][MCconsts::NTYPE];
@@ -248,6 +272,9 @@ class MyAnalysisMC: public MyAnalysis {
 		TH1F* hPIDPtRtMinCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS][MCconsts::NRTBINS];
 		TH1F* hPIDPtRtMaxCorrUnf[MCconsts::NSPECIES][MCconsts::NTYPE][MCconsts::NREGIONS][MCconsts::NRTBINS];
 
+
+		// AUXILIARY NT BINNING FROM PHI
+		TH2F* hPhiPtNtBinning;
 
 
 };
