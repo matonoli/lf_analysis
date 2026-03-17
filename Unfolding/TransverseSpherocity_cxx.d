@@ -1,0 +1,49 @@
+
+# DO NOT DELETE
+
+TransverseSpherocity_cxx.so: TransverseSpherocity.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TNamed.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TObject.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/Rtypes.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RtypesCore.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/ROOT/RConfig.hxx
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RVersion.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RConfigure.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/DllImport.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/strtok.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/strlcpy.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/snprintf.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TGenericClassInfo.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TSchemaHelper.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TIsAProxy.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TVirtualIsAProxy.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TStorage.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TVersionCheck.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RVersion.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TString.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TMathBase.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/ROOT/RStringView.hxx
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/ROOT/RWrap_libcpp_string_view.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/ROOT/libcpp_string_view.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/ROOT/TypeTraits.hxx
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TMath.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TError.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TH1.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TAxis.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TAttAxis.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TArrayD.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TArray.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TAttLine.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TAttFill.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TAttMarker.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TArrayC.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TArrayS.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TArrayI.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TArrayF.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/Foption.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/ROOT/EExecutionPolicy.hxx
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TVectorFfwd.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TVectorDfwd.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TFitResultPtr.h
+TransverseSpherocity_cxx.so: /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RVersion.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RConfig.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TClass.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TDictAttributeMap.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TInterpreter.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TROOT.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TBuffer.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TMemberInspector.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TError.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/RtypesImp.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TIsAProxy.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TFileMergeInfo.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/include/TCollectionProxyInfo.h /opt/alice/sw/slc7_x86-64/ROOT/v6-24-06-local1/bin/rootcling
+TransverseSpherocity_cxx__ROOTBUILDVERSION= 6.24/06
