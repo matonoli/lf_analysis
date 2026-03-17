@@ -188,7 +188,43 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 		if (ptLead > 40.) continue;
 		nChTrans++;		// increment only if a leading particle was found	
 	}
-	
+
+	// RT NCH CALCULATION
+	Int_t nChTrans2011Sys = 0;
+	for (int iTr = 0; iTr < nTracks; ++iTr)
+	{
+
+		if (!mHandler->track(iTr))
+			continue;
+		MyTrack t(mHandler->track(iTr));
+		t.SetHandler(mHandler);
+
+		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1])
+			continue;
+
+		// RT DETERMINATION
+		if (!IsTrans(t.GetPhi(), phiLead))
+			continue;
+		if (t.GetPt() < 0.15)
+			continue;
+
+		// using hybrid tracks
+		if (!t.IsITSTPC2011Sys())
+			continue;
+		if (TMath::Abs(t.GetMCPdgCode()) != 211 && TMath::Abs(t.GetMCPdgCode()) != 321 && TMath::Abs(t.GetMCPdgCode()) != 2212)
+			continue;
+
+		// APPLY DCA CUT TO AVOID V0 DAUGHTERS
+		if (TMath::Abs(t.GetDCApvXY()) > cuts::V0_D_DCAPVXY)
+			continue;
+
+		if (ptLead < 5.)
+			continue;
+		if (ptLead > 40.)
+			continue;
+		nChTrans2011Sys++; // increment only if a leading particle was found
+	}
+
 	// DETERMINE NT_MIN AND NT_MAX
 	Bool_t isSideAMin = 0;			// We need to keep track for also classifying the regions for spectra.
 	Int_t nChTransMin = nChTransB;	// NT in the min transverse region
@@ -324,6 +360,11 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 			hNchTransMaxRC->Fill(nChTransMax);
 			hNchTransMaxMC->Fill(nChTransMaxMC);
 			hNchTransMaxRCvMC->Fill(nChTransMaxMC,nChTransMax);
+
+			hNchTrans2011SysRC->Fill(nChTrans2011Sys);
+			hNchTrans2011SysMC->Fill(nChTransMC);
+			hNchTrans2011SysRCvMC->Fill(nChTransMC,nChTrans2011Sys);
+
 		}
 
 	}
@@ -331,6 +372,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 	// CLASSIFYING EVENT FOR RT ANALYSIS
 	if (ptLead>5. && ptLead < 40.  && ptLeadMC>5. && ptLeadMC<40.) {// THE LAST TWO CAN BE REMOVED
 		hNchTrans->Fill(nChTrans);
+		hNchTrans2011Sys->Fill(nChTrans2011Sys);
 	}
 
 	// CLASSIFYING EVENT FOR RT ANALYSIS
@@ -1144,6 +1186,13 @@ Bool_t MyAnalysisMC::CreateHistograms() {
  	hLeadPtvNchTrans0		= new TH2F("hLeadPtvNchTrans0","; N_{ch}^{trans}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
  	hLeadPtvNchTransMin		= new TH2F("hLeadPtvNchTransMin","; N_{ch}^{trans,min}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
  	hLeadPtvNchTransMax		= new TH2F("hLeadPtvNchTransMax","; N_{ch}^{trans,max}; p_{T}^{leading} (GeV/#it{c})", 50, -0.5, 49.5, 200, 0., 40.);
+
+	// NT SYSTEMATICS
+	hNchTrans2011Sys			= new TH1F("hNchTrans2011Sys","; N_{ch}^{trans,2011}; Entries",50, -0.5, 49.5);
+	hNchTrans2011SysRC			= new TH1F("hNchTrans2011SysRC","; RC N_{ch}^{trans,2011}; Entries",50, -0.5, 49.5);
+	hNchTrans2011SysMC			= new TH1F("hNchTrans2011SysMC","; MC N_{ch}^{trans,2011}; Entries",50, -0.5, 49.5);
+	hNchTrans2011SysRCvMC		= new TH2F("hNchTrans2011SysRCvMC", ";MC N_{ch}^{trans,2011}; RC N_{ch}^{trans,2011}",50,-0.5,49.5,50,-0.5,49.5);
+
 
  	hPhiDaughterRegionsPt[MC]   = new TH2F("hPhiDaughterRegionsPt_MC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 3,-0.5,2.5);
  	hPhiDaughterRegionsPt[RC]	= new TH2F("hPhiDaughterRegionsPt_RC",";p_{T} (GeV/#it{c}); n. of differences between m. and d. regions", NPTBINS[phi], XBINS[phi], 3,-0.5,2.5);

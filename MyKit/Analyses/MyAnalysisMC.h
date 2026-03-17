@@ -217,6 +217,12 @@ class MyAnalysisMC: public MyAnalysis {
 		TH1F* hXiBachDCAXY;
 		TH1F* hXiPrDCAXY;
 
+		// NT SYSTEMATICS
+		TH1F *hNchTrans2011Sys;
+		TH1F *hNchTrans2011SysRC;
+		TH1F *hNchTrans2011SysMC;
+		TH2F *hNchTrans2011SysRCvMC;
+
 		//PID NT HISTOGRAMS
 		TH1D* hPIDPt[MCconsts::NSPECIES][MCconsts::NTYPE];
 		TH1D* hPIDEffi[MCconsts::NSPECIES];
