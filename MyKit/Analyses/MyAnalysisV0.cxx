@@ -455,6 +455,41 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		nChTrans++;		// increment only if a leading particle was found	
 	}
 
+	// RT NCH CALCULATION
+	Int_t nChTrans2011Sys = 0;
+	for (int iTr = 0; iTr < nTracks; ++iTr)
+	{
+		if (!mHandler->track(iTr))
+			continue;
+		MyTrack t(mHandler->track(iTr));
+		t.SetHandler(mHandler);
+		if (t.GetEta() < cuts::V0_ETA[0] || t.GetEta() > cuts::V0_ETA[1])
+			continue;
+
+		// RT DETERMINATION
+		if (!IsTrans(t.GetPhi(), phiLead))
+			continue;
+		// if (!t.IskITSrefit()) continue;		// cuts for tracks entering Nch^trans calculations
+		// if (!t.IsTPCOnlyRefit()) continue; // not using these cuts anymore
+		if (t.GetPt() < 0.15)
+			continue;
+
+		// using hybrid tracks instead
+		if (!t.IsITSTPC2011Sys() )
+			continue;
+		// if (!t.IsITSTPC2011()) continue;
+
+		// APPLY DCA CUT TO AVOID V0 DAUGHTERS
+		if (TMath::Abs(t.GetDCApvXY()) > cuts::V0_D_DCAPVXY)
+			continue;
+
+		if (ptLead < 5.)
+			continue;
+		if (ptLead > 40.)
+			continue;
+		nChTrans2011Sys++; // increment only if a leading particle was found
+	}
+
 	// NT TRACK CUTS STUDY
 	Int_t nChTrans2011 = 0;
 	Int_t nChTransHybrid = 0;
@@ -535,6 +570,8 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		hNchTrans2011OrHybrid->Fill(nChTrans2011OrHybrid);		// hybrid
 		hNchTrans2011vsHybrid->Fill(nChTrans2011OrHybrid,nChTrans2011);		//2011 vs hybrid
 
+		// NT systematics
+		hNchTrans2011Sys->Fill(nChTrans2011Sys);
 
 		eventRt = (double)nChTrans/RT_DEN;
 		hRt->Fill(eventRt);		}
@@ -669,7 +706,13 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 			hNchTransMaxRCvMC->Fill(nChTransMaxMC,nChTransMax);
 			eventRtMC = (double)nChTransMC/RT_DEN_MC;
 			hRtMC->Fill(eventRtMC);
-			hRtRCvMC->Fill(eventRtMC,eventRt);		}
+			hRtRCvMC->Fill(eventRtMC,eventRt);
+		
+			// NT systematics
+			hNchTrans2011SysRC->Fill(nChTrans2011Sys);
+			hNchTrans2011SysMC->Fill(nChTransMC);
+			hNchTrans2011SysRCvMC->Fill(nChTransMC,nChTrans2011Sys);
+				}
 
 		if (ptLeadMC > 5. && ptLeadMC < 40.) for (int iP = 0; iP < nParticles; ++iP)		{
 			
@@ -1919,6 +1962,12 @@ Bool_t MyAnalysisV0::CreateHistograms() {
  	hK0sDPhivNchTransMC				= new TH2F("hK0sDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
  	hLDPhivNchTransMC				= new TH2F("hLDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
  	hLbarDPhivNchTransMC			= new TH2F("hLbarDPhivNchTransMC","; N_{ch}^{trans}; #phi - #phi^{lead}", 50, -0.5, 49.5, 300, -3.2, 3.2);
+
+	// NT SYSTEMATICS
+	hNchTrans2011Sys 			= new TH1F("hNchTrans2011Sys", "; N_ch [trans.]; Entries", 50, -0.5, 49.5);
+	hNchTrans2011SysRC 			= new TH1F("hNchTrans2011SysRC", "; RC N_ch [trans.]; Entries", 50, -0.5, 49.5);
+	hNchTrans2011SysMC 			= new TH1F("hNchTrans2011SysMC", "; MC N_ch [trans.]; Entries", 50, -0.5, 49.5);
+	hNchTrans2011SysRCvMC 		= new TH2F("hNchTrans2011SysRCvMC", ";MC N_ch [trans.]; RC N_ch [trans.]", 50, -0.5, 49.5, 50, -0.5, 49.5);
 
 	// TRACK HISTOGRAMS
 	for (int iType = 0; iType < NTYPE; ++iType)		{

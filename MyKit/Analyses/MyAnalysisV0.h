@@ -473,6 +473,12 @@ class MyAnalysisV0: public MyAnalysis {
 		TH2F* hLDPhivNchTransMC;
 		TH2F* hLbarDPhivNchTransMC;
 
+		// NT SYSTEMATICS
+		TH1F *hNchTrans2011Sys;
+		TH1F *hNchTrans2011SysRC;
+		TH1F *hNchTrans2011SysMC;
+		TH2F *hNchTrans2011SysRCvMC;
+
 		// TRACK HISTOGRAMS
 		TH1D* hTrackPt[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];
 		TH2F* hTrackEtavPhi[V0consts::NTYPE][V0consts::NMULTI][V0consts::NSPHERO];

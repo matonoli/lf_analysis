@@ -43,6 +43,7 @@ class MyTrack: public TObject {
 		Bool_t IskITSrefit()					const { return (mAliTrack->GetStatus()&AliESDtrack::kITSrefit);};
 		Bool_t IsITSTPC2011()					const { return (mAliTrack->GetTrackCutFlag()&2);};
 		Bool_t IsTPCOnlyRefit()					const { return (mAliTrack->GetTrackCutFlag()&4);};
+		Bool_t IskITSTPC2011Sys()				const { return (mAliTrack->GetTrackCutFlag()&8);};
 		Bool_t IsGoodV0daughter()				const { return (mAliTrack->GetTrackCutFlag()&16);};
 		Bool_t IsITSTPC2011HybridOff()			const { return (mAliTrack->GetTrackCutFlag()&32);};
 		Bool_t IsITSTPC2011HybridNone()			const { return (mAliTrack->GetTrackCutFlag()&64);};
