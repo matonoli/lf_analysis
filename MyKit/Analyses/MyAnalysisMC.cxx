@@ -166,8 +166,9 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 		if (!IsTrans(t.GetPhi(),phiLead))	continue;
 		if (t.GetPt()<0.15) continue;
 
-		// using hybrid tracks
-		if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
+		// using hybrid tracks (or only 2011 for sys study)
+		// if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
+		if (!t.IsITSTPC2011()) continue;
 		if (TMath::Abs(t.GetMCPdgCode()) != 211 && TMath::Abs(t.GetMCPdgCode()) != 321
 			&& TMath::Abs(t.GetMCPdgCode()) != 2212) continue;
 		
@@ -208,7 +209,7 @@ Int_t MyAnalysisMC::Make(Int_t iEv) {
 		if (t.GetPt() < 0.15)
 			continue;
 
-		// using hybrid tracks
+		// using sys tracks
 		if (!t.IsITSTPC2011Sys())
 			continue;
 		if (TMath::Abs(t.GetMCPdgCode()) != 211 && TMath::Abs(t.GetMCPdgCode()) != 321 && TMath::Abs(t.GetMCPdgCode()) != 2212)

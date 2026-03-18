@@ -433,9 +433,9 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		//if (!t.IsTPCOnlyRefit()) continue; // not using these cuts anymore
 		if (t.GetPt()<0.15) continue;
 
-		// using hybrid tracks instead
-		if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
-		//if (!t.IsITSTPC2011()) continue;
+		// using hybrid tracks instead OR only 2011 for sys study
+		//if (!t.IsITSTPC2011() && !t.IsITSTPC2011HybridNone()) continue;
+		if (!t.IsITSTPC2011()) continue;
 
 		// APPLY DCA CUT TO AVOID V0 DAUGHTERS
 		if (TMath::Abs(t.GetDCApvXY()) > cuts::V0_D_DCAPVXY) continue;
@@ -474,7 +474,7 @@ Int_t MyAnalysisV0::Make(Int_t iEv) {
 		if (t.GetPt() < 0.15)
 			continue;
 
-		// using hybrid tracks instead
+		// using sys tracks
 		if (!t.IsITSTPC2011Sys() )
 			continue;
 		// if (!t.IsITSTPC2011()) continue;
