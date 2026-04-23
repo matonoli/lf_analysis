@@ -1273,6 +1273,11 @@ Bool_t MyAnalysisMC::BorrowHistograms() {
 	hNtMaxGen		= (TH1F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMaxMC")->Clone("hNtMaxGen");
 	hNtMaxRM		= (TH2F*)mHandler->analysis(0)->dirFile()->Get("hNchTransMaxRCvMC")->Clone("hNtMaxRM");
 
+	hNt 			= (TH1F *)mHandler->analysis(0)->dirFile()->Get("hNchTrans2011Sys")->Clone("hNtSys");
+	hNtRec 			= (TH1F *)mHandler->analysis(0)->dirFile()->Get("hNchTrans2011SysRC")->Clone("hNtSysRec");
+	hNtGen 			= (TH1F *)mHandler->analysis(0)->dirFile()->Get("hNchTrans2011SysMC")->Clone("hNtSysGen");
+	hNtRM 			= (TH2F *)mHandler->analysis(0)->dirFile()->Get("hNchTrans2011SysRCvMC")->Clone("hNtSysRM");
+
 	for (int iSp = 0; iSp < NSPECIES; ++iSp)		{
 
 		hPIDEffi[iSp]		= (TH1D*)mHandler->analysis(0)->dirFile()->Get(TString::Format("hPIDEffi_%s",SPECIES[iSp]));
@@ -1473,6 +1478,9 @@ Bool_t MyAnalysisMC::Unfold() {
 
 	DoUnfoldingNt();
 	DoUnfolding1D();
+
+	delete mUnf; mUnf = new UnfoldNTclass();
+	DoUnfoldingNtSys();
 
 	delete mUnf; mUnf = new UnfoldNTclass();
 	DoUnfoldingNtMin();
@@ -2096,6 +2104,108 @@ void MyAnalysisMC::DoUnfoldingNt() {
 	(mUnf->GetObjArray())->Write();
 	fUnfOut->Close();
 	delete fUnfOut;	
+
+	mDirFile->cd();
+	lOut->Write();
+}
+
+void MyAnalysisMC::DoUnfoldingNtSys()
+{
+
+	TList *lOut = new TList();
+	lOut->SetOwner();
+
+	// Output plots
+	const char *dOut = "results_unfolding_sys";
+	const bool eRM = false;
+	const int NumberOfIters = 5;
+
+	// X-AXIS NEEDS TO BE RC, Y-AXIS MC
+	hNtSysRM = FlipMatrix(hNtSysRM, 20);
+	// ROWWISE NORMALISATION IS PERFORMED IN mUnf
+	// cout << "Histograms: " << hNtRec << " " << hNt << " " << hNtGen << " " << hNtRM << "\n";
+
+	if (eRM)
+		mUnf->ExtrapolateRM(hNtSysRM);
+	mUnf->SetnIter(NumberOfIters);
+	mUnf->SetError(hNtSysRec);
+	mUnf->SetError(hNtSysGen);
+	mUnf->SaveSolutionNT(kTRUE);
+
+	if (mHandler->GetFlagMC())
+		mUnf->Setup(hNtSysRec, hNtSysGen, hNtSysRM);
+	else
+		mUnf->Setup(hNtSys, hNtSysGen, hNtSysRMS);
+
+	mUnf->Unfold();
+	mUnf->V2H();
+
+	printf(" - Unfolding region : %s\n", mUnf->GetRegion());
+
+	hNtSysUnf = (TH1F *)(mUnf->GetUnfoldedDistH())->Clone("hNtSysUnf");
+	if (mHandler->GetFlagMC())
+		hNtSysClosure = (TH1F *)(mUnf->GetClosureH())->Clone("hNtSysClosure");
+
+	TH1F *hNT = (TH1F *)hNtSysUnf->Clone("_hNT");
+	hRtSysUnf = (TH1F *)mUnf->RebinNT2RT(hNtSysUnf, kTRUE);
+	hRtSysUnf->Scale(1.0 / hRtSysUnf->Integral());
+
+	//! Relative statistical uncertainty
+	//! NT distribution with final bins to plot
+	TH1F *hRelStatUnc = (TH1F *)hNtSysUnf->Clone("hRelStatUnc_NtSys");
+	hRelStatUnc->Reset();
+
+	TH1F *hNch = (TH1F *)hNtSysUnf->Clone("hNTSys");
+	hNch->Reset();
+
+	for (int bin = 1; bin <= hRelStatUnc->GetNbinsX(); bin++)
+	{
+		double yield = hNtSysUnf->GetBinContent(bin);
+		double error = hNtSysUnf->GetBinError(bin);
+		if (yield > 0.)
+			hRelStatUnc->SetBinContent(bin, error / yield);
+	}
+
+	lOut->Add(hNtSysRM);
+
+	if (mHandler->GetFlagMC())
+		lOut->Add(hNtSysClosure);
+	// else 	ComparisonPublished(hRtUnf);
+
+	lOut->Add(hNtSysUnf);
+	lOut->Add(hRtSysUnf);
+	lOut->Add(hRelStatUnc);
+
+	TGraph *gChi2 = nullptr;
+	if (mHandler->GetFlagMC())
+	{
+		mUnf->DrawNchClosure(hNtGen, hNtUnf, -0.5, 30.0, "#it{N}_{T}", "Unfolded/True", dOut);
+		TVectorD iterX = (TVectorD)mUnf->GetChi2Vectors(kTRUE);
+		TVectorD Chi2 = (TVectorD)mUnf->GetChi2Vectors(kFALSE);
+		gChi2 = new TGraph(iterX, Chi2);
+		gChi2->SetName("gChi2");
+		gChi2->SetMarkerStyle(8);
+		lOut->Add(gChi2);
+	}
+
+	TFile *fUnfOut;
+	if (mHandler->GetFlagMC())
+		fUnfOut = new TFile(Form("./%s/1D_newClass_mc.root", dOut), "RECREATE");
+	else
+		fUnfOut = new TFile(Form("./%s/1D_newClass_data.root", dOut), "RECREATE");
+
+	fUnfOut->cd();
+	lOut->Write();
+	(mUnf->GetObjArray())->Write();
+	fUnfOut->Close();
+	delete fUnfOut;
+
+	fUnfOut = new TFile(Form("./%s/1D_newClass_data.root", dOut), "RECREATE");
+	fUnfOut->cd();
+	lOut->Write();
+	(mUnf->GetObjArray())->Write();
+	fUnfOut->Close();
+	delete fUnfOut;
 
 	mDirFile->cd();
 	lOut->Write();

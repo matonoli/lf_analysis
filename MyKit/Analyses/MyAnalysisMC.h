@@ -136,6 +136,7 @@ class MyAnalysisMC: public MyAnalysis {
 
 
 		void DoUnfoldingNt();
+		void DoUnfoldingNtSys();
 		//void DoUnfoldingNtRebin();
 		void DoUnfolding1D();
 		void DoUnfoldingNtMin();
@@ -256,6 +257,14 @@ class MyAnalysisMC: public MyAnalysis {
 		TH1F* hNtUnf;
 		TH1F* hNtClosure;
 		TH1F* hRtUnf;
+
+		TH1F *hNtSys;
+		TH1F *hNtSysRec;
+		TH1F *hNtSysGen;
+		TH2F *hNtSysRM;
+		TH1F *hNtSysUnf;
+		TH1F *hNtSysClosure;
+		TH1F *hRtSysUnf;
 
 		TH1F* hNtMin;
 		TH1F* hNtMinRec;
