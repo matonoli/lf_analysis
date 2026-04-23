@@ -2135,7 +2135,7 @@ void MyAnalysisMC::DoUnfoldingNtSys()
 	if (mHandler->GetFlagMC())
 		mUnf->Setup(hNtSysRec, hNtSysGen, hNtSysRM);
 	else
-		mUnf->Setup(hNtSys, hNtSysGen, hNtSysRMS);
+		mUnf->Setup(hNtSys, hNtSysGen, hNtSysRM);
 
 	mUnf->Unfold();
 	mUnf->V2H();
